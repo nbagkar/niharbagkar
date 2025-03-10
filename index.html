@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nihar Bagkar - Personal Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -13,8 +16,8 @@
             <div class="logo">NB</div>
             <ul class="nav-links">
                 <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#skills">Skills</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="resume.html">Resume</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -25,7 +28,7 @@
             <h1>Nihar Bagkar</h1>
             <p class="tagline">NYU Stern BTE Student</p>
             <div class="cta-buttons">
-                <a href="#projects" class="btn primary">View Projects</a>
+                <a href="projects.html" class="btn primary">View Projects</a>
                 <a href="#contact" class="btn secondary">Contact Me</a>
             </div>
         </div>
@@ -36,112 +39,39 @@
             <h2>About Me</h2>
             <div class="about-content">
                 <div class="about-text">
-                    <p>I'm Nihar Bagkar, a business and technology enthusiast driven by entrepreneurship, innovation, and the evolving landscape of AI, sustainability, and fashion tech. Currently, I'm pursuing a Bachelor of Science in Business, Technology, and Entrepreneurship at NYU's Stern School of Business, where I explore the intersection of strategy, product development, and venture-building.                    </p>
-                    <p>My experience spans leadership, finance, and product strategy. I've founded and led initiatives like Rapid Fire Esports, building a 1,000+ member gaming community, and FutureVibe Consulting, a college consulting service. At NYU, I co-lead the BTE Venture Studio, focusing on self-driven ventures and startup incubation. I've also contributed to the Product Management Club, analyzing business strategies for companies like Stripe. My background includes data analytics as well as intelligent waste management research.</p>
-                    <p>Beyond my professional pursuits, I'm passionate about soccer, travel, and the evolving relationship between technology and creativity. Whether launching ventures, refining business strategies, or exploring AI's role in fashion and retail, I'm always seeking ways to drive meaningful innovation.</p>
+                    <div class="about-intro">
+                        <p>I'm Nihar Bagkar, a business and technology enthusiast driven by entrepreneurship, innovation, and the evolving landscape of AI, sustainability, and sports tech.</p>
+                        <p>Currently pursuing a Bachelor of Science in Business, Technology, and Entrepreneurship at NYU's Stern School of Business, I explore the intersection of strategy, product development, and venture-building.</p>
+                    </div>
+                    <div class="about-highlights">
+                        <div class="highlight-item">
+                            <i class="fas fa-rocket"></i>
+                            <div class="highlight-content">
+                                <h3>Entrepreneurship</h3>
+                                <p>Founded Rapid Fire Esports (1,000+ member gaming community) and FutureVibe Consulting, demonstrating my ability to build and scale ventures.</p>
+                            </div>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-lightbulb"></i>
+                            <div class="highlight-content">
+                                <h3>Innovation</h3>
+                                <p>Co-leading BTE Venture Studio at NYU, focusing on startup incubation and mentoring student entrepreneurs.</p>
+                            </div>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="highlight-content">
+                                <h3>Product Strategy</h3>
+                                <p>Active member of the Product Management Club, analyzing business strategies for companies like Stripe and participating in product case competitions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-passion">
+                        <p>Beyond my professional pursuits, I'm passionate about soccer, travel, and sitcoms. Whether launching ventures, refining business strategies, or exploring AI's role in startups, I'm always seeking ways to drive meaningful innovation.</p>
+                    </div>
                 </div>
                 <div class="about-image">
                     <img src="images/NewHeadshotNB.JPG" alt="Nihar Bagkar">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <section id="projects" class="section">
-        <div class="container">
-            <h2>Projects</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/binderchain.png" alt="BinderChain">
-                    </div>
-                    <h3>BinderChain</h3>
-                    <p>BinderChain is a blockchain-powered platform for trading card game (TCG) collectors that solves ownership disputes, fraud, and fragmented tracking tools.</p>
-                    <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/abroadromantics.png" alt="AbroadRomantics Project">
-                    </div>
-                    <h3>AbroadRomantics</h3>
-                    <p>A partnering campaign app targeting NYU study-abroad students to address isolation concerns and promote cultural immersion through curated social experiences.</p>
-                    <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/CleanMatch.png" alt="CleanMatch">
-                    </div>
-                    <h3>CleanMatch</h3>
-                    <p>CleanMatch is an AI-powered data-cleansing platform that automates financial data onboarding for analysts and institutions, reducing manual errors and prep time by 30-50%.</p>
-                    <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/stripe.png" alt="Stripe Entrepreneurship Education Suite">
-                    </div>
-                    <h3>Stripe Entrepreneurship Education Suite</h3>
-                    <p>Stripe for Young Entrepreneurs is a tailored financial toolkit helping sole proprietors under 25 overcome limited resources and financial literacy barriers through simplified Stripe integration and community-driven support.</p>
-                    <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/savficiently.png" alt="Savficiency">
-                    </div>
-                    <h3>Savficiency</h3>
-                    <p>Savficiency is a hardware-software system designed to help small businesses (hotels, gas stations, clinics) optimize utility consumption (electricity, water, waste) through real-time monitoring and AI-powered analytics.</p>
-                    <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" class="btn primary">View Prototype</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <section id="skills" class="section">
-        <div class="container">
-            <h2>Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <h3>Programming Languages</h3>
-                    <ul>
-                        <li>HTML</li>
-                        <li>CSS</li>
-                        <li>Python</li>
-                        <li>Java</li>
-                        <li>SQL</li>
-                        
-                        <!-- Add more languages -->
-                    </ul>
-                </div>
-                <div class="skill-category">
-                    <h3>Languages</h3>
-                    <ul>
-                        <li>English (Native)</li>
-                        <li>Hindi (Native)</li>
-                        <li>Marathi (Native)</li>
-                        <li>Spanish (Intermediate)</li>
-                        <!-- Add more languages -->
-                    </ul>
-                </div>
-                <div class="skill-category">
-                    <h3>Tools</h3>
-                    <ul>
-                        <li>VS Code</li>
-                        <li>Figma</li>
-                        <li>Microsoft Office</li>
-                        <li>Miro</li>
-                        <li>Canva</li>
-                        <li>Notion</li>
-                        <li>Slack</li>
-                        <li>Jira</li>
-                        <li>GitHub</li>
-                        <li>Bloomberg Terminal</li>
-                        <li>Minitab</li>
-                        <li>Pendo</li>
-                        <!-- Add more tools -->
-                    </ul>
                 </div>
             </div>
         </div>
@@ -166,6 +96,14 @@
                         <i class="fab fa-linkedin"></i>
                         <a href="https://linkedin.com/in/nihar-bagkar" target="_blank">LinkedIn</a>
                     </div>
+                    <div class="contact-item">
+                        <i class="fab fa-instagram"></i>
+                        <a href="https://www.instagram.com/nihar_bagkar/" target="_blank">Instagram</a>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-twitter"></i>
+                        <a href="https://x.com/BagkarNihar" target="_blank">X</a>
+                    </div>
                 </div>
                 <form class="contact-form">
                     <input type="text" placeholder="Name" required>
@@ -186,3 +124,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
