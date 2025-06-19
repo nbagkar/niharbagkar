@@ -61,7 +61,48 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe all sections
-document.querySelectorAll('.section').forEach(section => {
-    observer.observe(section);
-}); 
+// Animate About Me blocks and header with fade/slide-up
+const aboutAnimates = document.querySelectorAll('.about-animate');
+aboutAnimates.forEach((el) => {
+    const blockObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                el.classList.add('animated');
+            }
+        });
+    }, observerOptions);
+    blockObserver.observe(el);
+});
+
+// Dark/Light mode toggle
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
+const root = document.documentElement;
+
+function setTheme(mode) {
+    if (mode === 'dark') {
+        root.setAttribute('data-theme', 'dark');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    } else {
+        root.removeAttribute('data-theme');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+    }
+    localStorage.setItem('theme', mode);
+}
+
+function getPreferredTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        setTheme(isDark ? 'light' : 'dark');
+    });
+    // On load
+    setTheme(getPreferredTheme());
+} 

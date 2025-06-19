@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects - Nihar Bagkar</title>
+    <title>Projects - Builder's Lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -19,73 +19,115 @@
                 <li><a href="projects.html" class="active">Projects</a></li>
                 <li><a href="resume.html">Resume</a></li>
                 <li><a href="index.html#contact">Contact</a></li>
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
+                        <span id="theme-icon" class="fas fa-moon"></span>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>
 
-    <section class="section">
+    <section class="section animate">
         <div class="container">
             <h2>My Projects</h2>
+            <div class="project-tag-bar">
+                <button class="project-tag active" data-tag="all">All</button>
+                <button class="project-tag" data-tag="AI">AI</button>
+                <button class="project-tag" data-tag="Fintech">Fintech</button>
+                <button class="project-tag" data-tag="Social">Social</button>
+                <button class="project-tag" data-tag="Education">Education</button>
+                <button class="project-tag" data-tag="Game">Game</button>
+            </div>
             <div class="projects-grid">
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/binderchain.png" alt="BinderChain">
-                    </div>
-                    <h3>BinderChain</h3>
-                    <p>BinderChain is a blockchain-powered platform for trading card game (TCG) collectors that solves ownership disputes, fraud, and fragmented tracking tools.</p>
-                    <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/abroadromantics.png" alt="AbroadRomantics Project">
-                    </div>
-                    <h3>AbroadRomantics</h3>
-                    <p>A partnering campaign app targeting NYU study-abroad students to address isolation concerns and promote cultural immersion through curated social experiences.</p>
-                    <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/CleanMatch.png" alt="CleanMatch">
-                    </div>
-                    <h3>CleanMatch</h3>
-                    <p>CleanMatch is an AI-powered data-cleansing platform that automates financial data onboarding for analysts and institutions, reducing manual errors and prep time by 30-50%.</p>
-                    <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/stripe.png" alt="Stripe Entrepreneurship Education Suite">
-                    </div>
-                    <h3>Stripe Entrepreneurship Education Suite</h3>
-                    <p>Stripe for Young Entrepreneurs is a tailored financial toolkit helping sole proprietors under 25 overcome limited resources and financial literacy barriers through simplified Stripe integration and community-driven support.</p>
-                    <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
-                    <div class="image-container">
-                        <img src="images/savficiently.png" alt="Savficiency">
-                    </div>
-                    <h3>Savficiency</h3>
-                    <p>Savficiency is a hardware-software system designed to help small businesses (hotels, gas stations, clinics) optimize utility consumption (electricity, water, waste) through real-time monitoring and AI-powered analytics.</p>
-                    <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card">
+                <div class="project-card" data-tags="AI,Web,Product">
                     <div class="image-container">
                         <img src="images/Cue.png" alt="Cue Project Preview" />
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag ai">🧠 AI</span>
                     </div>
                     <h3>Cue</h3>
                     <p>Cue is an AI-powered semantic sound search engine built for music producers. Instead of using manual tags, Cue finds the perfect sound based on vibes using text-to-audio embeddings, streamlining the creative process.</p>
                     <a href="https://www.trycue.net" class="btn primary" target="_blank">View Prototype</a>
                 </div>
-                <div class="project-card">
+                <div class="project-card" data-tags="Fintech">
+                    <div class="image-container">
+                        <img src="images/binderchain.png" alt="BinderChain">
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag fintech">💸 Fintech</span>
+                    </div>
+                    <h3>BinderChain</h3>
+                    <p>BinderChain is a blockchain-powered platform for trading card game (TCG) collectors that solves ownership disputes, fraud, and fragmented tracking tools.</p>
+                    <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" class="btn primary">View Prototype</a>
+                </div>
+                <div class="project-card" data-tags="Social">
+                    <div class="image-container">
+                        <img src="images/abroadromantics.png" alt="AbroadRomantics Project">
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag social">🌍 Social</span>
+                    </div>
+                    <h3>AbroadRomantics</h3>
+                    <p>A partnering campaign app targeting NYU study-abroad students to address isolation concerns and promote cultural immersion through curated social experiences.</p>
+                    <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" class="btn primary">View Prototype</a>
+                </div>
+                <div class="project-card" data-tags="AI,Fintech">
+                    <div class="image-container">
+                        <img src="images/CleanMatch.png" alt="CleanMatch">
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag ai">🧠 AI</span>
+                        <span class="project-tag fintech">💸 Fintech</span>
+                    </div>
+                    <h3>CleanMatch</h3>
+                    <p>CleanMatch is an AI-powered data-cleansing platform that automates financial data onboarding for analysts and institutions, reducing manual errors and prep time by 30-50%.</p>
+                    <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" class="btn primary">View Prototype</a>
+                </div>
+                <div class="project-card" data-tags="Fintech">
+                    <div class="image-container">
+                        <img src="images/stripe.png" alt="Stripe Entrepreneurship Education Suite">
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag fintech">💸 Fintech</span>
+                    </div>
+                    <h3>Stripe Entrepreneurship Education Suite</h3>
+                    <p>Stripe for Young Entrepreneurs is a tailored financial toolkit helping sole proprietors under 25 overcome limited resources and financial literacy barriers through simplified Stripe integration and community-driven support.</p>
+                    <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" class="btn primary">View Prototype</a>
+                </div>
+                <div class="project-card" data-tags="AI,Social">
+                    <div class="image-container">
+                        <img src="images/savficiently.png" alt="Savficiency">
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag ai">🧠 AI</span>
+                        <span class="project-tag social">🌍 Social</span>
+                    </div>
+                    <h3>Savficiency</h3>
+                    <p>Savficiency is a hardware-software system designed to help small businesses (hotels, gas stations, clinics) optimize utility consumption (electricity, water, waste) through real-time monitoring and AI-powered analytics.</p>
+                    <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" class="btn primary">View Prototype</a>
+                </div>
+                <div class="project-card" data-tags="AI,Education">
                     <div class="image-container">
                         <img src="images/Altbert.png" alt="Altbert Project Preview" />
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag ai">🧠 AI</span>
+                        <span class="project-tag education">📚 Education</span>
                     </div>
                     <h3>Altbert</h3>
                     <p>A smart course selection tool for NYU students that scrapes Albert and RateMyProfessor to generate optimal class schedules. It matches core/elective requirements, checks prerequisites, and personalizes suggestions using AI.</p>
                     <a href="https://docs.google.com/presentation/d/1Pd-EyIVFZT13ELl6ScoUL9XBVaHKp7BF85-MhbydnEI/edit?usp=sharing" class="btn primary" target="_blank">View Prototype</a>
                 </div>
-                <div class="project-card">
+                <div class="project-card" data-tags="AI,Education,Game">
                     <div class="image-container">
                         <img src="images/BlitzQuiz.png" alt="BlitzQuiz Project Preview" />
+                    </div>
+                    <div class="project-tags">
+                        <span class="project-tag ai">🧠 AI</span>
+                        <span class="project-tag education">📚 Education</span>
+                        <span class="project-tag game">🎮 Game</span>
                     </div>
                     <h3>BlitzQuiz</h3>
                     <p>BlitzQuiz is a multiplayer STEM quiz app that gamifies learning with ELO-style rankings and real-time competitive features. Designed during the Code Pi Ideathon, it delivers an engaging one-on-one quiz experience.</p>
@@ -97,10 +139,35 @@
 
     <footer>
         <div class="container">
+            <div class="logo">NB</div>
+            <div class="footer-links">
+                <a href="mailto:nihar.bagkar@stern.nyu.edu" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://github.com/nbagkar" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.instagram.com/nihar_bagkar/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://x.com/BagkarNihar" target="_blank" title="X"><i class="fab fa-twitter"></i></a>
+            </div>
             <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
+    <script>
+    // Project filter functionality
+    document.querySelectorAll('.project-tag-bar .project-tag').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.project-tag-bar .project-tag').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const tag = this.getAttribute('data-tag');
+            document.querySelectorAll('.project-card').forEach(card => {
+                if (tag === 'all' || (card.dataset.tags && card.dataset.tags.toLowerCase().includes(tag.toLowerCase()))) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html> 

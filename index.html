@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihar Bagkar - Personal Portfolio</title>
+    <title>Nihar Bagkar - Builder's Lab Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -19,59 +19,82 @@
                 <li><a href="projects.html">Projects</a></li>
                 <li><a href="resume.html">Resume</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
+                        <span id="theme-icon" class="fas fa-moon"></span>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>
 
     <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>Nihar Bagkar</h1>
-            <p class="tagline">NYU Stern BTE Student</p>
+            <h1>Hi, I'm Nihar Bagkar</h1>
+            <p class="tagline">I build things at the intersection of tech, design, and impact.</p>
             <div class="cta-buttons">
-                <a href="projects.html" class="btn primary">View Projects</a>
-                <a href="#contact" class="btn secondary">Contact Me</a>
+                <a href="projects.html" class="btn primary">Explore My Work</a>
+                <a href="resume.html" class="btn secondary">View Resume</a>
             </div>
         </div>
     </header>
 
-    <section id="about" class="section">
+    <section id="about" class="section animate">
         <div class="container">
-            <h2>About Me</h2>
             <div class="about-content">
                 <div class="about-text">
-                    <div class="about-intro">
-                        <p>I'm Nihar Bagkar, a business and technology enthusiast driven by entrepreneurship, innovation, and the evolving landscape of AI, sustainability, and sports tech.</p>
-                        <p>Currently pursuing a Bachelor of Science in Business, Technology, and Entrepreneurship at NYU's Stern School of Business, I explore the intersection of strategy, product development, and venture-building.</p>
+                    <!-- Hero Title Block -->
+                    <div class="about-animate about-hero">
+                        <h2 class="about-title" style="font-size:48px;font-weight:900;line-height:1.1;">About Me</h2>
+                        <p class="about-intro" style="font-size:20px;margin-top:0.7em;">Hi, I'm Nihar — I build at the intersection of business, technology, and design. I love crafting ventures, solving meaningful problems, and scaling ideas from zero to impact.</p>
                     </div>
-                    <div class="about-highlights">
-                        <div class="highlight-item">
-                            <i class="fas fa-rocket"></i>
-                            <div class="highlight-content">
-                                <h3>Entrepreneurship</h3>
-                                <p>Founded Rapid Fire Esports (1,000+ member gaming community) and FutureVibe Consulting, demonstrating my ability to build and scale ventures.</p>
-                            </div>
-                        </div>
-                        <div class="highlight-item">
-                            <i class="fas fa-lightbulb"></i>
-                            <div class="highlight-content">
-                                <h3>Innovation</h3>
-                                <p>Co-leading BTE Venture Studio at NYU, focusing on startup incubation and mentoring student entrepreneurs.</p>
-                            </div>
-                        </div>
-                        <div class="highlight-item">
-                            <i class="fas fa-chart-line"></i>
-                            <div class="highlight-content">
-                                <h3>Product Strategy</h3>
-                                <p>Active member of the Product Management Club, analyzing business strategies for companies like Stripe and participating in product case competitions.</p>
-                            </div>
-                        </div>
+                    <!-- Education Block -->
+                    <div class="about-animate about-block">
+                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#333;">📘 What I Study</h3>
+                        <p style="font-size:17px;max-width:80%;">I'm currently studying <strong>Business, Technology & Entrepreneurship</strong> at NYU Stern, where I explore how strategy, product thinking, and emerging tech (like AI and sustainability) shape the future of innovation.</p>
                     </div>
-                    <div class="about-passion">
-                        <p>Beyond my professional pursuits, I'm passionate about soccer, travel, and sitcoms. Whether launching ventures, refining business strategies, or exploring AI's role in startups, I'm always seeking ways to drive meaningful innovation.</p>
+                    <!-- Projects Block -->
+                    <div class="about-animate about-block">
+                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#222;">🛠️ What I've Built</h3>
+                        <ul class="about-list about-projects-list" style="font-size:17px;list-style:none;padding-left:0;">
+                            <li style="display:flex;align-items:flex-start;gap:0.7em;margin-bottom:0.7em;">
+                                <span style="font-size:1.3em;">🎧</span>
+                                <span><strong>Cue</strong> — AI-powered sound search for music producers, turning vague vibes into real audio.</span>
+                            </li>
+                            <li style="display:flex;align-items:flex-start;gap:0.7em;">
+                                <span style="font-size:1.3em;">🔥</span>
+                                <span><strong>Rapid Fire Esports</strong> — built a 1,000+ member gaming community from scratch during the pandemic.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Leadership Block -->
+                    <div class="about-animate about-block">
+                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#3EF4C4;">🚀 Where I Lead</h3>
+                        <ul class="about-list about-leadership-list" style="font-size:17px;list-style:none;padding-left:0;">
+                            <li style="display:flex;align-items:flex-start;gap:0.7em;margin-bottom:0.7em;">
+                                <span style="font-size:1.3em;">🧑‍🔬</span>
+                                <span><strong>BTE Venture Studio</strong> — co-leading NYU's venture incubator, mentoring student founders, and driving early-stage validation.</span>
+                            </li>
+                            <li style="display:flex;align-items:flex-start;gap:0.7em;">
+                                <span style="font-size:1.3em;">💼</span>
+                                <span><strong>Product Management Club</strong> — collaborating on live cases with companies like Stripe and exploring real-world product strategy.</span>
+                            </li>
+                        </ul>
+                        <hr style="border: none; border-top: 2px dashed #3EF4C4; margin: 1.5em 0; width: 60%;">
+                    </div>
+                    <!-- Closing Block -->
+                    <div class="about-animate about-block">
+                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;font-family:serif;color:#4F46E5;">🌍 What Drives Me</h3>
+                        <div style="font-size:17px;max-width:100%;margin-bottom:0.7em;">
+                            <p style="margin-bottom:0.5em;">I care deeply about systems — how products scale, how teams grow, and how technology can be used with purpose. Whether I'm working on a new startup idea, writing about platform capitalism, or running growth experiments, I love the builder's process.</p>
+                            <p style="margin-bottom:0;">Outside the workspace, I'm always down for a late-night soccer debate, a spontaneous trip, or rewatching <em>Brooklyn 99</em>.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="about-image">
-                    <img src="images/NewHeadshotNB.JPG" alt="Nihar Bagkar">
+                    <img src="images/NewHeadshotNB.JPG" alt="Nihar Bagkar" />
                 </div>
             </div>
         </div>
@@ -79,37 +102,25 @@
 
     <div class="section-divider"></div>
 
-    <section id="contact" class="section">
+    <section id="contact" class="section animate">
         <div class="container">
-            <h2>Contact Me</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <a href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a>
+            <div class="contact-content" style="background:var(--card-bg);border-radius:1.5rem;box-shadow:var(--shadow-soft);padding:2.5rem 2rem;display:grid;grid-template-columns:1.1fr 1.3fr;gap:2.5rem;align-items:center;">
+                <div class="contact-info" style="gap:1.5rem;">
+                    <div class="contact-header" style="margin-bottom:1.2rem;">
+                        <h2 style="font-size:2.3rem;font-weight:900;color:var(--accent-blue);margin-bottom:0.2em;">Contact Me</h2>
+                        <div style="font-size:1.3rem;color:var(--accent-mint);font-weight:700;">📬 Let's connect!</div>
                     </div>
-                    <div class="contact-item">
-                        <i class="fab fa-github"></i>
-                        <a href="https://github.com/nbagkar" target="_blank">GitHub</a>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-linkedin"></i>
-                        <a href="https://linkedin.com/in/nihar-bagkar" target="_blank">LinkedIn</a>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-instagram"></i>
-                        <a href="https://www.instagram.com/nihar_bagkar/" target="_blank">Instagram</a>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-twitter"></i>
-                        <a href="https://x.com/BagkarNihar" target="_blank">X</a>
-                    </div>
+                    <div class="contact-item"><i class="fas fa-envelope"></i><a href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a></div>
+                    <div class="contact-item"><i class="fab fa-github"></i><a href="https://github.com/nbagkar" target="_blank">GitHub</a></div>
+                    <div class="contact-item"><i class="fab fa-linkedin"></i><a href="https://linkedin.com/in/nihar-bagkar" target="_blank">LinkedIn</a></div>
+                    <div class="contact-item"><i class="fab fa-instagram"></i><a href="https://www.instagram.com/nihar_bagkar/" target="_blank">Instagram</a></div>
+                    <div class="contact-item"><img src="images/x-logo.png" alt="X logo" style="width:22px;height:22px;vertical-align:middle;margin-right:0.5em;"><a href="https://x.com/BagkarNihar" target="_blank">X</a></div>
                 </div>
-                <form class="contact-form">
-                    <input type="text" placeholder="Name" required>
-                    <input type="email" placeholder="Email" required>
-                    <textarea placeholder="Message" required></textarea>
-                    <button type="submit" class="btn primary">Send Message</button>
+                <form class="contact-form" style="display:flex;flex-direction:column;gap:1.2rem;">
+                    <input type="text" placeholder="Name" required style="font-size:1.1rem;">
+                    <input type="email" placeholder="Email" required style="font-size:1.1rem;">
+                    <textarea placeholder="Message" required style="font-size:1.1rem;"></textarea>
+                    <button type="submit" class="btn primary" style="margin-top:0.5em;">Send Message</button>
                 </form>
             </div>
         </div>
@@ -117,6 +128,14 @@
 
     <footer>
         <div class="container">
+            <div class="logo">NB</div>
+            <div class="footer-links">
+                <a href="mailto:nihar.bagkar@stern.nyu.edu" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://github.com/nbagkar" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.instagram.com/nihar_bagkar/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://x.com/BagkarNihar" target="_blank"title="X"><i class="fab fa-x-twitter"></i></a>
+            </div>
             <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
         </div>
     </footer>

@@ -6,7 +6,7 @@
     <title>Resume - Nihar Bagkar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -19,15 +19,25 @@
                 <li><a href="projects.html">Projects</a></li>
                 <li><a href="resume.html" class="active">Resume</a></li>
                 <li><a href="index.html#contact">Contact</a></li>
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
+                        <span id="theme-icon" class="fas fa-moon"></span>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>
 
-    <section class="section">
+    <section class="section animate">
         <div class="container">
-            <h2>Resume</h2>
-            <div class="resume-content" style="display: flex; justify-content: center; align-items: center; min-height: 80vh; width: 100%;">
-                <iframe src="https://nyu0-my.sharepoint.com/personal/nrb3931_nyu0_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc={7403fcb8-9385-470c-a2b2-14e0d8af9923}&amp;action=embedview" width="100%" height="80vh" style="border: none; min-height: 500px;" allowfullscreen> This is an embedded <a target="_blank" href="https://office.com">Microsoft Office</a> document, powered by <a target="_blank" href="https://office.com/webapps">Office</a>.</iframe>
+            <h2 class="about-title" style="font-size:2.3rem;font-weight:900;margin-bottom:1.5rem;">Resume</h2>
+            <div class="resume-content">
+                <iframe src="https://nyu0-my.sharepoint.com/personal/nrb3931_nyu0_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc={7403fcb8-9385-470c-a2b2-14e0d8af9923}&amp;action=embedview"
+                    width="100%" height="700" style="border:none;border-radius:12px;min-height:500px;background:#fff;" allowfullscreen loading="lazy">
+                </iframe>
+                <p style="margin-top:1.5rem;text-align:center;">
+                    If you cannot see the embedded resume, <a href="https://nyu0-my.sharepoint.com/personal/nrb3931_nyu0_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc={7403fcb8-9385-470c-a2b2-14e0d8af9923}&amp;action=embedview" target="_blank" rel="noopener">click here to view it directly.</a>
+                </p>
             </div>
         </div>
     </section>
