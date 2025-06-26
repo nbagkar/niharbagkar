@@ -54,7 +54,7 @@
                     <div class="about-animate about-block">
                         <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#333;">📘 What I Study</h3>
                         <p style="font-size:17px;max-width:80%;">I'm currently studying <strong>Business, Technology & Entrepreneurship</strong> at NYU Stern, where I explore how strategy, product thinking, and emerging tech (like AI and sustainability) shape the future of innovation.</p>
-                    </div>
+                            </div>
                     <!-- Projects Block -->
                     <div class="about-animate about-block">
                         <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#222;">🛠️ What I've Built</h3>
@@ -68,7 +68,7 @@
                                 <span><strong>Rapid Fire Esports</strong> — built a 1,000+ member gaming community from scratch during the pandemic.</span>
                             </li>
                         </ul>
-                    </div>
+                        </div>
                     <!-- Leadership Block -->
                     <div class="about-animate about-block">
                         <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#3EF4C4;">🚀 Where I Lead</h3>
@@ -83,7 +83,7 @@
                             </li>
                         </ul>
                         <hr style="border: none; border-top: 2px dashed #3EF4C4; margin: 1.5em 0; width: 60%;">
-                    </div>
+                            </div>
                     <!-- Closing Block -->
                     <div class="about-animate about-block">
                         <h3 class="about-block-title" style="font-size:28px;font-weight:700;font-family:serif;color:#4F46E5;">🌍 What Drives Me</h3>
@@ -114,12 +114,13 @@
                     <div class="contact-item"><i class="fab fa-github"></i><a href="https://github.com/nbagkar" target="_blank">GitHub</a></div>
                     <div class="contact-item"><i class="fab fa-linkedin"></i><a href="https://linkedin.com/in/nihar-bagkar" target="_blank">LinkedIn</a></div>
                     <div class="contact-item"><i class="fab fa-instagram"></i><a href="https://www.instagram.com/nihar_bagkar/" target="_blank">Instagram</a></div>
-                    <div class="contact-item"><img src="images/x-logo.png" alt="X logo" style="width:22px;height:22px;vertical-align:middle;margin-right:0.5em;"><a href="https://x.com/BagkarNihar" target="_blank">X</a></div>
+                    <div class="contact-item"><span class="contact-icon"><img src="images/x-logo.png" alt="X logo"></span><a href="https://x.com/BagkarNihar" target="_blank">X</a></div>
                 </div>
-                <form class="contact-form" style="display:flex;flex-direction:column;gap:1.2rem;">
-                    <input type="text" placeholder="Name" required style="font-size:1.1rem;">
-                    <input type="email" placeholder="Email" required style="font-size:1.1rem;">
-                    <textarea placeholder="Message" required style="font-size:1.1rem;"></textarea>
+                <form class="contact-form" action="https://formspree.io/f/xldnoklw" method="POST" style="display:flex;flex-direction:column;gap:1.2rem;">
+                    <input type="text" name="name" placeholder="Name" required style="font-size:1.1rem;">
+                    <input type="email" name="email" placeholder="Email" required style="font-size:1.1rem;">
+                    <textarea name="message" placeholder="Message" required style="font-size:1.1rem;"></textarea>
+                    <input type="hidden" name="_next" value="/index.html#contact-thankyou">
                     <button type="submit" class="btn primary" style="margin-top:0.5em;">Send Message</button>
                 </form>
             </div>
@@ -134,7 +135,7 @@
                 <a href="https://github.com/nbagkar" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
                 <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.instagram.com/nihar_bagkar/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://x.com/BagkarNihar" target="_blank"title="X"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://x.com/BagkarNihar" target="_blank" title="X"><img src="images/x-logo.png" alt="X logo" class="footer-x-icon"></a>
             </div>
             <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
         </div>

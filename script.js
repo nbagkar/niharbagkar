@@ -24,29 +24,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Form submission handling
-const contactForm = document.querySelector('.contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const formData = new FormData(contactForm);
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            message: formData.get('message')
-        };
-
-        try {
-            // Here you would typically send the data to your backend
-            // For now, we'll just show a success message
-            alert('Thank you for your message! I will get back to you soon.');
-            contactForm.reset();
-        } catch (error) {
-            alert('Sorry, there was an error sending your message. Please try again later.');
-        }
-    });
-}
+// Removed contact form JS handler for Formspree direct submission
 
 // Add animation on scroll
 const observerOptions = {
@@ -102,7 +80,7 @@ if (themeToggle) {
     themeToggle.addEventListener('click', () => {
         const isDark = root.getAttribute('data-theme') === 'dark';
         setTheme(isDark ? 'light' : 'dark');
-    });
+}); 
     // On load
     setTheme(getPreferredTheme());
 } 
