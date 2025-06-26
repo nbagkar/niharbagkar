@@ -434,11 +434,11 @@ footer .footer-links a:hover {
 .footer-x-icon {
     width: 1.2em;
     height: 1.2em;
+    max-width: 32px;
+    max-height: 32px;
     display: inline-block;
     vertical-align: middle;
-    filter: brightness(0) saturate(100%) invert(32%) sepia(98%) saturate(749%) hue-rotate(210deg) brightness(95%) contrast(92%);
-    /* This filter tints the icon to match the accent-blue color. Adjust as needed. */
-    transition: filter 0.2s;
+    object-fit: contain;
 }
 .footer-links a:hover .footer-x-icon {
     filter: brightness(0) saturate(100%) invert(67%) sepia(98%) saturate(749%) hue-rotate(120deg) brightness(95%) contrast(92%);
@@ -540,7 +540,10 @@ footer .footer-links a:hover {
 .contact-item .contact-icon img {
     width: 22px;
     height: 22px;
+    max-width: 100%;
+    max-height: 100%;
     display: block;
+    object-fit: contain;
 }
 
 .contact-item a {
@@ -786,4 +789,9 @@ footer .footer-links a:hover {
     background: var(--accent-blue) !important;
     color: var(--accent-mint) !important;
     box-shadow: 0 2px 8px rgba(124,140,248,0.18) !important;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
 } 
