@@ -781,3 +781,36 @@ img {
     max-width: 100%;
     height: auto;
 } 
+
+.publications-section {
+    background: #f3f4f6;
+    border-radius: 1.2rem;
+    box-shadow: 0 2px 12px rgba(67,56,202,0.07);
+    padding: 2.5rem 2rem;
+    margin: 2.5rem 0;
+}
+.publications-list {
+    text-align: left;
+    list-style: none;
+    padding-left: 0;
+    max-width: 700px;
+    margin: 0 auto;
+}
+.publications-list li {
+    margin-bottom: 1.2em;
+    font-size: 1.15rem;
+    line-height: 1.7;
+}
+.publications-list a {
+    color: #fff;
+    background: var(--accent-blue);
+    padding: 0.15em 0.6em;
+    border-radius: 0.5em;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.publications-list a:hover {
+    background: var(--accent-mint);
+    color: #101014;
+} 
