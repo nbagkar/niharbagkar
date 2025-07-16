@@ -431,20 +431,6 @@ footer .footer-links a:hover {
     color: var(--accent-mint);
 }
 
-.footer-x-icon {
-    width: 1.2em;
-    height: 1.2em;
-    max-width: 32px;
-    max-height: 32px;
-    display: inline-block;
-    vertical-align: middle;
-    object-fit: contain;
-}
-.footer-links a:hover .footer-x-icon {
-    filter: brightness(0) saturate(100%) invert(67%) sepia(98%) saturate(749%) hue-rotate(120deg) brightness(95%) contrast(92%);
-    /* This filter tints the icon to match the accent-mint color on hover. Adjust as needed. */
-}
-
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {
     .container { padding: 0 1rem; }
