@@ -78,7 +78,7 @@ input:focus, textarea:focus {
     border-color: var(--accent-blue) !important;
 }
 
-.project-tag, .project-tag.ai, .project-tag.web, .project-tag.product, .project-tag.education, .project-tag.fintech, .project-tag.social, .project-tag.game {
+.project-tag, .project-tag.ai, .project-tag.web, .project-tag.product, .project-tag.education, .project-tag.fintech, .project-tag.social, .project-tag.game, .project-tag.business {
     background: var(--accent-blue) !important;
     color: var(--accent-mint) !important;
     border: none;
