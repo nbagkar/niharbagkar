@@ -132,6 +132,7 @@ const heroSlideshow = {
                 const encodedParts = pathParts.map(part => encodeURIComponent(part));
                 const encodedPath = encodedParts.join('/');
                 slide.style.backgroundImage = `url('${encodedPath}')`;
+                slide.setAttribute('data-image-path', imagePath); // Store original path for debugging
                 slideshowContainer.appendChild(slide);
                 this.slides.push(slide);
             });
@@ -142,14 +143,19 @@ const heroSlideshow = {
 
     preloadImages() {
         const promises = this.images.map(imagePath => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const img = new Image();
+                // Properly encode the path - encode each path segment separately
                 const pathParts = imagePath.split('/');
                 const encodedParts = pathParts.map(part => encodeURIComponent(part));
                 const encodedPath = encodedParts.join('/');
-                img.onload = () => resolve();
+                
+                img.onload = () => {
+                    console.log(`✓ Loaded: ${imagePath}`);
+                    resolve();
+                };
                 img.onerror = () => {
-                    console.warn(`Failed to load image: ${imagePath}`);
+                    console.error(`✗ Failed to load: ${imagePath} (tried: ${encodedPath})`);
                     resolve(); // Continue even if one image fails
                 };
                 img.src = encodedPath;
