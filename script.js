@@ -118,16 +118,47 @@ const heroSlideshow = {
             this.images = ['images/nyc-blue.jpg'];
         }
 
-        // Create slides dynamically based on number of images
-        slideshowContainer.innerHTML = '';
-        this.images.forEach((imagePath, index) => {
-            const slide = document.createElement('div');
-            slide.className = 'hero-slide';
-            if (index === 0) slide.classList.add('active');
-            slide.style.backgroundImage = `url('${imagePath}')`;
-            slideshowContainer.appendChild(slide);
-            this.slides.push(slide);
+        // Preload all images first
+        this.preloadImages().then(() => {
+            // Create slides dynamically based on number of images
+            slideshowContainer.innerHTML = '';
+            this.images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'hero-slide';
+                if (index === 0) slide.classList.add('active');
+                // Encode the image path to handle spaces and special characters
+                // Only encode the filename parts, not the path separators
+                const pathParts = imagePath.split('/');
+                const encodedParts = pathParts.map(part => encodeURIComponent(part));
+                const encodedPath = encodedParts.join('/');
+                slide.style.backgroundImage = `url('${encodedPath}')`;
+                slideshowContainer.appendChild(slide);
+                this.slides.push(slide);
+            });
+
+            this.setupControls();
         });
+    },
+
+    preloadImages() {
+        const promises = this.images.map(imagePath => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const pathParts = imagePath.split('/');
+                const encodedParts = pathParts.map(part => encodeURIComponent(part));
+                const encodedPath = encodedParts.join('/');
+                img.onload = () => resolve();
+                img.onerror = () => {
+                    console.warn(`Failed to load image: ${imagePath}`);
+                    resolve(); // Continue even if one image fails
+                };
+                img.src = encodedPath;
+            });
+        });
+        return Promise.all(promises);
+    },
+
+    setupControls() {
 
         // Create dots
         const dotsContainer = document.querySelector('.hero-slideshow-dots');
