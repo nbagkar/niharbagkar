@@ -3,172 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihar Bagkar - Builder's Lab Portfolio</title>
+    <title>Nihar Bagkar | Cinematic Portfolio</title>
+    <meta name="description" content="Portfolio of Nihar Bagkar: business, technology, design, and venture-driven product building.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">NB</div>
-            <ul class="nav-links">
-                <li><a href="#about">About</a></li>
-                <li><a href="projects.html">Projects</a></li>
-                <li><a href="resume.html">Resume</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li>
-                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
-                        <span id="theme-icon" class="fas fa-moon"></span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <a class="skip-link" href="#story">Skip to content</a>
 
-    <header class="hero">
-        <div class="hero-slideshow"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1>Hi, I'm Nihar Bagkar</h1>
-            <p class="tagline">I build things at the intersection of tech, design, and impact.</p>
-            <div class="cta-buttons">
-                <a href="projects.html" class="btn primary">Explore My Work</a>
-                <a href="resume.html" class="btn secondary">View Resume</a>
-            </div>
+    <div class="site-glow site-glow-a" aria-hidden="true"></div>
+    <div class="site-glow site-glow-b" aria-hidden="true"></div>
+
+    <header class="site-header" id="top">
+        <div class="container nav-shell">
+            <a class="brand" href="#top" aria-label="Home">
+                <span class="brand-mark">NB</span>
+                <span class="brand-text">Nihar Bagkar</span>
+            </a>
+
+            <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav id="site-nav" class="site-nav" aria-label="Primary">
+                <a href="#story">Story</a>
+                <a href="#work">Work</a>
+                <a href="#timeline">Journey</a>
+                <a href="#proof">Proof</a>
+                <a href="#contact">Contact</a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon" class="fas fa-moon"></span>
+                </button>
+            </nav>
         </div>
-        <div class="hero-slideshow-controls">
-            <button class="slideshow-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
-            <button class="slideshow-next" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
-        </div>
-        <div class="hero-slideshow-dots"></div>
     </header>
 
-    <section id="about" class="section animate">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <!-- Hero Title Block -->
-                    <div class="about-animate about-hero">
-                        <h2 class="about-title" style="font-size:48px;font-weight:900;line-height:1.1;">About Me</h2>
-                        <p class="about-intro" style="font-size:20px;margin-top:0.7em;">Hi, I'm Nihar — I build at the intersection of business, technology, and design. I love crafting ventures, solving meaningful problems, and scaling ideas from zero to impact.</p>
-                    </div>
-                    <!-- Education Block -->
-                    <div class="about-animate about-block">
-                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#333;">📘 What I Study</h3>
-                        <p style="font-size:17px;max-width:80%;">I'm currently pursuing a <strong>B.S. in Business, Technology & Entrepreneurship</strong> at NYU Stern (GPA: 3.88), with a joint minor in <strong>CS & Math</strong> and a minor in <strong>Psychology</strong>. I'm interested in tech, venture capital, and finance, and I aspire to be in the technology and startup industry with the possibility of my own venture.</p>
-                            </div>
-                    <!-- Projects Block -->
-                    <div class="about-animate about-block">
-                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#222;">🛠️ What I've Built</h3>
-                        <ul class="about-list about-projects-list" style="font-size:17px;list-style:none;padding-left:0;">
-                            <li style="display:flex;align-items:flex-start;gap:0.7em;margin-bottom:0.7em;">
-                                <span style="font-size:1.3em;">🎧</span>
-                                <span><strong>Cue</strong> — AI-powered music search engine for producers. Launched MVP and gathered feedback from 25+ creators, turning vague vibes into real audio.</span>
-                            </li>
-                            <li style="display:flex;align-items:flex-start;gap:0.7em;">
-                                <span style="font-size:1.3em;">🔥</span>
-                                <span><strong>Rapid Fire Esports</strong> — founded a non-profit gaming organization, building a 1,000+ member community from scratch.</span>
-                            </li>
-                        </ul>
-                        </div>
-                    <!-- Leadership Block -->
-                    <div class="about-animate about-block">
-                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;color:#3EF4C4;">🚀 Where I Lead</h3>
-                        <ul class="about-list about-leadership-list" style="font-size:17px;list-style:none;padding-left:0;">
-                            <li style="display:flex;align-items:flex-start;gap:0.7em;margin-bottom:0.7em;">
-                                <span style="font-size:1.3em;">💼</span>
-                                <span><strong>Entrepreneurial Exchange Group</strong> — E-Board Member (Treasurer & Community Team), building NYU's startup ecosystem and supporting student founders.</span>
-                            </li>
-                            <li style="display:flex;align-items:flex-start;gap:0.7em;margin-bottom:0.7em;">
-                                <span style="font-size:1.3em;">📊</span>
-                                <span><strong>Product Management Club</strong> — E-Board Member (President, Treasurer, & Event Coordinator), organizing events and overseeing operations for NYU's largest PM community. Grew attendance by 114% in Spring 2025.</span>
-                            </li>
-                            <li style="display:flex;align-items:flex-start;gap:0.7em;">
-                                <span style="font-size:1.3em;">🏆</span>
-                                <span><strong>Awards & Recognition</strong> — Dean's List, NYUVC Finalist, CodePi Ideathon Winner, and Stern Scholarship recipient.</span>
-                            </li>
-                        </ul>
-                        <hr style="border: none; border-top: 2px dashed #3EF4C4; margin: 1.5em 0; width: 60%;">
-                            </div>
-                    <!-- Closing Block -->
-                    <div class="about-animate about-block">
-                        <h3 class="about-block-title" style="font-size:28px;font-weight:700;font-family:serif;color:#4F46E5;">🌍 What Drives Me</h3>
-                        <div style="font-size:17px;max-width:100%;margin-bottom:0.7em;">
-                            <p style="margin-bottom:0.5em;">I care deeply about systems — how products scale, how teams grow, and how technology can be used with purpose. Whether I'm working on a new startup idea, evaluating companies at Plug and Play, or collaborating with companies like Stripe on product strategy, I love the builder's process.</p>
-                            <p style="margin-bottom:0;">I'm passionate about tech, venture capital, and finance, and I'm always open to new connections and opportunities. Outside the workspace, I'm always down for a late-night soccer debate, a spontaneous trip, or rewatching <em>Brooklyn 99</em>.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="about-image">
-                    <img src="images/NewHeadshotNB.JPG" alt="Nihar Bagkar" />
+    <main>
+        <section class="hero" id="story">
+            <div class="container hero-grid">
+                <p class="eyebrow reveal">New York based · Builder, Operator, Venture-Minded Product Thinker</p>
+                <h1 class="hero-title reveal">
+                    I build ventures where
+                    <span>technology</span>,
+                    <span>capital</span>, and
+                    <span>human behavior</span>
+                    collide.
+                </h1>
+                <p class="hero-copy reveal">
+                    I am Nihar Bagkar. I turn ambiguous, high-stakes ideas into operating systems people can use: clearer decisions, stronger products, and faster execution.
+                </p>
+                <div class="hero-cta reveal">
+                    <a href="#work" class="btn btn-solid">See Selected Work</a>
+                    <a href="https://drive.google.com/file/d/14W-xFNLR0OHdpN9onjLIlmpueQjOWOhs/view?usp=sharing" class="btn btn-ghost" target="_blank" rel="noopener">Open Resume PDF</a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <section id="publications" class="section animate">
-        <div class="container">
-            <div class="publications-content" style="background:var(--card-bg);border-radius:1.5rem;box-shadow:var(--shadow-soft);padding:2.5rem 2rem;">
-                <h2 style="font-size:2.3rem;font-weight:900;color:var(--accent-blue);margin-bottom:1.2rem;text-align:left;">Publications</h2>
-                <ul class="publications-list" style="margin-left:0;width:100%;max-width:none;">
-                    <li>
-                        <strong>Bagkar, N.</strong> (2025). <em>Reimagining Trust in the Collectibles Market</em>. <a href="https://niharbagkar.substack.com/p/reimagining-trust-in-the-collectibles?utm_source=post-email-title&publication_id=4412004&post_id=159298110&utm_campaign=email-post-title&isFreemail=true&r=5ebe3x&triedRedirect=true" target="_blank">Substack · Mar 17, 2025</a>.
-                    </li>
-                    <li>
-                        <strong>Bagkar, N.</strong> (2023). <em>A Quest For Glory: The Journey To State Cup</em>. <a href="https://www.amazon.com/dp/B0CF4FWH6F?ref_=cm_sw_r_mwn_dp_TF47X224637EA648SQY8&language=en_US" target="_blank">AmazonKDP · Aug 8, 2023</a>.
-                    </li>
-                </ul>
+            <div class="hero-ribbon" aria-hidden="true">
+                <span>AI</span>
+                <span>VENTURE</span>
+                <span>FINTECH</span>
+                <span>PRODUCT</span>
+                <span>STORYTELLING</span>
+                <span>AI</span>
+                <span>VENTURE</span>
+                <span>FINTECH</span>
+                <span>PRODUCT</span>
+                <span>STORYTELLING</span>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <div class="section-divider"></div>
+        <section class="cred-strip reveal" aria-label="Highlights">
+            <div class="container cred-grid">
+                <article>
+                    <p class="cred-label">Current Track</p>
+                    <p class="cred-value">NYU Stern, B.S. BTE</p>
+                </article>
+                <article>
+                    <p class="cred-label">Community Built</p>
+                    <p class="cred-value">1,000+ members</p>
+                </article>
+                <article>
+                    <p class="cred-label">Leadership Impact</p>
+                    <p class="cred-value">114% attendance growth</p>
+                </article>
+                <article>
+                    <p class="cred-label">Focus</p>
+                    <p class="cred-value">AI, Venture, Finance</p>
+                </article>
+            </div>
+        </section>
 
-    <section id="contact" class="section animate">
-        <div class="container">
-            <div class="contact-content" style="background:var(--card-bg);border-radius:1.5rem;box-shadow:var(--shadow-soft);padding:2.5rem 2rem;display:grid;grid-template-columns:1.1fr 1.3fr;gap:2.5rem;align-items:center;">
-                <div class="contact-info" style="gap:1.5rem;">
-                    <div class="contact-header" style="margin-bottom:1.2rem;">
-                        <h2 style="font-size:2.3rem;font-weight:900;color:var(--accent-blue);margin-bottom:0.2em;">Contact Me</h2>
-                        <div style="font-size:1.3rem;color:var(--accent-mint);font-weight:700;">📬 Let's connect!</div>
-                    </div>
-                    <div class="contact-item"><i class="fas fa-envelope"></i><a href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a></div>
-                    <div class="contact-item"><i class="fab fa-github"></i><a href="https://github.com/nbagkar" target="_blank">GitHub</a></div>
-                    <div class="contact-item"><i class="fab fa-linkedin"></i><a href="https://linkedin.com/in/nihar-bagkar" target="_blank">LinkedIn</a></div>
-                    <div class="contact-item"><i class="fab fa-instagram"></i><a href="https://www.instagram.com/nihar_bagkar/" target="_blank">Instagram</a></div>
-                    <div class="contact-item"><i class="fab fa-twitter"></i><a href="https://x.com/BagkarNihar" target="_blank">Twitter</a></div>
+        <section class="section" id="work">
+            <div class="container">
+                <div class="section-head reveal">
+                    <p class="section-kicker">Selected Work</p>
+                    <h2>Not just projects. Proof of how I think and build.</h2>
                 </div>
-                <form class="contact-form" action="https://formspree.io/f/xldnoklw" method="POST" style="display:flex;flex-direction:column;gap:1.2rem;">
-                    <input type="text" name="name" placeholder="Name" required style="font-size:1.1rem;">
-                    <input type="email" name="email" placeholder="Email" required style="font-size:1.1rem;">
-                    <textarea name="message" placeholder="Message" required style="font-size:1.1rem;"></textarea>
-                    <input type="hidden" name="_next" value="/index.html#contact-thankyou">
-                    <button type="submit" class="btn primary" style="margin-top:0.5em;">Send Message</button>
+
+                <div class="project-grid">
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Music</span><span>Cue</span></div>
+                        <h3>Cue</h3>
+                        <p>Semantic sound search that translates language into production-ready audio, cutting friction in creative flow.</p>
+                        <a href="https://www.trycue.net" target="_blank" rel="noopener">Visit Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Fintech + Workflow</span><span>IB Prep Hub</span></div>
+                        <h3>IB Prep Hub</h3>
+                        <p>A recruiting command center that unifies applications, outreach, and prep into one system candidates can run daily.</p>
+                        <a href="https://www.ibprep.xyz" target="_blank" rel="noopener">Visit Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Finance</span><span>BCPS Parser</span></div>
+                        <h3>BCPS Budgeting PDF Parser</h3>
+                        <p>Automates extraction of budgeting tables from messy PDFs into clean outputs for finance teams and analysts.</p>
+                        <a href="https://github.com/nbagkar/bcps-pdf-parser" target="_blank" rel="noopener">View Repository</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Infrastructure + Trust</span><span>BinderChain</span></div>
+                        <h3>BinderChain</h3>
+                        <p>Trust-focused platform concept reducing fraud and ownership ambiguity in collectibles with verifiable records.</p>
+                        <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + VC Ops</span><span>Automated GP</span></div>
+                        <h3>Automated GP - VC AI</h3>
+                        <p>Agentic workflow that compresses GP-level venture work, from sourcing to portfolio review, into repeatable routines.</p>
+                        <a href="https://www.canva.com/design/DAG7DnrIEb4/-fwYtmuDK34ODAcITc4csA/edit?utm_content=DAG7DnrIEb4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener">View Case</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Sustainability + Story</span><span>Digital Graveyard</span></div>
+                        <h3>The Digital Graveyard</h3>
+                        <p>AI-generated documentary concept exposing the hidden downstream cost of e-waste and digital consumption habits.</p>
+                        <a href="https://www.canva.com/design/DAG6eJKSKaQ/9eXs5he31H5hfH3oFsrMRw/edit?utm_content=DAG6eJKSKaQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener">View Project</a>
+                    </article>
+                </div>
+
+                <p class="archive-note reveal">Need the full legacy catalog? See <a href="content-archive-2026-06-27.md" target="_blank" rel="noopener">archived project documentation</a>.</p>
+            </div>
+        </section>
+
+        <section class="section section-alt" id="timeline">
+            <div class="container">
+                <div class="section-head reveal">
+                    <p class="section-kicker">Journey</p>
+                    <h2>From student leadership to venture execution.</h2>
+                </div>
+
+                <div class="timeline">
+                    <article class="timeline-item reveal">
+                        <p class="timeline-year">Now</p>
+                        <h3>NYU Stern + Cross-Disciplinary Study</h3>
+                        <p>B.S. in Business, Technology & Entrepreneurship with CS/Math and Psychology focus to connect strategy, computation, and behavior.</p>
+                    </article>
+                    <article class="timeline-item reveal">
+                        <p class="timeline-year">Leadership</p>
+                        <h3>Product Management Club and Entrepreneurial Exchange Group</h3>
+                        <p>Built operator discipline through events, treasury ownership, and community scaling, including 114% attendance growth.</p>
+                    </article>
+                    <article class="timeline-item reveal">
+                        <p class="timeline-year">Builder Mode</p>
+                        <h3>AI and Fintech Product Experiments</h3>
+                        <p>Shipped practical products across creator workflows, finance automation, and venture intelligence.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="proof">
+            <div class="container proof-grid">
+                <article class="proof-card reveal">
+                    <p class="section-kicker">Publications</p>
+                    <h2>Ideas tested in public.</h2>
+                    <ul>
+                        <li>
+                            <a href="https://niharbagkar.substack.com/p/reimagining-trust-in-the-collectibles?utm_source=post-email-title&publication_id=4412004&post_id=159298110&utm_campaign=email-post-title&isFreemail=true&r=5ebe3x&triedRedirect=true" target="_blank" rel="noopener">Reimagining Trust in the Collectibles Market</a>
+                            <span>Substack · 2025</span>
+                        </li>
+                        <li>
+                            <a href="https://www.amazon.com/dp/B0CF4FWH6F?ref_=cm_sw_r_mwn_dp_TF47X224637EA648SQY8&language=en_US" target="_blank" rel="noopener">A Quest For Glory: The Journey To State Cup</a>
+                            <span>AmazonKDP · 2023</span>
+                        </li>
+                    </ul>
+                </article>
+
+                <article class="proof-card reveal">
+                    <p class="section-kicker">Awards</p>
+                    <h2>Signals of execution and follow-through.</h2>
+                    <ul>
+                        <li><span>Dean's List</span></li>
+                        <li><span>NYUVC Finalist</span></li>
+                        <li><span>CodePi Ideathon Winner</span></li>
+                        <li><span>Stern Scholarship Recipient</span></li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section contact" id="contact">
+            <div class="container contact-grid">
+                <div class="contact-copy reveal">
+                    <p class="section-kicker">Contact</p>
+                    <h2>Let us build something ambitious together.</h2>
+                    <p>If you are exploring product strategy, venture workflows, or AI-powered execution systems, I would love to connect and collaborate.</p>
+                    <div class="contact-links">
+                        <a href="mailto:nihar.bagkar@stern.nyu.edu"><i class="fas fa-envelope"></i><span>Email</span></a>
+                        <a href="https://github.com/nbagkar" target="_blank" rel="noopener"><i class="fab fa-github"></i><span>GitHub</span></a>
+                        <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i><span>LinkedIn</span></a>
+                    </div>
+                </div>
+
+                <form class="contact-form reveal" action="https://formspree.io/f/xldnoklw" method="POST">
+                    <label for="name">Name</label>
+                    <input id="name" type="text" name="name" required>
+
+                    <label for="email">Email</label>
+                    <input id="email" type="email" name="email" required>
+
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" required></textarea>
+
+                    <input type="hidden" name="_next" value="/index.html#contact">
+                    <button type="submit" class="btn btn-solid">Send Message</button>
                 </form>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <footer>
-        <div class="container">
-            <div class="logo">NB</div>
-            <div class="footer-links">
-                <a href="mailto:nihar.bagkar@stern.nyu.edu" title="Email"><i class="fas fa-envelope"></i></a>
-                <a href="https://github.com/nbagkar" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-                <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                <a href="https://www.instagram.com/nihar_bagkar/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://x.com/BagkarNihar" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
-            </div>
-            <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="container footer-shell">
+            <p>© 2026 Nihar Bagkar</p>
+            <a href="#top">Back to top</a>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-

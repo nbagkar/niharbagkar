@@ -3,254 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects - Builder's Lab</title>
+    <title>Projects | Nihar Bagkar</title>
+    <meta name="description" content="Full project archive for Nihar Bagkar.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">NB</div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="projects.html" class="active">Projects</a></li>
-                <li><a href="resume.html">Resume</a></li>
-                <li><a href="index.html#contact">Contact</a></li>
-                <li>
-                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
-                        <span id="theme-icon" class="fas fa-moon"></span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <a class="skip-link" href="#catalog">Skip to content</a>
 
-    <section class="section animate">
-        <div class="container">
-            <h2>My Projects</h2>
-            <div class="project-tag-bar">
-                <button class="project-tag active" data-tag="all">All</button>
-                <button class="project-tag" data-tag="AI">AI</button>
-                <button class="project-tag" data-tag="Fintech">Fintech</button>
-                <button class="project-tag" data-tag="Social">Social</button>
-                <button class="project-tag" data-tag="Education">Education</button>
-                <button class="project-tag" data-tag="Game">Game</button>
-                <button class="project-tag" data-tag="Business">Business</button>
-            </div>
-            <div class="projects-grid">
-                <div class="project-card" data-tags="Fintech">
-                    <div class="image-container">
-                        <img src="images/IBPrep.png" alt="IB Prep Hub Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>IB Prep Hub</h3>
-                    <p>IB Prep Hub is an all-in-one dashboard designed to streamline investment banking recruiting prep. It helps you track applications, organize interview practice, manage cold emails, and centralize resources in one clean, accessible place.</p>
-                    <a href="https://www.ibprep.xyz" class="btn primary" target="_blank">View Project</a>
-                </div>
-                <div class="project-card" data-tags="Fintech,AI">
-                    <div class="image-container">
-                        <img src="images/BCPS.png" alt="BCPS Budgeting PDF Parser Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag fintech">💸 Fintech</span>
-                        <span class="project-tag ai">🧠 AI</span>
-                    </div>
-                    <h3>BCPS Budgeting PDF Parser</h3>
-                    <p>A tool that extracts and consolidates budgeting data from PDF files into a single, organized Excel master sheet. Designed for financial analysis and reporting, it automates manual data entry, saving time and reducing errors for finance teams and analysts.</p>
-                    <a href="https://github.com/nbagkar/bcps-pdf-parser" class="btn primary" target="_blank">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="AI,Web,Product">
-                    <div class="image-container">
-                        <img src="images/Cue.png" alt="Cue Project Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                    </div>
-                    <h3>Cue</h3>
-                    <p>Cue is an AI-powered semantic sound search engine built for music producers. Instead of using manual tags, Cue finds the perfect sound based on vibes using text-to-audio embeddings, streamlining the creative process.</p>
-                    <a href="https://www.trycue.net" class="btn primary" target="_blank">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="Fintech">
-                    <div class="image-container">
-                        <img src="images/binderchain.png" alt="BinderChain">
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>BinderChain</h3>
-                    <p>BinderChain is a blockchain-powered platform for trading card game (TCG) collectors that solves ownership disputes, fraud, and fragmented tracking tools.</p>
-                    <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="Social">
-                    <div class="image-container">
-                        <img src="images/abroadromantics.png" alt="AbroadRomantics Project">
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag social">🌍 Social</span>
-                    </div>
-                    <h3>AbroadRomantics</h3>
-                    <p>A partnering campaign app targeting NYU study-abroad students to address isolation concerns and promote cultural immersion through curated social experiences.</p>
-                    <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="AI,Fintech">
-                    <div class="image-container">
-                        <img src="images/CleanMatch.png" alt="CleanMatch">
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>CleanMatch</h3>
-                    <p>CleanMatch is an AI-powered data-cleansing platform that automates financial data onboarding for analysts and institutions, reducing manual errors and prep time by 30-50%.</p>
-                    <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="Fintech">
-                    <div class="image-container">
-                        <img src="images/stripe.png" alt="Stripe Entrepreneurship Education Suite">
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>Stripe Entrepreneurship Education Suite</h3>
-                    <p>Stripe for Young Entrepreneurs is a tailored financial toolkit helping sole proprietors under 25 overcome limited resources and financial literacy barriers through simplified Stripe integration and community-driven support.</p>
-                    <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="AI,Social">
-                    <div class="image-container">
-                        <img src="images/savficiently.png" alt="Savficiency">
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag social">🌍 Social</span>
-                    </div>
-                    <h3>Savficiency</h3>
-                    <p>Savficiency is a hardware-software system designed to help small businesses (hotels, gas stations, clinics) optimize utility consumption (electricity, water, waste) through real-time monitoring and AI-powered analytics.</p>
-                    <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" class="btn primary">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="AI,Education">
-                    <div class="image-container">
-                        <img src="images/Altbert.png" alt="Altbert Project Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag education">📚 Education</span>
-                    </div>
-                    <h3>Altbert</h3>
-                    <p>A smart course selection tool for NYU students that scrapes Albert and RateMyProfessor to generate optimal class schedules. It matches core/elective requirements, checks prerequisites, and personalizes suggestions using AI.</p>
-                    <a href="https://docs.google.com/presentation/d/1Pd-EyIVFZT13ELl6ScoUL9XBVaHKp7BF85-MhbydnEI/edit?usp=sharing" class="btn primary" target="_blank">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="AI,Education,Game">
-                    <div class="image-container">
-                        <img src="images/BlitzQuiz.png" alt="BlitzQuiz Project Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag education">📚 Education</span>
-                        <span class="project-tag game">🎮 Game</span>
-                    </div>
-                    <h3>BlitzQuiz</h3>
-                    <p>BlitzQuiz is a multiplayer STEM quiz app that gamifies learning with ELO-style rankings and real-time competitive features. Designed during the Code Pi Ideathon, it delivers an engaging one-on-one quiz experience.</p>
-                    <a href="https://www.figma.com/proto/LzMFwzZV6mzB5cWkqNfy3Q/BlitzQuiz-Design-File?node-id=46-22&t=9apaT1al7ZmJMUGr-1" class="btn primary" target="_blank">View Prototype</a>
-                </div>
-                <div class="project-card" data-tags="Business">
-                    <div class="image-container">
-                        <img src="images/ConsultingCase.png" alt="Consulting Internship Program Case Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag business">💼 Business</span>
-                    </div>
-                    <h3>Consulting Internship Program Case</h3>
-                    <p>A strategic case study analyzing the business case for implementing a summer internship program. This comprehensive analysis evaluates ROI, talent pipeline development, and organizational benefits to support data-driven decision-making for program implementation.</p>
-                    <a href="https://gamma.app/docs/The-Strategic-Case-for-a-Summer-Internship-Program-9u07vesdf605o4g" class="btn primary" target="_blank">View Project</a>
-                </div>
-                <div class="project-card" data-tags="AI,Fintech">
-                    <div class="image-container">
-                        <img src="images/EarningsBot.png" alt="Earnings Call Bot Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>Earnings Call Bot - AI Agent</h3>
-                    <p>An AI-powered agent designed to analyze and extract insights from earnings call transcripts. The bot automates financial data processing, identifies key metrics, and provides actionable intelligence for investors and analysts, streamlining the research workflow.</p>
-                    <a href="https://docs.google.com/presentation/d/1TEnOVYz3mSaMIDF5JxeExzKW-lMtry7uvdnKGZzBP78/edit?usp=sharing" class="btn primary" target="_blank">View Project</a>
-                </div>
-                <div class="project-card" data-tags="AI,Social">
-                    <div class="image-container">
-                        <img src="images/CelsiusAICampaign.png" alt="Celsius AI Marketing Campaign Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag social">🌍 Social</span>
-                    </div>
-                    <h3>Celsius AI Marketing Campaign</h3>
-                    <p>A comprehensive marketing campaign designed for Celsius AI, focusing on brand positioning and user acquisition. The campaign leverages strategic messaging, visual design, and multi-channel distribution to effectively communicate the platform's value proposition and drive engagement.</p>
-                    <a href="https://www.canva.com/design/DAG3y8QDllk/i5tM3gcbGE3tsCNJ8I50zw/edit" class="btn primary" target="_blank">View Project</a>
-                </div>
-                <div class="project-card" data-tags="AI,Fintech">
-                    <div class="image-container">
-                        <img src="images/VCAIGP.png" alt="Automated GP - VC AI Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag fintech">💸 Fintech</span>
-                    </div>
-                    <h3>Automated GP - VC AI</h3>
-                    <p>An agentic workflow designed to automate General Partner (GP) level work in venture capital. This AI-powered system streamlines deal sourcing, due diligence, portfolio management, and reporting tasks, enabling VCs to focus on strategic decision-making and relationship building while reducing manual operational overhead.</p>
-                    <a href="https://www.canva.com/design/DAG7DnrIEb4/-fwYtmuDK34ODAcITc4csA/edit?utm_content=DAG7DnrIEb4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="btn primary" target="_blank">View Project</a>
-                </div>
-                <div class="project-card" data-tags="AI,Social">
-                    <div class="image-container">
-                        <img src="images/TheDigitalGraveyard.png" alt="The Digital Graveyard Preview" />
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag ai">🧠 AI</span>
-                        <span class="project-tag social">🌍 Social</span>
-                    </div>
-                    <h3>The Digital Graveyard</h3>
-                    <p>An AI-generated documentary exploring the hidden world of electronic waste and its environmental impact. Through cinematic visuals and compelling storytelling, the project sheds light on the true cost of our digital consumption, revealing where discarded technology ends up and the human and environmental consequences of our throwaway culture.</p>
-                    <a href="https://www.canva.com/design/DAG6eJKSKaQ/9eXs5he31H5hfH3oFsrMRw/edit?utm_content=DAG6eJKSKaQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" class="btn primary" target="_blank">View Project</a>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="site-glow site-glow-a" aria-hidden="true"></div>
+    <div class="site-glow site-glow-b" aria-hidden="true"></div>
 
-    <footer>
-        <div class="container">
-            <div class="logo">NB</div>
-            <div class="footer-links">
-                <a href="mailto:nihar.bagkar@stern.nyu.edu" title="Email"><i class="fas fa-envelope"></i></a>
-                <a href="https://github.com/nbagkar" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-                <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                <a href="https://www.instagram.com/nihar_bagkar/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://x.com/BagkarNihar" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+    <header class="site-header" id="top">
+        <div class="container nav-shell">
+            <a class="brand" href="index.html#top" aria-label="Home">
+                <span class="brand-mark">NB</span>
+                <span class="brand-text">Nihar Bagkar</span>
+            </a>
+
+            <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav id="site-nav" class="site-nav" aria-label="Primary">
+                <a href="index.html#story">Story</a>
+                <a href="projects.html">Projects</a>
+                <a href="resume.html">Resume</a>
+                <a href="index.html#contact">Contact</a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon" class="fas fa-moon"></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section" id="catalog">
+            <div class="container">
+                <div class="section-head reveal">
+                    <p class="section-kicker">Project Archive</p>
+                    <h1 class="support-title">Work Archive</h1>
+                    <p class="support-copy">A broader look at the systems I have built across AI, fintech, education, and social impact.</p>
+                </div>
+
+                <div class="project-grid support-grid">
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Fintech</span><span>IB Prep Hub</span></div>
+                        <h3>IB Prep Hub</h3>
+                        <p>All-in-one dashboard for investment banking recruiting preparation, tracking, and execution.</p>
+                        <a href="https://www.ibprep.xyz" target="_blank" rel="noopener">View Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Fintech + AI</span><span>BCPS Parser</span></div>
+                        <h3>BCPS Budgeting PDF Parser</h3>
+                        <p>Automates extraction and consolidation of budgeting data from PDF files into Excel.</p>
+                        <a href="https://github.com/nbagkar/bcps-pdf-parser" target="_blank" rel="noopener">View Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI</span><span>Cue</span></div>
+                        <h3>Cue</h3>
+                        <p>Semantic sound search engine for producers using vibe-based language instead of rigid tagging.</p>
+                        <a href="https://www.trycue.net" target="_blank" rel="noopener">View Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Fintech</span><span>BinderChain</span></div>
+                        <h3>BinderChain</h3>
+                        <p>Trust and ownership infrastructure concept for collectible ecosystems with fragmented records.</p>
+                        <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Social</span><span>AbroadRomantics</span></div>
+                        <h3>AbroadRomantics</h3>
+                        <p>Campaign app for study-abroad students designed to reduce isolation and increase real social connection.</p>
+                        <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Fintech</span><span>CleanMatch</span></div>
+                        <h3>CleanMatch</h3>
+                        <p>AI-powered financial data onboarding and cleansing to reduce analyst prep overhead.</p>
+                        <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Fintech</span><span>Stripe Suite</span></div>
+                        <h3>Stripe Entrepreneurship Education Suite</h3>
+                        <p>Toolkit concept helping young entrepreneurs adopt payments infrastructure with confidence.</p>
+                        <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Social</span><span>Savficiency</span></div>
+                        <h3>Savficiency</h3>
+                        <p>Monitoring and analytics system helping small businesses reduce utility waste through real-time signals.</p>
+                        <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Education</span><span>Altbert</span></div>
+                        <h3>Altbert</h3>
+                        <p>Smart NYU course planning tool combining schedule constraints, prerequisites, and review signals.</p>
+                        <a href="https://docs.google.com/presentation/d/1Pd-EyIVFZT13ELl6ScoUL9XBVaHKp7BF85-MhbydnEI/edit?usp=sharing" target="_blank" rel="noopener">View Project</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Game</span><span>BlitzQuiz</span></div>
+                        <h3>BlitzQuiz</h3>
+                        <p>Competitive STEM quiz app with multiplayer matchups, fast feedback loops, and skill-based ranking.</p>
+                        <a href="https://www.figma.com/proto/LzMFwzZV6mzB5cWkqNfy3Q/BlitzQuiz-Design-File?node-id=46-22&t=9apaT1al7ZmJMUGr-1" target="_blank" rel="noopener">View Prototype</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>Business</span><span>Consulting Case</span></div>
+                        <h3>Consulting Internship Program Case</h3>
+                        <p>Strategic evaluation of internship ROI, pipeline value, and execution design for operating teams.</p>
+                        <a href="https://gamma.app/docs/The-Strategic-Case-for-a-Summer-Internship-Program-9u07vesdf605o4g" target="_blank" rel="noopener">View Case</a>
+                    </article>
+
+                    <article class="project-card reveal">
+                        <div class="project-meta"><span>AI + Finance</span><span>Earnings Bot</span></div>
+                        <h3>Earnings Call Bot</h3>
+                        <p>AI agent for parsing earnings transcripts and surfacing concise, actionable investor insights.</p>
+                        <a href="https://docs.google.com/presentation/d/1TEnOVYz3mSaMIDF5JxeExzKW-lMtry7uvdnKGZzBP78/edit?usp=sharing" target="_blank" rel="noopener">View Project</a>
+                    </article>
+                </div>
+
+                <p class="archive-note reveal">Additional legacy entries are documented in <a href="content-archive-2026-06-27.md" target="_blank" rel="noopener">content-archive-2026-06-27.md</a>.</p>
             </div>
-            <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-shell">
+            <p>© 2026 Nihar Bagkar</p>
+            <a href="index.html#top">Back to home</a>
         </div>
     </footer>
 
     <script src="script.js"></script>
-    <script>
-    // Project filter functionality
-    document.querySelectorAll('.project-tag-bar .project-tag').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.project-tag-bar .project-tag').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const tag = this.getAttribute('data-tag');
-            document.querySelectorAll('.project-card').forEach(card => {
-                if (tag === 'all' || (card.dataset.tags && card.dataset.tags.toLowerCase().includes(tag.toLowerCase()))) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    });
-    </script>
 </body>
-</html> 
+</html>

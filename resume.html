@@ -3,50 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume - Nihar Bagkar</title>
+    <title>Resume | Nihar Bagkar</title>
+    <meta name="description" content="Resume and credentials for Nihar Bagkar.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">NB</div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="projects.html">Projects</a></li>
-                <li><a href="resume.html" class="active">Resume</a></li>
-                <li><a href="index.html#contact">Contact</a></li>
-                <li>
-                    <button id="theme-toggle" aria-label="Toggle dark mode" style="background:none;border:none;cursor:pointer;font-size:1.5rem;padding:0 0.5em;">
-                        <span id="theme-icon" class="fas fa-moon"></span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <a class="skip-link" href="#resume-main">Skip to content</a>
 
-    <section class="section animate">
-        <div class="container">
-            <h2 class="about-title" style="font-size:2.3rem;font-weight:900;margin-bottom:1.5rem;">Resume</h2>
-            <div class="resume-content">
-                <iframe src="https://drive.google.com/file/d/14W-xFNLR0OHdpN9onjLIlmpueQjOWOhs/preview"
-                    width="100%" height="700" style="border:none;border-radius:12px;min-height:500px;background:#fff;" allowfullscreen loading="lazy"></iframe>
-                <p style="margin-top:1.5rem;text-align:center;">
-                    If you cannot see the embedded resume, <a href="https://drive.google.com/file/d/14W-xFNLR0OHdpN9onjLIlmpueQjOWOhs/view?usp=sharing" target="_blank" rel="noopener">click here to view it directly (PDF)</a>.
-                </p>
+    <div class="site-glow site-glow-a" aria-hidden="true"></div>
+    <div class="site-glow site-glow-b" aria-hidden="true"></div>
+
+    <header class="site-header" id="top">
+        <div class="container nav-shell">
+            <a class="brand" href="index.html#top" aria-label="Home">
+                <span class="brand-mark">NB</span>
+                <span class="brand-text">Nihar Bagkar</span>
+            </a>
+
+            <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav id="site-nav" class="site-nav" aria-label="Primary">
+                <a href="index.html#story">Story</a>
+                <a href="projects.html">Projects</a>
+                <a href="resume.html">Resume</a>
+                <a href="index.html#contact">Contact</a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon" class="fas fa-moon"></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section" id="resume-main">
+            <div class="container">
+                <div class="section-head reveal">
+                    <p class="section-kicker">Resume</p>
+                    <h1 class="support-title">Credential Snapshot</h1>
+                    <p class="support-copy">A concise view of my academic foundation, leadership execution, and builder track record. Open the PDF for the full timeline.</p>
+                </div>
+
+                <div class="proof-grid">
+                    <article class="proof-card reveal">
+                        <p class="section-kicker">Education</p>
+                        <h2>NYU Stern</h2>
+                        <ul>
+                            <li><span>B.S. in Business, Technology & Entrepreneurship</span></li>
+                            <li><span>GPA: 3.88</span></li>
+                            <li><span>Joint Minor: CS and Math</span></li>
+                            <li><span>Minor: Psychology</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="proof-card reveal">
+                        <p class="section-kicker">Leadership</p>
+                        <h2>Operator Roles and Outcomes</h2>
+                        <ul>
+                            <li><span>Entrepreneurial Exchange Group, E-Board</span></li>
+                            <li><span>Product Management Club, E-Board</span></li>
+                            <li><span>Attendance growth: 114% (Spring 2025)</span></li>
+                            <li><span>Built communities across venture and PM tracks</span></li>
+                        </ul>
+                    </article>
+                </div>
+
+                <article class="proof-card reveal resume-cta-card">
+                    <p class="section-kicker">Full Resume</p>
+                    <h2>View Full Resume</h2>
+                    <p class="support-copy">For recruiters, operators, and founders who want the complete timeline and experience depth.</p>
+                    <div class="hero-cta">
+                        <a class="btn btn-solid" href="https://drive.google.com/file/d/14W-xFNLR0OHdpN9onjLIlmpueQjOWOhs/view?usp=sharing" target="_blank" rel="noopener">Open Resume PDF</a>
+                        <a class="btn btn-ghost" href="index.html#contact">Contact Nihar</a>
+                    </div>
+                </article>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Nihar Bagkar. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="container footer-shell">
+            <p>© 2026 Nihar Bagkar</p>
+            <a href="index.html#top">Back to home</a>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
-</html> 
+</html>
