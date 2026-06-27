@@ -305,24 +305,40 @@ a {
 
 .hero-ribbon {
     margin-top: 2.4rem;
-    display: flex;
-    gap: 0.9rem;
-    padding: 0.75rem;
+    position: relative;
+    padding: 0.85rem clamp(0.8rem, 2.2vw, 1.4rem);
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
     overflow: hidden;
     white-space: nowrap;
 }
 
+.hero-ribbon-marquee {
+    display: flex;
+    width: max-content;
+    animation: ribbonShift 22s linear infinite;
+}
+
+.hero-ribbon-track {
+    flex: 0 0 auto;
+    min-width: calc(100vw - 2 * clamp(0.8rem, 2.2vw, 1.4rem));
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: clamp(1.2rem, 4vw, 3rem);
+    padding-inline: clamp(0.8rem, 2.4vw, 1.8rem);
+}
+
 .hero-ribbon span {
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.12em;
+    line-height: 1;
     color: var(--brand);
-    animation: ribbonShift 18s linear infinite;
+    white-space: nowrap;
 }
 
-.hero-ribbon.is-paused span {
+.hero-ribbon.is-paused .hero-ribbon-marquee {
     animation-play-state: paused;
 }
 
@@ -330,8 +346,9 @@ a {
     from {
         transform: translateX(0);
     }
+
     to {
-        transform: translateX(-220%);
+        transform: translateX(-50%);
     }
 }
 
