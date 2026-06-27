@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <a class="skip-link" href="#catalog">Skip to content</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
 
     <div class="site-glow site-glow-a" aria-hidden="true"></div>
     <div class="site-glow site-glow-b" aria-hidden="true"></div>
@@ -32,6 +33,9 @@
 
             <nav id="site-nav" class="site-nav" aria-label="Primary">
                 <a href="index.html#story">Story</a>
+                <a href="index.html#work">Work</a>
+                <a href="index.html#timeline">Journey</a>
+                <a href="index.html#proof">Proof</a>
                 <a href="projects.html">Projects</a>
                 <a href="resume.html">Resume</a>
                 <a href="index.html#contact">Contact</a>
@@ -42,7 +46,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="section" id="catalog">
             <div class="container">
                 <div class="section-head reveal">
@@ -51,88 +55,113 @@
                     <p class="support-copy">A broader look at the systems I have built across AI, fintech, education, and social impact.</p>
                 </div>
 
-                <div class="project-grid support-grid">
-                    <article class="project-card reveal">
+                <div class="project-controls reveal">
+                    <div class="filter-pills" role="toolbar" aria-label="Filter projects by category">
+                        <button class="filter-pill active" data-filter="all">All</button>
+                        <button class="filter-pill" data-filter="fintech">Fintech</button>
+                        <button class="filter-pill" data-filter="ai">AI</button>
+                        <button class="filter-pill" data-filter="social">Social</button>
+                        <button class="filter-pill" data-filter="education">Education</button>
+                        <button class="filter-pill" data-filter="business">Business</button>
+                        <button class="filter-pill" data-filter="game">Game</button>
+                    </div>
+                    <button class="btn btn-ghost" type="button" data-random-project>Surprise Me</button>
+                </div>
+
+                <div class="project-grid support-grid" data-project-grid>
+                    <article class="project-card reveal" data-category="fintech" data-tilt>
                         <div class="project-meta"><span>Fintech</span><span>IB Prep Hub</span></div>
                         <h3>IB Prep Hub</h3>
                         <p>All-in-one dashboard for investment banking recruiting preparation, tracking, and execution.</p>
+                        <ul class="impact-list"><li>4 recruiting workflows unified</li></ul>
                         <a href="https://www.ibprep.xyz" target="_blank" rel="noopener">View Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="fintech ai" data-tilt>
                         <div class="project-meta"><span>Fintech + AI</span><span>BCPS Parser</span></div>
                         <h3>BCPS Budgeting PDF Parser</h3>
                         <p>Automates extraction and consolidation of budgeting data from PDF files into Excel.</p>
+                        <ul class="impact-list"><li>Manual PDF wrangling greatly reduced</li></ul>
                         <a href="https://github.com/nbagkar/bcps-pdf-parser" target="_blank" rel="noopener">View Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai" data-tilt>
                         <div class="project-meta"><span>AI</span><span>Cue</span></div>
                         <h3>Cue</h3>
                         <p>Semantic sound search engine for producers using vibe-based language instead of rigid tagging.</p>
+                        <ul class="impact-list"><li>25+ creator interviews informed MVP</li></ul>
                         <a href="https://www.trycue.net" target="_blank" rel="noopener">View Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="fintech" data-tilt>
                         <div class="project-meta"><span>Fintech</span><span>BinderChain</span></div>
                         <h3>BinderChain</h3>
                         <p>Trust and ownership infrastructure concept for collectible ecosystems with fragmented records.</p>
+                        <ul class="impact-list"><li>End-to-end trust flow prototyped</li></ul>
                         <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="social" data-tilt>
                         <div class="project-meta"><span>Social</span><span>AbroadRomantics</span></div>
                         <h3>AbroadRomantics</h3>
                         <p>Campaign app for study-abroad students designed to reduce isolation and increase real social connection.</p>
+                        <ul class="impact-list"><li>Built around student isolation pain points</li></ul>
                         <a href="https://www.figma.com/proto/2WYPvqnX37KEp9f8MFMcgL/Cupid-Arrow-Dating-App%3A-iOS%2FAndroid-UI%2FUX-(Community)?node-id=1-43&starting-point-node-id=1%3A43&t=5EeH2dIeVJGdv5wX-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai fintech" data-tilt>
                         <div class="project-meta"><span>AI + Fintech</span><span>CleanMatch</span></div>
                         <h3>CleanMatch</h3>
                         <p>AI-powered financial data onboarding and cleansing to reduce analyst prep overhead.</p>
+                        <ul class="impact-list"><li>Designed for 30-50% prep-time reduction</li></ul>
                         <a href="https://www.figma.com/proto/G200jMt99hjl5FbktDhjhQ/PMC-CleanMatch-Mockups?node-id=23-124&starting-point-node-id=17%3A2&t=gtrG7klixnlrVXk2-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="fintech" data-tilt>
                         <div class="project-meta"><span>Fintech</span><span>Stripe Suite</span></div>
                         <h3>Stripe Entrepreneurship Education Suite</h3>
                         <p>Toolkit concept helping young entrepreneurs adopt payments infrastructure with confidence.</p>
+                        <ul class="impact-list"><li>Tailored for under-25 founders</li></ul>
                         <a href="https://www.figma.com/proto/Rws5XTQRqKIO1rTXoD01DI/Stripe-Entrepreneurship-Education-Suite?node-id=7-8&starting-point-node-id=7%3A8&t=Sp5wprKmwVXGkMoz-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai social" data-tilt>
                         <div class="project-meta"><span>AI + Social</span><span>Savficiency</span></div>
                         <h3>Savficiency</h3>
                         <p>Monitoring and analytics system helping small businesses reduce utility waste through real-time signals.</p>
+                        <ul class="impact-list"><li>Real-time utility intelligence framework</li></ul>
                         <a href="https://www.figma.com/proto/UQ8516EDzHdTodw2IE05JA/Savficiency-Prototype?node-id=3-2&starting-point-node-id=3%3A2&t=crQhxWPZYNSPjsab-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai education" data-tilt>
                         <div class="project-meta"><span>AI + Education</span><span>Altbert</span></div>
                         <h3>Altbert</h3>
                         <p>Smart NYU course planning tool combining schedule constraints, prerequisites, and review signals.</p>
+                        <ul class="impact-list"><li>Multi-source recommendation logic designed</li></ul>
                         <a href="https://docs.google.com/presentation/d/1Pd-EyIVFZT13ELl6ScoUL9XBVaHKp7BF85-MhbydnEI/edit?usp=sharing" target="_blank" rel="noopener">View Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai education game" data-tilt>
                         <div class="project-meta"><span>AI + Game</span><span>BlitzQuiz</span></div>
                         <h3>BlitzQuiz</h3>
                         <p>Competitive STEM quiz app with multiplayer matchups, fast feedback loops, and skill-based ranking.</p>
+                        <ul class="impact-list"><li>Competitive loop built for retention</li></ul>
                         <a href="https://www.figma.com/proto/LzMFwzZV6mzB5cWkqNfy3Q/BlitzQuiz-Design-File?node-id=46-22&t=9apaT1al7ZmJMUGr-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="business" data-tilt>
                         <div class="project-meta"><span>Business</span><span>Consulting Case</span></div>
                         <h3>Consulting Internship Program Case</h3>
                         <p>Strategic evaluation of internship ROI, pipeline value, and execution design for operating teams.</p>
+                        <ul class="impact-list"><li>Decision-ready business case framing</li></ul>
                         <a href="https://gamma.app/docs/The-Strategic-Case-for-a-Summer-Internship-Program-9u07vesdf605o4g" target="_blank" rel="noopener">View Case</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-category="ai fintech" data-tilt>
                         <div class="project-meta"><span>AI + Finance</span><span>Earnings Bot</span></div>
                         <h3>Earnings Call Bot</h3>
                         <p>AI agent for parsing earnings transcripts and surfacing concise, actionable investor insights.</p>
+                        <ul class="impact-list"><li>Transcript-to-insight workflow automated</li></ul>
                         <a href="https://docs.google.com/presentation/d/1TEnOVYz3mSaMIDF5JxeExzKW-lMtry7uvdnKGZzBP78/edit?usp=sharing" target="_blank" rel="noopener">View Project</a>
                     </article>
                 </div>

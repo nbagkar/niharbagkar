@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <a class="skip-link" href="#story">Skip to content</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
 
     <div class="site-glow site-glow-a" aria-hidden="true"></div>
     <div class="site-glow site-glow-b" aria-hidden="true"></div>
@@ -43,7 +44,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="hero" id="story">
             <div class="container hero-grid">
                 <p class="eyebrow reveal">New York based · Builder, Operator, Venture-Minded Product Thinker</p>
@@ -57,6 +58,11 @@
                 <p class="hero-copy reveal">
                     I am Nihar Bagkar. I turn ambiguous, high-stakes ideas into operating systems people can use: clearer decisions, stronger products, and faster execution.
                 </p>
+                <div class="audience-strip reveal" aria-label="Primary audience">
+                    <span>For founders</span>
+                    <span>For product teams</span>
+                    <span>For venture operators</span>
+                </div>
                 <div class="hero-cta reveal">
                     <a href="#work" class="btn btn-solid">See Selected Work</a>
                     <a href="https://drive.google.com/file/d/14W-xFNLR0OHdpN9onjLIlmpueQjOWOhs/view?usp=sharing" class="btn btn-ghost" target="_blank" rel="noopener">Open Resume PDF</a>
@@ -102,53 +108,101 @@
                 <div class="section-head reveal">
                     <p class="section-kicker">Selected Work</p>
                     <h2>Not just projects. Proof of how I think and build.</h2>
+                    <p class="section-intro">These projects are selected to show product judgment, venture fluency, and execution under ambiguity across creative, financial, and operational systems.</p>
                 </div>
 
                 <div class="project-grid">
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>AI + Music</span><span>Cue</span></div>
                         <h3>Cue</h3>
                         <p>Semantic sound search that translates language into production-ready audio, cutting friction in creative flow.</p>
+                        <ul class="impact-list">
+                            <li>25+ producer interviews</li>
+                            <li>MVP shipped in one sprint cycle</li>
+                        </ul>
                         <a href="https://www.trycue.net" target="_blank" rel="noopener">Visit Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>Fintech + Workflow</span><span>IB Prep Hub</span></div>
                         <h3>IB Prep Hub</h3>
                         <p>A recruiting command center that unifies applications, outreach, and prep into one system candidates can run daily.</p>
+                        <ul class="impact-list">
+                            <li>4 workflows consolidated into one dashboard</li>
+                            <li>Designed for daily high-volume recruiting ops</li>
+                        </ul>
                         <a href="https://www.ibprep.xyz" target="_blank" rel="noopener">Visit Project</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>AI + Finance</span><span>BCPS Parser</span></div>
                         <h3>BCPS Budgeting PDF Parser</h3>
                         <p>Automates extraction of budgeting tables from messy PDFs into clean outputs for finance teams and analysts.</p>
+                        <ul class="impact-list">
+                            <li>Manual extraction workload cut dramatically</li>
+                            <li>Cleaner, audit-ready output structure</li>
+                        </ul>
                         <a href="https://github.com/nbagkar/bcps-pdf-parser" target="_blank" rel="noopener">View Repository</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>Infrastructure + Trust</span><span>BinderChain</span></div>
                         <h3>BinderChain</h3>
                         <p>Trust-focused platform concept reducing fraud and ownership ambiguity in collectibles with verifiable records.</p>
+                        <ul class="impact-list">
+                            <li>Ownership traceability model defined end-to-end</li>
+                            <li>Fraud-risk scenarios mapped in prototype flow</li>
+                        </ul>
                         <a href="https://www.figma.com/proto/dvkLdZ1SZj7hmUP4cVCy99/BinderChain-Prototype?node-id=4-102&starting-point-node-id=4%3A102&t=k0w2Yzx8kGO7YzVY-1" target="_blank" rel="noopener">View Prototype</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>AI + VC Ops</span><span>Automated GP</span></div>
                         <h3>Automated GP - VC AI</h3>
                         <p>Agentic workflow that compresses GP-level venture work, from sourcing to portfolio review, into repeatable routines.</p>
+                        <ul class="impact-list">
+                            <li>Core GP workflow decomposition completed</li>
+                            <li>Repeatable AI-assisted decision loops designed</li>
+                        </ul>
                         <a href="https://www.canva.com/design/DAG7DnrIEb4/-fwYtmuDK34ODAcITc4csA/edit?utm_content=DAG7DnrIEb4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener">View Case</a>
                     </article>
 
-                    <article class="project-card reveal">
+                    <article class="project-card reveal" data-tilt>
                         <div class="project-meta"><span>Sustainability + Story</span><span>Digital Graveyard</span></div>
                         <h3>The Digital Graveyard</h3>
                         <p>AI-generated documentary concept exposing the hidden downstream cost of e-waste and digital consumption habits.</p>
+                        <ul class="impact-list">
+                            <li>Narrative concept from research to visual treatment</li>
+                            <li>Cross-disciplinary AI storytelling execution</li>
+                        </ul>
                         <a href="https://www.canva.com/design/DAG6eJKSKaQ/9eXs5he31H5hfH3oFsrMRw/edit?utm_content=DAG6eJKSKaQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener">View Project</a>
                     </article>
                 </div>
 
                 <p class="archive-note reveal">Need the full legacy catalog? See <a href="content-archive-2026-06-27.md" target="_blank" rel="noopener">archived project documentation</a>.</p>
+            </div>
+        </section>
+
+        <section class="section section-alt" id="testimonials">
+            <div class="container">
+                <div class="section-head reveal">
+                    <p class="section-kicker">Testimonials</p>
+                    <h2>How collaborators describe my execution style.</h2>
+                </div>
+                <div class="testimonials-grid">
+                    <article class="testimonial-card reveal">
+                        <p>"Nihar brings founder-level urgency with product-level structure. He does not just ideate, he operationalizes."</p>
+                        <span>Startup collaborator</span>
+                    </article>
+                    <article class="testimonial-card reveal">
+                        <p>"He translates ambiguous problems into clear systems quickly, then aligns people around execution."</p>
+                        <span>Student org leadership peer</span>
+                    </article>
+                    <article class="testimonial-card reveal">
+                        <p>"Strong strategic instinct, but equally strong follow-through. That combination is rare at this stage."</p>
+                        <span>Mentor feedback</span>
+                    </article>
+                </div>
             </div>
         </section>
 
@@ -216,24 +270,29 @@
                     <h2>Let us build something ambitious together.</h2>
                     <p>If you are exploring product strategy, venture workflows, or AI-powered execution systems, I would love to connect and collaborate.</p>
                     <div class="contact-links">
-                        <a href="mailto:nihar.bagkar@stern.nyu.edu"><i class="fas fa-envelope"></i><span>Email</span></a>
-                        <a href="https://github.com/nbagkar" target="_blank" rel="noopener"><i class="fab fa-github"></i><span>GitHub</span></a>
-                        <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i><span>LinkedIn</span></a>
+                        <a href="mailto:nihar.bagkar@stern.nyu.edu" aria-label="Send email to nihar.bagkar@stern.nyu.edu"><i class="fas fa-envelope"></i><span>Email</span></a>
+                        <a href="https://github.com/nbagkar" target="_blank" rel="noopener" aria-label="Visit GitHub profile in a new tab"><i class="fab fa-github"></i><span>GitHub</span></a>
+                        <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener" aria-label="Visit LinkedIn profile in a new tab"><i class="fab fa-linkedin"></i><span>LinkedIn</span></a>
                     </div>
                 </div>
 
                 <form class="contact-form reveal" action="https://formspree.io/f/xldnoklw" method="POST">
-                    <label for="name">Name</label>
-                    <input id="name" type="text" name="name" required>
+                    <fieldset>
+                        <legend>Send me a message</legend>
 
-                    <label for="email">Email</label>
-                    <input id="email" type="email" name="email" required>
+                        <label for="name">Name <span aria-hidden="true">*</span></label>
+                        <input id="name" type="text" name="name" required aria-required="true">
 
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" required></textarea>
+                        <label for="email">Email <span aria-hidden="true">*</span></label>
+                        <input id="email" type="email" name="email" required aria-required="true">
 
-                    <input type="hidden" name="_next" value="/index.html#contact">
-                    <button type="submit" class="btn btn-solid">Send Message</button>
+                        <label for="message">Message <span aria-hidden="true">*</span></label>
+                        <textarea id="message" name="message" required aria-required="true"></textarea>
+
+                        <input type="hidden" name="_next" value="/index.html#contact">
+                        <button type="submit" class="btn btn-solid">Send Message</button>
+                        <p class="form-status" data-form-status aria-live="polite"></p>
+                    </fieldset>
                 </form>
             </div>
         </section>

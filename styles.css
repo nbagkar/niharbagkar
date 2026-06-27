@@ -38,6 +38,23 @@ html {
     scroll-behavior: smooth;
 }
 
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 80;
+    background: transparent;
+}
+
+.scroll-progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--brand), var(--accent));
+}
+
 body {
     font-family: "Space Grotesk", sans-serif;
     background: var(--bg);
@@ -83,6 +100,7 @@ a {
     z-index: -1;
     filter: blur(70px);
     opacity: 0.38;
+    will-change: transform;
 }
 
 .site-glow-a {
@@ -106,7 +124,7 @@ a {
     position: sticky;
     top: 0;
     z-index: 50;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
     background: color-mix(in srgb, var(--bg) 78%, transparent);
 }
@@ -227,6 +245,23 @@ a {
     font-size: clamp(1.02rem, 1.7vw, 1.24rem);
 }
 
+.audience-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.audience-strip span {
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.3rem 0.62rem;
+    background: var(--surface);
+    color: var(--muted);
+}
+
 .hero-cta {
     display: flex;
     flex-wrap: wrap;
@@ -287,6 +322,10 @@ a {
     animation: ribbonShift 18s linear infinite;
 }
 
+.hero-ribbon.is-paused span {
+    animation-play-state: paused;
+}
+
 @keyframes ribbonShift {
     from {
         transform: translateX(0);
@@ -345,6 +384,12 @@ a {
     max-width: 19ch;
 }
 
+.section-intro {
+    margin-top: 0.7rem;
+    max-width: 72ch;
+    color: var(--muted);
+}
+
 .support-title {
     margin-top: 0.4rem;
     font-family: "Instrument Serif", serif;
@@ -375,6 +420,7 @@ a {
     padding: 1.35rem;
     box-shadow: var(--shadow);
     transition: transform 0.25s ease, border-color 0.25s ease;
+    will-change: transform;
 }
 
 .project-card:hover {
@@ -408,11 +454,81 @@ a {
     display: inline-block;
     color: var(--brand);
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
 }
 
 .project-card a:hover {
-    text-decoration: underline;
+    text-decoration-thickness: 3px;
+}
+
+.project-card.is-hidden {
+    display: none;
+}
+
+.project-card.spotlight {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 45%, transparent), var(--shadow);
+    animation: spotlightPop 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes spotlightPop {
+    0% {
+        transform: translateY(0) scale(0.98);
+    }
+    100% {
+        transform: translateY(-4px) scale(1);
+    }
+}
+
+.impact-list {
+    list-style: none;
+    margin-top: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.impact-list li {
+    font-size: 0.74rem;
+    color: var(--muted);
+    border: 1px dashed color-mix(in srgb, var(--line) 70%, var(--brand));
+    border-radius: 999px;
+    padding: 0.22rem 0.55rem;
+    background: color-mix(in srgb, var(--surface-alt) 65%, transparent);
+}
+
+.project-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 1.25rem;
+}
+
+.filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.filter-pill {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    font-family: inherit;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.filter-pill.active,
+.filter-pill:hover {
+    border-color: var(--brand);
+    color: var(--text);
+    background: var(--surface-alt);
 }
 
 .archive-note {
@@ -491,12 +607,41 @@ a {
 
 .proof-card a {
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
     color: var(--brand);
 }
 
 .proof-card a:hover {
-    text-decoration: underline;
+    text-decoration-thickness: 3px;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.testimonial-card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 1.1rem;
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.testimonial-card p {
+    color: var(--text);
+}
+
+.testimonial-card span {
+    margin-top: 0.7rem;
+    display: inline-block;
+    color: var(--muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .resume-cta-card {
@@ -553,6 +698,20 @@ a {
     gap: 0.5rem;
 }
 
+.contact-form fieldset {
+    border: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.contact-form legend {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+}
+
 .contact-form label {
     font-size: 0.84rem;
     font-weight: 700;
@@ -580,6 +739,20 @@ a {
 
 .contact-form button {
     margin-top: 0.45rem;
+}
+
+.form-status {
+    min-height: 1.1rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.form-status.success {
+    color: var(--accent);
+}
+
+.form-status.error {
+    color: #c2410c;
 }
 
 .site-footer {
@@ -631,6 +804,15 @@ a {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .project-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .site-nav {
         position: absolute;
         right: 4vw;
@@ -648,6 +830,7 @@ a {
 
     .site-nav.open {
         display: flex;
+        animation: navDrop 0.25s ease;
     }
 
     .menu-toggle {
@@ -656,6 +839,17 @@ a {
 
     .brand-text {
         display: none;
+    }
+}
+
+@keyframes navDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -679,6 +873,10 @@ a {
 
     .support-grid {
         grid-template-columns: 1fr;
+    }
+
+    .filter-pills {
+        width: 100%;
     }
 }
 
