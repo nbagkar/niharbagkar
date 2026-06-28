@@ -38,7 +38,6 @@
                 <a href="#timeline">Journey</a>
                 <a href="#proof">Proof</a>
                 <a href="#contact">Contact</a>
-                <button id="palette-toggle" class="palette-toggle" type="button" aria-label="Open quick jump palette" aria-haspopup="dialog" aria-controls="quick-jump-palette">Jump</button>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
                     <span id="theme-icon" class="fas fa-moon"></span>
                 </button>
@@ -141,46 +140,6 @@
                 </article>
             </div>
         </section>
-
-        <div class="dialog-backdrop" id="project-modal" hidden>
-            <div class="dialog-card project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
-                <button class="dialog-close" type="button" data-close-project-modal aria-label="Close project details">×</button>
-                <div class="project-dialog-media">
-                    <img data-project-modal-image alt="">
-                </div>
-                <div class="project-dialog-content">
-                    <div class="project-dialog-meta" data-project-modal-meta></div>
-                    <h2 id="project-modal-title" data-project-modal-title></h2>
-                    <p data-project-modal-description></p>
-                    <ul class="impact-list project-dialog-points" data-project-modal-points></ul>
-                    <a class="btn btn-solid" data-project-modal-link target="_blank" rel="noopener">Open Project</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="dialog-backdrop palette-backdrop" id="quick-jump-palette" hidden>
-            <div class="dialog-card palette-card" role="dialog" aria-modal="true" aria-labelledby="quick-jump-title">
-                <div class="palette-head">
-                    <div>
-                        <p class="section-kicker">Quick Jump</p>
-                        <h2 id="quick-jump-title">Jump anywhere</h2>
-                    </div>
-                    <button class="dialog-close" type="button" data-close-palette aria-label="Close quick jump palette">×</button>
-                </div>
-                <input class="palette-input" type="search" data-palette-input placeholder="Type to filter" aria-label="Filter quick jump commands">
-                <div class="palette-list" data-palette-list>
-                    <button class="palette-item" type="button" data-section="story">Story</button>
-                    <button class="palette-item" type="button" data-section="work">Work</button>
-                    <button class="palette-item" type="button" data-section="timeline">Journey</button>
-                    <button class="palette-item" type="button" data-section="proof">Proof</button>
-                    <button class="palette-item" type="button" data-section="contact">Contact</button>
-                    <button class="palette-item" type="button" data-url="projects.html">Projects</button>
-                    <button class="palette-item" type="button" data-url="resume.html">Resume</button>
-                    <button class="palette-item" type="button" data-url="https://github.com/nbagkar">GitHub</button>
-                    <button class="palette-item" type="button" data-url="https://linkedin.com/in/nihar-bagkar">LinkedIn</button>
-                </div>
-            </div>
-        </div>
 
         <section class="section" id="work">
             <div class="container">
