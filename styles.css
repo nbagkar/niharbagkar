@@ -665,6 +665,10 @@ a {
     margin-top: 1rem;
 }
 
+.resume-stack {
+    margin-top: 1rem;
+}
+
 .contact-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
