@@ -319,7 +319,6 @@ function updateActiveLink() {
     let activeId = "";
 
     sections.forEach((section) => {
-        if (section.id === "thesis") return;
         const top = section.offsetTop;
         const bottom = top + section.offsetHeight;
         if (scrollLine >= top && scrollLine < bottom) {
