@@ -56,6 +56,45 @@ html {
     box-shadow: 0 0 18px color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
+.chapter-label {
+    position: fixed;
+    right: clamp(0.8rem, 2.6vw, 1.6rem);
+    top: 5.4rem;
+    z-index: 65;
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.52rem 0.72rem;
+    border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.chapter-label.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.chapter-label-kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.chapter-label-value {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    font-weight: 700;
+}
+
 body {
     font-family: "Space Grotesk", sans-serif;
     background: var(--bg);
@@ -279,6 +318,9 @@ a {
     align-self: center;
     justify-self: end;
     max-width: clamp(14rem, 26vw, 19rem);
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
 }
 
 .hero-visual img {
@@ -422,6 +464,25 @@ a {
     border-radius: 1.35rem;
     padding: 1.4rem;
     box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-surface {
+    --spot-x: 50%;
+    --spot-y: 50%;
+    --spot-active: 0;
+}
+
+.spotlight-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(180px circle at var(--spot-x) var(--spot-y), color-mix(in srgb, #ffffff 30%, transparent), transparent 68%);
+    opacity: var(--spot-active);
+    transition: opacity 0.24s ease;
 }
 
 .thesis-card h2 {
@@ -1118,6 +1179,12 @@ body.modal-open {
         box-shadow: var(--shadow);
     }
 
+    .chapter-label {
+        top: auto;
+        bottom: 0.9rem;
+        right: 0.9rem;
+    }
+
     .site-nav.open {
         display: flex;
         animation: navDrop 0.25s ease;
@@ -1207,5 +1274,13 @@ body.modal-open {
 
     .project-modal {
         backdrop-filter: none;
+    }
+
+    .chapter-label {
+        transition: none;
+    }
+
+    .spotlight-surface::before {
+        display: none;
     }
 }

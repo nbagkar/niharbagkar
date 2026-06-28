@@ -6,6 +6,16 @@ const siteNav = document.getElementById("site-nav");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const sections = Array.from(document.querySelectorAll("main section[id]"));
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const chapterNames = {
+    story: "Story",
+    thesis: "Thesis",
+    work: "Work",
+    testimonials: "Testimonials",
+    timeline: "Journey",
+    proof: "Proof",
+    contact: "Contact",
+    catalog: "Archive"
+};
 const sectionAccents = {
     story: { start: "#ff5a36", end: "#ff9a58" },
     thesis: { start: "#cc3f22", end: "#09c184" },
@@ -16,6 +26,53 @@ const sectionAccents = {
     contact: { start: "#3ce5ae", end: "#ff5a36" }
 };
 const progressBar = document.getElementById("scroll-progress-bar");
+
+function createChapterLabel() {
+    if (!sections.length) return null;
+    const existing = document.querySelector("[data-chapter-label]");
+    if (existing) {
+        return existing;
+    }
+
+    const badge = document.createElement("aside");
+    badge.className = "chapter-label";
+    badge.setAttribute("data-chapter-label", "true");
+    badge.setAttribute("aria-live", "polite");
+    badge.innerHTML = `
+        <span class="chapter-label-kicker">Chapter</span>
+        <span class="chapter-label-value" data-chapter-value></span>
+    `;
+
+    document.body.appendChild(badge);
+    return badge;
+}
+
+const chapterLabel = createChapterLabel();
+
+function humanizeSectionName(sectionId) {
+    if (!sectionId) return "";
+    if (chapterNames[sectionId]) {
+        return chapterNames[sectionId];
+    }
+    return sectionId
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function updateChapterLabel(sectionId) {
+    if (!chapterLabel) return;
+    const valueNode = chapterLabel.querySelector("[data-chapter-value]");
+    if (!valueNode) return;
+
+    const chapterName = humanizeSectionName(sectionId);
+    if (!chapterName) {
+        chapterLabel.classList.remove("is-visible");
+        return;
+    }
+
+    valueNode.textContent = chapterName;
+    chapterLabel.classList.add("is-visible");
+}
 
 function setProgressAccent(sectionId) {
     if (!progressBar) return;
@@ -125,6 +182,7 @@ function updateActiveLink() {
     });
 
     setProgressAccent(activeId || "story");
+    updateChapterLabel(activeId || sections[0]?.id || "");
 }
 
 window.addEventListener("scroll", updateActiveLink, { passive: true });
@@ -324,6 +382,23 @@ if (!prefersReducedMotion && window.matchMedia("(pointer: fine)").matches) {
         card.addEventListener("mouseleave", () => {
             card.classList.remove("is-magnetic");
             card.style.transform = "";
+        });
+    });
+
+    const spotlightTargets = Array.from(document.querySelectorAll(".hero-visual, .thesis-card"));
+    spotlightTargets.forEach((target) => {
+        target.classList.add("spotlight-surface");
+        target.addEventListener("mousemove", (event) => {
+            const rect = target.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            target.style.setProperty("--spot-x", `${x}px`);
+            target.style.setProperty("--spot-y", `${y}px`);
+            target.style.setProperty("--spot-active", "1");
+        });
+
+        target.addEventListener("mouseleave", () => {
+            target.style.setProperty("--spot-active", "0");
         });
     });
 }
