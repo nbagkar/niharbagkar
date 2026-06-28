@@ -53,6 +53,7 @@ html {
     height: 100%;
     width: 0;
     background: linear-gradient(90deg, var(--brand), var(--accent));
+    box-shadow: 0 0 18px color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
 body {
@@ -403,6 +404,64 @@ a {
 
 .section {
     padding: 4.8rem 0;
+}
+
+.thesis-section {
+    padding-top: 2.2rem;
+}
+
+.thesis-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.95fr;
+    gap: 1rem;
+}
+
+.thesis-card {
+    background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, var(--brand) 12%), var(--surface));
+    border: 1px solid color-mix(in srgb, var(--line) 78%, var(--brand) 22%);
+    border-radius: 1.35rem;
+    padding: 1.4rem;
+    box-shadow: var(--shadow);
+}
+
+.thesis-card h2 {
+    margin-top: 0.4rem;
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    max-width: 15ch;
+}
+
+.thesis-card p {
+    margin-top: 0.8rem;
+    max-width: 64ch;
+    color: var(--muted);
+}
+
+.thesis-card-alt {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--surface-alt) 80%, transparent), var(--surface));
+}
+
+.thesis-list {
+    list-style: none;
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1rem;
+}
+
+.thesis-list li {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+}
+
+.thesis-list strong {
+    font-size: 0.95rem;
+}
+
+.thesis-list span {
+    color: var(--muted);
 }
 
 .section-alt {
@@ -871,6 +930,7 @@ a {
 
 @media (max-width: 980px) {
     .cred-grid,
+    .thesis-grid,
     .project-grid,
     .proof-grid,
     .contact-grid {
@@ -879,6 +939,10 @@ a {
 
     .support-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .thesis-card h2 {
+        max-width: 100%;
     }
 
     .testimonials-grid {
@@ -960,6 +1024,10 @@ a {
 
     .project-cover {
         height: 9.5rem;
+    }
+
+    .thesis-section {
+        padding-top: 1.4rem;
     }
 
     .footer-shell {

@@ -6,6 +6,25 @@ const siteNav = document.getElementById("site-nav");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const sections = Array.from(document.querySelectorAll("main section[id]"));
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sectionAccents = {
+    story: { start: "#ff5a36", end: "#ff9a58" },
+    thesis: { start: "#cc3f22", end: "#09c184" },
+    work: { start: "#09c184", end: "#35b7ff" },
+    testimonials: { start: "#8b5cf6", end: "#ff7f5f" },
+    timeline: { start: "#ff7f5f", end: "#f4b860" },
+    proof: { start: "#f4b860", end: "#3ce5ae" },
+    contact: { start: "#3ce5ae", end: "#ff5a36" }
+};
+const progressBar = document.getElementById("scroll-progress-bar");
+
+function setProgressAccent(sectionId) {
+    if (!progressBar) return;
+    const accent = sectionAccents[sectionId] || sectionAccents.story;
+    progressBar.style.background = `linear-gradient(90deg, ${accent.start}, ${accent.end})`;
+    progressBar.style.boxShadow = `0 0 18px ${accent.start}55`;
+}
+
+setProgressAccent("story");
 
 function setTheme(mode) {
     if (mode === "dark") {
@@ -104,13 +123,14 @@ function updateActiveLink() {
             link.removeAttribute("aria-current");
         }
     });
+
+    setProgressAccent(activeId || "story");
 }
 
 window.addEventListener("scroll", updateActiveLink, { passive: true });
 window.addEventListener("resize", updateActiveLink);
 updateActiveLink();
 
-const progressBar = document.getElementById("scroll-progress-bar");
 function updateScrollProgress() {
     if (!progressBar) return;
     const scrollTop = window.scrollY;
