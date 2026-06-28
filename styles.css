@@ -272,9 +272,10 @@ a {
 }
 
 .hero-visual {
-    margin-top: 0;
+    margin-top: clamp(1rem, 3vw, 2.25rem);
     grid-column: 2;
     grid-row: 1 / span 6;
+    align-self: center;
     justify-self: end;
     max-width: clamp(14rem, 26vw, 19rem);
 }
