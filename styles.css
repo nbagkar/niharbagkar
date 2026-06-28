@@ -317,7 +317,7 @@ a {
     grid-row: 1 / span 6;
     align-self: center;
     justify-self: end;
-    max-width: clamp(14rem, 26vw, 19rem);
+    max-width: clamp(18rem, 32vw, 24rem);
     position: relative;
     overflow: hidden;
     border-radius: 1rem;
