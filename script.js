@@ -2,6 +2,7 @@ const root = document.documentElement;
 const themeToggle = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
 const menuToggle = document.getElementById("menu-toggle");
+const paletteToggle = document.getElementById("palette-toggle");
 const siteNav = document.getElementById("site-nav");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const sections = Array.from(document.querySelectorAll("main section[id]"));
@@ -16,6 +17,22 @@ const sectionAccents = {
     contact: { start: "#3ce5ae", end: "#ff5a36" }
 };
 const progressBar = document.getElementById("scroll-progress-bar");
+const projectModal = document.getElementById("project-modal");
+const projectModalTitle = projectModal?.querySelector("[data-project-modal-title]");
+const projectModalDescription = projectModal?.querySelector("[data-project-modal-description]");
+const projectModalMeta = projectModal?.querySelector("[data-project-modal-meta]");
+const projectModalImage = projectModal?.querySelector("[data-project-modal-image]");
+const projectModalPoints = projectModal?.querySelector("[data-project-modal-points]");
+const projectModalLink = projectModal?.querySelector("[data-project-modal-link]");
+const projectModalClose = projectModal?.querySelector("[data-close-project-modal]");
+const paletteModal = document.getElementById("quick-jump-palette");
+const paletteInput = paletteModal?.querySelector("[data-palette-input]");
+const paletteList = paletteModal?.querySelector("[data-palette-list]");
+const paletteClose = paletteModal?.querySelector("[data-close-palette]");
+const paletteItems = Array.from(document.querySelectorAll("[data-palette-list] .palette-item"));
+const projectCards = Array.from(document.querySelectorAll(".project-card"));
+let lastProjectTrigger = null;
+let lastPaletteTrigger = null;
 
 function setProgressAccent(sectionId) {
     if (!progressBar) return;
@@ -25,6 +42,123 @@ function setProgressAccent(sectionId) {
 }
 
 setProgressAccent("story");
+
+function openDialog(dialog) {
+    if (!dialog) return;
+    dialog.hidden = false;
+    requestAnimationFrame(() => {
+        dialog.classList.add("open");
+    });
+    document.body.classList.add("dialog-open");
+}
+
+function closeDialog(dialog) {
+    if (!dialog) return;
+    dialog.classList.remove("open");
+    document.body.classList.remove("dialog-open");
+    window.setTimeout(() => {
+        dialog.hidden = true;
+    }, 180);
+}
+
+function getProjectData(card) {
+    const title = card.querySelector("h3")?.textContent?.trim() || "Project";
+    const meta = Array.from(card.querySelectorAll(".project-meta span")).map((item) => item.textContent?.trim()).filter(Boolean);
+    const description = card.querySelector("p")?.textContent?.trim() || "";
+    const points = Array.from(card.querySelectorAll(".impact-list li")).map((item) => item.textContent?.trim()).filter(Boolean);
+    const link = card.querySelector("a");
+    const image = card.querySelector(".project-cover");
+
+    return {
+        title,
+        meta,
+        description,
+        points,
+        linkHref: link?.href || "",
+        linkText: link?.textContent?.trim() || "Open Project",
+        imageSrc: image?.getAttribute("src") || "",
+        imageAlt: image?.getAttribute("alt") || title
+    };
+}
+
+function openProjectModal(card) {
+    if (!projectModal || !projectModalTitle || !projectModalDescription || !projectModalMeta || !projectModalImage || !projectModalPoints || !projectModalLink) return;
+    const data = getProjectData(card);
+
+    projectModalTitle.textContent = data.title;
+    projectModalDescription.textContent = data.description;
+    projectModalMeta.innerHTML = data.meta.map((item) => `<span>${item}</span>`).join("");
+    projectModalPoints.innerHTML = data.points.map((item) => `<li>${item}</li>`).join("");
+    projectModalLink.href = data.linkHref;
+    projectModalLink.textContent = data.linkText;
+
+    if (data.imageSrc) {
+        projectModalImage.src = data.imageSrc;
+        projectModalImage.alt = data.imageAlt;
+        projectModalImage.parentElement?.removeAttribute("hidden");
+    } else {
+        projectModalImage.removeAttribute("src");
+        projectModalImage.alt = "";
+        projectModalImage.parentElement?.setAttribute("hidden", "true");
+    }
+
+    openDialog(projectModal);
+    projectModalClose?.focus();
+}
+
+function closeProjectModal() {
+    closeDialog(projectModal);
+    lastProjectTrigger?.focus();
+    lastProjectTrigger = null;
+}
+
+function openPalette() {
+    if (!paletteModal) return;
+    openDialog(paletteModal);
+    paletteInput?.focus();
+}
+
+function closePalette() {
+    closeDialog(paletteModal);
+    lastPaletteTrigger?.focus();
+    lastPaletteTrigger = null;
+}
+
+function filterPalette(query) {
+    const normalized = query.trim().toLowerCase();
+    paletteItems.forEach((item) => {
+        const matches = item.textContent.toLowerCase().includes(normalized);
+        item.hidden = !matches;
+    });
+}
+
+function runPaletteItem(item) {
+    const section = item.getAttribute("data-section");
+    const url = item.getAttribute("data-url");
+    const isIndexPage = location.pathname.endsWith("index.html") || location.pathname.endsWith("/");
+
+    closePalette();
+
+    if (section) {
+        const sectionId = section.startsWith("#") ? section.slice(1) : section;
+        const target = document.getElementById(sectionId);
+        if (target && isIndexPage) {
+            target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
+            history.replaceState(null, "", `#${sectionId}`);
+        } else {
+            window.location.href = `index.html#${sectionId}`;
+        }
+        return;
+    }
+
+    if (url) {
+        if (/^https?:/i.test(url)) {
+            window.open(url, "_blank", "noopener");
+        } else {
+            window.location.href = url;
+        }
+    }
+}
 
 function setTheme(mode) {
     if (mode === "dark") {
@@ -77,6 +211,13 @@ if (menuToggle && siteNav) {
     });
 }
 
+if (paletteToggle) {
+    paletteToggle.addEventListener("click", () => {
+        lastPaletteTrigger = paletteToggle;
+        openPalette();
+    });
+}
+
 const revealItems = document.querySelectorAll(".reveal");
 if (!prefersReducedMotion) {
     revealItems.forEach((item, idx) => {
@@ -101,11 +242,84 @@ if ("IntersectionObserver" in window) {
     revealItems.forEach((item) => item.classList.add("is-visible"));
 }
 
+if (projectModal) {
+    projectCards.forEach((card) => {
+        const primaryLink = card.querySelector("a");
+        if (!primaryLink) return;
+
+        card.classList.add("is-clickable");
+        card.setAttribute("tabindex", "0");
+        card.setAttribute("aria-haspopup", "dialog");
+        card.addEventListener("click", (event) => {
+            if (event.target.closest("a,button")) return;
+            lastProjectTrigger = card;
+            openProjectModal(card);
+        });
+        primaryLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            lastProjectTrigger = card;
+            openProjectModal(card);
+        });
+        card.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                lastProjectTrigger = card;
+                openProjectModal(card);
+            }
+        });
+    });
+
+    projectModal.addEventListener("click", (event) => {
+        if (event.target === projectModal) {
+            closeProjectModal();
+        }
+    });
+
+    projectModalClose?.addEventListener("click", closeProjectModal);
+}
+
+if (paletteModal) {
+    paletteToggle?.setAttribute("aria-controls", "quick-jump-palette");
+
+    paletteModal.addEventListener("click", (event) => {
+        if (event.target === paletteModal) {
+            closePalette();
+        }
+    });
+
+    paletteClose?.addEventListener("click", closePalette);
+    paletteInput?.addEventListener("input", (event) => {
+        filterPalette(event.target.value);
+    });
+
+    paletteItems.forEach((item) => {
+        item.addEventListener("click", () => runPaletteItem(item));
+    });
+}
+
+window.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        lastPaletteTrigger = paletteToggle || lastPaletteTrigger;
+        openPalette();
+    }
+
+    if (event.key === "Escape") {
+        if (paletteModal && !paletteModal.hidden) {
+            closePalette();
+        }
+        if (projectModal && !projectModal.hidden) {
+            closeProjectModal();
+        }
+    }
+});
+
 function updateActiveLink() {
     const scrollLine = window.scrollY + window.innerHeight * 0.34;
     let activeId = "";
 
     sections.forEach((section) => {
+        if (section.id === "thesis") return;
         const top = section.offsetTop;
         const bottom = top + section.offsetHeight;
         if (scrollLine >= top && scrollLine < bottom) {

@@ -193,6 +193,17 @@ a {
     cursor: pointer;
 }
 
+.palette-toggle {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
 .menu-toggle {
     display: none;
     background: transparent;
@@ -407,6 +418,10 @@ a {
 }
 
 .thesis-section {
+    display: none;
+}
+
+.thesis-section {
     padding-top: 2.2rem;
 }
 
@@ -517,6 +532,10 @@ a {
     box-shadow: var(--shadow);
     transition: transform 0.25s ease, border-color 0.25s ease;
     will-change: transform;
+}
+
+.project-card.is-clickable {
+    cursor: pointer;
 }
 
 .project-cover {
@@ -877,6 +896,145 @@ a {
     margin-top: 0.45rem;
 }
 
+.dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(10, 12, 18, 0.68);
+    backdrop-filter: blur(10px);
+}
+
+.dialog-backdrop[hidden] {
+    display: none;
+}
+
+.dialog-card {
+    width: min(56rem, 94vw);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1.35rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.project-dialog {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.project-dialog-media {
+    min-height: 100%;
+    background: color-mix(in srgb, var(--surface-alt) 70%, var(--bg));
+}
+
+.project-dialog-media img {
+    width: 100%;
+    height: 100%;
+    min-height: 18rem;
+    object-fit: cover;
+    display: block;
+}
+
+.project-dialog-content {
+    padding: 1.35rem;
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+}
+
+.project-dialog-content h2 {
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+.project-dialog-content p {
+    color: var(--muted);
+}
+
+.project-dialog-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.project-dialog-points {
+    margin-top: 0.2rem;
+}
+
+.palette-card {
+    width: min(42rem, 94vw);
+    padding: 1.2rem;
+}
+
+.palette-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.palette-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 0.8rem;
+    padding: 0.7rem 0.8rem;
+    font: inherit;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.palette-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+    max-height: 18rem;
+    overflow: auto;
+    padding-right: 0.2rem;
+}
+
+.palette-item {
+    border: 1px solid var(--line);
+    border-radius: 0.9rem;
+    padding: 0.85rem 0.9rem;
+    text-align: left;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.palette-item:hover,
+.palette-item:focus-visible {
+    border-color: var(--brand);
+    background: var(--surface-alt);
+}
+
+.dialog-close {
+    border: 1px solid var(--line);
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+body.dialog-open {
+    overflow: hidden;
+}
+
 .form-status {
     min-height: 1.1rem;
     font-size: 0.82rem;
@@ -952,6 +1110,19 @@ a {
     .project-controls {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .project-dialog {
+        grid-template-columns: 1fr;
+    }
+
+    .project-dialog-media img {
+        min-height: 13rem;
+        aspect-ratio: 16 / 10;
+    }
+
+    .palette-list {
+        grid-template-columns: 1fr;
     }
 
     .site-nav {
