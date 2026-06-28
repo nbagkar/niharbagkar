@@ -2,7 +2,6 @@ const root = document.documentElement;
 const themeToggle = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
 const menuToggle = document.getElementById("menu-toggle");
-const paletteToggle = document.getElementById("palette-toggle");
 const siteNav = document.getElementById("site-nav");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const sections = Array.from(document.querySelectorAll("main section[id]"));
@@ -17,22 +16,6 @@ const sectionAccents = {
     contact: { start: "#3ce5ae", end: "#ff5a36" }
 };
 const progressBar = document.getElementById("scroll-progress-bar");
-const projectModal = document.getElementById("project-modal");
-const projectModalTitle = projectModal?.querySelector("[data-project-modal-title]");
-const projectModalDescription = projectModal?.querySelector("[data-project-modal-description]");
-const projectModalMeta = projectModal?.querySelector("[data-project-modal-meta]");
-const projectModalImage = projectModal?.querySelector("[data-project-modal-image]");
-const projectModalPoints = projectModal?.querySelector("[data-project-modal-points]");
-const projectModalLink = projectModal?.querySelector("[data-project-modal-link]");
-const projectModalClose = projectModal?.querySelector("[data-close-project-modal]");
-const paletteModal = document.getElementById("quick-jump-palette");
-const paletteInput = paletteModal?.querySelector("[data-palette-input]");
-const paletteList = paletteModal?.querySelector("[data-palette-list]");
-const paletteClose = paletteModal?.querySelector("[data-close-palette]");
-const paletteItems = Array.from(document.querySelectorAll("[data-palette-list] .palette-item"));
-const projectCards = Array.from(document.querySelectorAll(".project-card"));
-let lastProjectTrigger = null;
-let lastPaletteTrigger = null;
 
 function setProgressAccent(sectionId) {
     if (!progressBar) return;
@@ -42,123 +25,6 @@ function setProgressAccent(sectionId) {
 }
 
 setProgressAccent("story");
-
-function openDialog(dialog) {
-    if (!dialog) return;
-    dialog.hidden = false;
-    requestAnimationFrame(() => {
-        dialog.classList.add("open");
-    });
-    document.body.classList.add("dialog-open");
-}
-
-function closeDialog(dialog) {
-    if (!dialog) return;
-    dialog.classList.remove("open");
-    document.body.classList.remove("dialog-open");
-    window.setTimeout(() => {
-        dialog.hidden = true;
-    }, 180);
-}
-
-function getProjectData(card) {
-    const title = card.querySelector("h3")?.textContent?.trim() || "Project";
-    const meta = Array.from(card.querySelectorAll(".project-meta span")).map((item) => item.textContent?.trim()).filter(Boolean);
-    const description = card.querySelector("p")?.textContent?.trim() || "";
-    const points = Array.from(card.querySelectorAll(".impact-list li")).map((item) => item.textContent?.trim()).filter(Boolean);
-    const link = card.querySelector("a");
-    const image = card.querySelector(".project-cover");
-
-    return {
-        title,
-        meta,
-        description,
-        points,
-        linkHref: link?.href || "",
-        linkText: link?.textContent?.trim() || "Open Project",
-        imageSrc: image?.getAttribute("src") || "",
-        imageAlt: image?.getAttribute("alt") || title
-    };
-}
-
-function openProjectModal(card) {
-    if (!projectModal || !projectModalTitle || !projectModalDescription || !projectModalMeta || !projectModalImage || !projectModalPoints || !projectModalLink) return;
-    const data = getProjectData(card);
-
-    projectModalTitle.textContent = data.title;
-    projectModalDescription.textContent = data.description;
-    projectModalMeta.innerHTML = data.meta.map((item) => `<span>${item}</span>`).join("");
-    projectModalPoints.innerHTML = data.points.map((item) => `<li>${item}</li>`).join("");
-    projectModalLink.href = data.linkHref;
-    projectModalLink.textContent = data.linkText;
-
-    if (data.imageSrc) {
-        projectModalImage.src = data.imageSrc;
-        projectModalImage.alt = data.imageAlt;
-        projectModalImage.parentElement?.removeAttribute("hidden");
-    } else {
-        projectModalImage.removeAttribute("src");
-        projectModalImage.alt = "";
-        projectModalImage.parentElement?.setAttribute("hidden", "true");
-    }
-
-    openDialog(projectModal);
-    projectModalClose?.focus();
-}
-
-function closeProjectModal() {
-    closeDialog(projectModal);
-    lastProjectTrigger?.focus();
-    lastProjectTrigger = null;
-}
-
-function openPalette() {
-    if (!paletteModal) return;
-    openDialog(paletteModal);
-    paletteInput?.focus();
-}
-
-function closePalette() {
-    closeDialog(paletteModal);
-    lastPaletteTrigger?.focus();
-    lastPaletteTrigger = null;
-}
-
-function filterPalette(query) {
-    const normalized = query.trim().toLowerCase();
-    paletteItems.forEach((item) => {
-        const matches = item.textContent.toLowerCase().includes(normalized);
-        item.hidden = !matches;
-    });
-}
-
-function runPaletteItem(item) {
-    const section = item.getAttribute("data-section");
-    const url = item.getAttribute("data-url");
-    const isIndexPage = location.pathname.endsWith("index.html") || location.pathname.endsWith("/");
-
-    closePalette();
-
-    if (section) {
-        const sectionId = section.startsWith("#") ? section.slice(1) : section;
-        const target = document.getElementById(sectionId);
-        if (target && isIndexPage) {
-            target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
-            history.replaceState(null, "", `#${sectionId}`);
-        } else {
-            window.location.href = `index.html#${sectionId}`;
-        }
-        return;
-    }
-
-    if (url) {
-        if (/^https?:/i.test(url)) {
-            window.open(url, "_blank", "noopener");
-        } else {
-            window.location.href = url;
-        }
-    }
-}
 
 function setTheme(mode) {
     if (mode === "dark") {
@@ -211,13 +77,6 @@ if (menuToggle && siteNav) {
     });
 }
 
-if (paletteToggle) {
-    paletteToggle.addEventListener("click", () => {
-        lastPaletteTrigger = paletteToggle;
-        openPalette();
-    });
-}
-
 const revealItems = document.querySelectorAll(".reveal");
 if (!prefersReducedMotion) {
     revealItems.forEach((item, idx) => {
@@ -241,78 +100,6 @@ if ("IntersectionObserver" in window) {
 } else {
     revealItems.forEach((item) => item.classList.add("is-visible"));
 }
-
-if (projectModal) {
-    projectCards.forEach((card) => {
-        const primaryLink = card.querySelector("a");
-        if (!primaryLink) return;
-
-        card.classList.add("is-clickable");
-        card.setAttribute("tabindex", "0");
-        card.setAttribute("aria-haspopup", "dialog");
-        card.addEventListener("click", (event) => {
-            if (event.target.closest("a,button")) return;
-            lastProjectTrigger = card;
-            openProjectModal(card);
-        });
-        primaryLink.addEventListener("click", (event) => {
-            event.preventDefault();
-            lastProjectTrigger = card;
-            openProjectModal(card);
-        });
-        card.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                lastProjectTrigger = card;
-                openProjectModal(card);
-            }
-        });
-    });
-
-    projectModal.addEventListener("click", (event) => {
-        if (event.target === projectModal) {
-            closeProjectModal();
-        }
-    });
-
-    projectModalClose?.addEventListener("click", closeProjectModal);
-}
-
-if (paletteModal) {
-    paletteToggle?.setAttribute("aria-controls", "quick-jump-palette");
-
-    paletteModal.addEventListener("click", (event) => {
-        if (event.target === paletteModal) {
-            closePalette();
-        }
-    });
-
-    paletteClose?.addEventListener("click", closePalette);
-    paletteInput?.addEventListener("input", (event) => {
-        filterPalette(event.target.value);
-    });
-
-    paletteItems.forEach((item) => {
-        item.addEventListener("click", () => runPaletteItem(item));
-    });
-}
-
-window.addEventListener("keydown", (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        lastPaletteTrigger = paletteToggle || lastPaletteTrigger;
-        openPalette();
-    }
-
-    if (event.key === "Escape") {
-        if (paletteModal && !paletteModal.hidden) {
-            closePalette();
-        }
-        if (projectModal && !projectModal.hidden) {
-            closeProjectModal();
-        }
-    }
-});
 
 function updateActiveLink() {
     const scrollLine = window.scrollY + window.innerHeight * 0.34;
@@ -356,17 +143,147 @@ window.addEventListener("scroll", updateScrollProgress, { passive: true });
 window.addEventListener("resize", updateScrollProgress);
 updateScrollProgress();
 
-const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
-const projectCards = Array.from(document.querySelectorAll("[data-project-grid] .project-card"));
+const allProjectCards = Array.from(document.querySelectorAll(".project-card"));
+const archiveProjectCards = Array.from(document.querySelectorAll("[data-project-grid] .project-card"));
 
-if (filterButtons.length && projectCards.length) {
+function createProjectModal() {
+    const existing = document.querySelector("[data-project-modal]");
+    if (existing) {
+        return existing;
+    }
+
+    const modal = document.createElement("div");
+    modal.className = "project-modal";
+    modal.setAttribute("data-project-modal", "true");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-hidden", "true");
+    modal.innerHTML = `
+        <div class="project-modal-backdrop" data-project-modal-close></div>
+        <div class="project-modal-panel" role="document">
+            <button class="project-modal-close" type="button" data-project-modal-close aria-label="Close project details">×</button>
+            <div class="project-modal-media">
+                <img alt="" data-project-modal-image>
+            </div>
+            <div class="project-modal-body">
+                <p class="section-kicker" data-project-modal-meta></p>
+                <h2 data-project-modal-title></h2>
+                <p class="project-modal-description" data-project-modal-description></p>
+                <ul class="project-modal-impact" data-project-modal-impact></ul>
+                <a class="btn btn-solid project-modal-link" data-project-modal-link target="_blank" rel="noopener">Open Project</a>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    return modal;
+}
+
+const projectModal = allProjectCards.length ? createProjectModal() : null;
+
+function getCardDescription(card) {
+    return Array.from(card.children).find((child) => child.tagName === "P")?.textContent.trim() || "";
+}
+
+function openProjectModal(card) {
+    if (!projectModal) return;
+
+    const title = card.querySelector("h3")?.textContent.trim() || "Project";
+    const meta = Array.from(card.querySelectorAll(".project-meta span"))
+        .map((item) => item.textContent.trim())
+        .filter(Boolean)
+        .join(" · ");
+    const description = getCardDescription(card);
+    const impactItems = Array.from(card.querySelectorAll(".impact-list li")).map((item) => item.textContent.trim());
+    const image = card.querySelector(".project-cover");
+    const link = card.querySelector("a[href]");
+
+    const modalImage = projectModal.querySelector("[data-project-modal-image]");
+    const modalMeta = projectModal.querySelector("[data-project-modal-meta]");
+    const modalTitle = projectModal.querySelector("[data-project-modal-title]");
+    const modalDescription = projectModal.querySelector("[data-project-modal-description]");
+    const modalImpact = projectModal.querySelector("[data-project-modal-impact]");
+    const modalLink = projectModal.querySelector("[data-project-modal-link]");
+
+    if (modalImage && image) {
+        modalImage.src = image.getAttribute("src") || image.src;
+        modalImage.alt = image.getAttribute("alt") || title;
+    }
+
+    if (modalMeta) modalMeta.textContent = meta;
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalDescription) modalDescription.textContent = description;
+
+    if (modalImpact) {
+        modalImpact.innerHTML = impactItems.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    if (modalLink && link) {
+        modalLink.href = link.href;
+        modalLink.textContent = link.textContent.trim() || "Open Project";
+    }
+
+    projectModal.classList.add("is-open");
+    projectModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+
+    const closeButton = projectModal.querySelector("[data-project-modal-close]");
+    closeButton?.focus();
+}
+
+function closeProjectModal() {
+    if (!projectModal) return;
+    projectModal.classList.remove("is-open");
+    projectModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+}
+
+if (projectModal) {
+    projectModal.addEventListener("click", (event) => {
+        if (event.target instanceof Element && event.target.closest("[data-project-modal-close]")) {
+            closeProjectModal();
+        }
+    });
+
+    window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeProjectModal();
+        }
+    });
+}
+
+if (allProjectCards.length) {
+    allProjectCards.forEach((card) => {
+        card.tabIndex = 0;
+        card.setAttribute("aria-haspopup", "dialog");
+        card.setAttribute("aria-label", `Open project details for ${card.querySelector("h3")?.textContent.trim() || "project"}`);
+
+        card.addEventListener("click", (event) => {
+            if (event.target instanceof Element && event.target.closest("a, button, input, textarea, select, label")) {
+                return;
+            }
+            openProjectModal(card);
+        });
+
+        card.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openProjectModal(card);
+            }
+        });
+    });
+}
+
+const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
+
+if (filterButtons.length && archiveProjectCards.length) {
     filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const filter = button.getAttribute("data-filter") || "all";
             filterButtons.forEach((btn) => btn.classList.remove("active"));
             button.classList.add("active");
 
-            projectCards.forEach((card) => {
+            archiveProjectCards.forEach((card) => {
                 const categories = (card.getAttribute("data-category") || "").split(/\s+/);
                 const shouldShow = filter === "all" || categories.includes(filter);
                 card.classList.toggle("is-hidden", !shouldShow);
@@ -376,30 +293,36 @@ if (filterButtons.length && projectCards.length) {
 }
 
 const randomProjectButton = document.querySelector("[data-random-project]");
-if (randomProjectButton && projectCards.length) {
+if (randomProjectButton && archiveProjectCards.length) {
     randomProjectButton.addEventListener("click", () => {
-        const visibleCards = projectCards.filter((card) => !card.classList.contains("is-hidden"));
+        const visibleCards = archiveProjectCards.filter((card) => !card.classList.contains("is-hidden"));
         if (!visibleCards.length) return;
         const selected = visibleCards[Math.floor(Math.random() * visibleCards.length)];
-        projectCards.forEach((card) => card.classList.remove("spotlight"));
+        archiveProjectCards.forEach((card) => card.classList.remove("spotlight"));
         selected.classList.add("spotlight");
         selected.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
     });
 }
 
 if (!prefersReducedMotion && window.matchMedia("(pointer: fine)").matches) {
-    const tiltCards = Array.from(document.querySelectorAll("[data-tilt]"));
-    tiltCards.forEach((card) => {
+    allProjectCards.forEach((card) => {
+        card.addEventListener("mouseenter", () => {
+            card.classList.add("is-magnetic");
+        });
+
         card.addEventListener("mousemove", (event) => {
             const rect = card.getBoundingClientRect();
-            const px = (event.clientX - rect.left) / rect.width;
-            const py = (event.clientY - rect.top) / rect.height;
-            const rotateY = (px - 0.5) * 5;
-            const rotateX = (0.5 - py) * 5;
-            card.style.transform = `translateY(-4px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const offsetX = ((event.clientX - centerX) / rect.width) * 10;
+            const offsetY = ((event.clientY - centerY) / rect.height) * 10;
+            const rotateY = offsetX * 0.35;
+            const rotateX = -offsetY * 0.35;
+            card.style.transform = `translate3d(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px, 0) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
         });
 
         card.addEventListener("mouseleave", () => {
+            card.classList.remove("is-magnetic");
             card.style.transform = "";
         });
     });
