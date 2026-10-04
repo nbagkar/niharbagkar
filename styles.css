@@ -625,7 +625,7 @@ a {
 }
 
 .card[style*="contain"] .c-art img {
-    padding: 4cqw;
+    padding: var(--art-pad, 4cqw);
 }
 
 .c-type {
