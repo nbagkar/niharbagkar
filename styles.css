@@ -487,6 +487,7 @@ a {
 }
 
 .card[data-tone="sage"] { --tone: #b9ccaa; }
+.card[data-tone="coral"] { --tone: #eeaa95; }
 .card[data-tone="sky"] { --tone: #b2c5da; }
 .card[data-tone="lilac"] { --tone: #c9b9e0; }
 .card[data-tone="mustard"] { --tone: #e5cb78; }
