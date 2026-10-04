@@ -33,3 +33,26 @@ cards.forEach((card) => {
         });
     }
 });
+
+const pageTabs = Array.from(document.querySelectorAll(".page-tab"));
+
+function showPage(tab, moveFocus) {
+    pageTabs.forEach((other) => {
+        const selected = other === tab;
+        other.setAttribute("aria-selected", String(selected));
+        other.tabIndex = selected ? 0 : -1;
+        document.getElementById(other.getAttribute("aria-controls")).hidden = !selected;
+    });
+    if (moveFocus) tab.focus();
+}
+
+pageTabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => showPage(tab, false));
+    tab.addEventListener("keydown", (event) => {
+        const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+        if (step) {
+            event.preventDefault();
+            showPage(pageTabs[(index + step + pageTabs.length) % pageTabs.length], true);
+        }
+    });
+});

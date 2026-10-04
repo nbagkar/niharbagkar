@@ -74,7 +74,7 @@
                 <header class="section-head">
                     <p class="label">&sect; 01 &middot; Selected work</p>
                     <h2 id="binder-title">Filed like a collection.</h2>
-                    <p class="section-note">Every project is a card. Foil means it&rsquo;s built and running. Matte means it&rsquo;s a concept or a prototype. Tap a card to turn it over.</p>
+                    <p class="section-note">Every project is a card. Page 01 holds what&rsquo;s built and running, in foil. Page 02 holds concepts and prototypes, in matte. Tap a card to turn it over.</p>
                 </header>
 
                 <div class="binder">
@@ -82,17 +82,25 @@
 
                     <div class="binder-page">
                         <div class="binder-bar">
-                            <span class="label">Page 01</span>
+                            <div class="page-tabs" role="tablist" aria-label="Binder pages">
+                                <button class="page-tab" role="tab" id="tab-1" aria-controls="page-1" aria-selected="true" type="button">Page 01 <span>Built &amp; running</span></button>
+                                <button class="page-tab" role="tab" id="tab-2" aria-controls="page-2" aria-selected="false" tabindex="-1" type="button">Page 02 <span>Concepts</span></button>
+                            </div>
                             <span class="legend"><span class="swatch swatch-foil"></span>Foil: built &amp; running <span class="swatch swatch-matte"></span>Matte: concept</span>
                         </div>
 
+                        <div class="page-panel" role="tabpanel" id="page-1" aria-labelledby="tab-1">
                         <ul class="slots">
                             <li class="slot">
-                                <article class="card is-foil" data-tone="sage" style="--art-bg:#ffffff; --art-fit:contain; --art-pos:center;">
+                                <article class="card is-foil" data-tone="sage" style="--art-bg:#173f33;">
                                     <div class="card-inner">
                                         <div class="face face-front">
                                             <header class="c-head"><h3>Viridian</h3><span class="c-no">01/09</span></header>
-                                            <figure class="c-art"><img src="images/FullLogo.jpg" alt="Viridian logo: a green skyline and checkmark rising out of an open book" loading="lazy"></figure>
+                                            <figure class="c-art c-shots">
+                                                <img src="images/shots/viridian-market.jpg" alt="Viridian's market screen with a price tape and live listings" loading="lazy">
+                                                <img src="images/shots/viridian-card.jpg" alt="Viridian's card detail screen for a verified Silvally GX card" loading="lazy">
+                                                <img src="images/shots/viridian-order.jpg" alt="Viridian's order screen for buying or selling shares of a booster box" loading="lazy">
+                                            </figure>
                                             <p class="c-type">Fintech &middot; iOS</p>
                                             <p class="c-text">A fractional marketplace for collectible trading cards.</p>
                                             <footer class="c-foot"><span>Live on App Store</span><span class="c-mark">&#10022; Foil</span></footer>
@@ -110,11 +118,15 @@
                             </li>
 
                             <li class="slot">
-                                <article class="card is-foil" data-tone="coral" style="--art-bg:#6a5acd; --art-fit:cover; --art-pos:center;">
+                                <article class="card is-foil" data-tone="coral" style="--art-bg:#6a5acd;">
                                     <div class="card-inner">
                                         <div class="face face-front">
                                             <header class="c-head"><h3>UPHouse</h3><span class="c-no">02/09</span></header>
-                                            <figure class="c-art"><img src="images/UPHouse.jpg" alt="UPHouse app icon: a white house with a purple door on a purple background" loading="lazy"></figure>
+                                            <figure class="c-art c-shots">
+                                                <img src="images/shots/uphouse-games.jpg" alt="UPHouse's Games hub with daily puzzles" loading="lazy">
+                                                <img src="images/shots/uphouse-home.jpg" alt="UPHouse's home dashboard with the next event, forum and polls" loading="lazy">
+                                                <img src="images/shots/uphouse-calendar.jpg" alt="UPHouse's shared calendar with an upcoming event" loading="lazy">
+                                            </figure>
                                             <p class="c-type">Social &middot; iOS</p>
                                             <p class="c-text">A clubhouse for your friends: birthdays, polls, and games in one private space.</p>
                                             <footer class="c-foot"><span>Live on App Store</span><span class="c-mark">&#10022; Foil</span></footer>
@@ -219,6 +231,11 @@
                                 </article>
                             </li>
 
+                        </ul>
+                        </div>
+
+                        <div class="page-panel" role="tabpanel" id="page-2" aria-labelledby="tab-2" hidden>
+                        <ul class="slots">
                             <li class="slot">
                                 <article class="card" data-tone="teal" style="--art-bg:#161b26; --art-fit:contain; --art-pos:center;">
                                     <div class="card-inner">
@@ -284,7 +301,15 @@
                                     </div>
                                 </article>
                             </li>
+
+                            <li class="slot slot-empty" aria-label="Empty slot, next card in progress">
+                                <span class="label">Next up</span>
+                                <span class="empty-note">Next card in progress.</span>
+                            </li>
+                            <li class="slot slot-empty slot-blank" aria-hidden="true"></li>
+                            <li class="slot slot-empty slot-blank" aria-hidden="true"></li>
                         </ul>
+                        </div>
                     </div>
                 </div>
 
