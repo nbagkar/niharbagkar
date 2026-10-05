@@ -697,7 +697,7 @@ a {
 }
 
 .face-front {
-    --fold: 11cqw;
+    --fold: 0cqw;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--fold)), calc(100% - var(--fold)) 100%, 0 100%);
     transition: clip-path 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
@@ -709,7 +709,8 @@ a {
     width: var(--fold);
     height: var(--fold);
     clip-path: polygon(0 0, 100% 0, 0 100%);
-    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.25, 1), height 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+    opacity: 0;
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.25, 1), height 0.3s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.15s ease;
     pointer-events: none;
 }
 
@@ -729,7 +730,7 @@ a {
 }
 
 .c-foot {
-    padding-right: 17cqw;
+    transition: padding-right 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -751,6 +752,15 @@ a {
 
     .slot:not(.slot-empty):hover .face-front {
         --fold: 17cqw;
+    }
+
+    .slot:not(.slot-empty):hover .c-flip::before,
+    .slot:not(.slot-empty):hover .c-flip::after {
+        opacity: 1;
+    }
+
+    .slot:not(.slot-empty):hover .c-foot {
+        padding-right: 17cqw;
     }
 }
 
@@ -1277,7 +1287,8 @@ a {
     .card-inner,
     .face-front,
     .c-flip::before,
-    .c-flip::after {
+    .c-flip::after,
+    .c-foot {
         transition: none;
     }
 
