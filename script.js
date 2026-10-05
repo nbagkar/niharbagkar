@@ -1,3 +1,5 @@
+window.__dealReady = true;
+
 const cards = document.querySelectorAll(".card");
 const canHover = window.matchMedia("(hover: hover)").matches;
 
@@ -41,7 +43,9 @@ function showPage(tab, moveFocus) {
         const selected = other === tab;
         other.setAttribute("aria-selected", String(selected));
         other.tabIndex = selected ? 0 : -1;
-        document.getElementById(other.getAttribute("aria-controls")).hidden = !selected;
+        const panel = document.getElementById(other.getAttribute("aria-controls"));
+        panel.hidden = !selected;
+        if (selected) dealPanel(panel);
     });
     if (moveFocus) tab.focus();
 }
@@ -56,3 +60,29 @@ pageTabs.forEach((tab, index) => {
         }
     });
 });
+
+const DEAL_STAGGER_MS = 90;
+const DEAL_DURATION_MS = 800;
+
+function dealPanel(panel) {
+    if (panel.classList.contains("is-dealt")) return;
+    const panelCards = panel.querySelectorAll(".card");
+    panelCards.forEach((card, index) => card.style.setProperty("--i", index));
+    panel.classList.add("is-dealing", "is-dealt");
+    window.setTimeout(() => panel.classList.remove("is-dealing"), panelCards.length * DEAL_STAGGER_MS + DEAL_DURATION_MS + 100);
+}
+
+const dealPages = Array.from(document.querySelectorAll(".page-panel"));
+const binderPage = document.querySelector(".binder-page");
+
+if (!document.documentElement.classList.contains("js") || !("IntersectionObserver" in window)) {
+    dealPages.forEach((panel) => panel.classList.add("is-dealt"));
+} else {
+    const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+            observer.disconnect();
+            dealPanel(dealPages[0]);
+        }
+    }, { threshold: 0.15 });
+    observer.observe(binderPage);
+}

@@ -711,6 +711,35 @@ a {
     color: transparent;
 }
 
+/* Pack-opening intro */
+
+.js .page-panel:not(.is-dealt) .card {
+    opacity: 0;
+}
+
+.page-panel.is-dealing .slot {
+    overflow: hidden;
+}
+
+.page-panel.is-dealt .card {
+    animation: deal-in 0.8s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+@keyframes deal-in {
+    from {
+        opacity: 1;
+        transform: translateY(-112%);
+    }
+    72% {
+        transform: translateY(2.5%);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 /* Card back */
 
 .c-body {
@@ -1173,6 +1202,11 @@ a {
 
     .card-inner {
         transition: none;
+    }
+
+    .page-panel.is-dealt .card,
+    .page-panel:not([hidden]) {
+        animation: none;
     }
 
     .is-foil .face-front::before {
