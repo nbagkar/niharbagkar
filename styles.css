@@ -696,10 +696,25 @@ a {
     outline-offset: -4px;
 }
 
-.face-front {
+.card {
     --fold: 0cqw;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--fold)), calc(100% - var(--fold)) 100%, 0 100%);
-    transition: clip-path 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: var(--fold);
+    height: var(--fold);
+    background: var(--pocket);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.25, 1), height 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+    pointer-events: none;
+}
+
+.card.is-flipped::after {
+    display: none;
 }
 
 .c-flip::before,
@@ -750,7 +765,7 @@ a {
         box-shadow: 0 3cqw 5.5cqw rgba(0, 0, 0, 0.55);
     }
 
-    .slot:not(.slot-empty):hover .face-front {
+    .slot:not(.slot-empty):hover .card {
         --fold: 17cqw;
     }
 
@@ -867,27 +882,28 @@ a {
     border-radius: 99px;
 }
 
+.c-link {
+    position: relative;
+    z-index: 2;
+}
+
 .c-link:hover {
     background: var(--accent);
 }
 
 .c-back {
-    align-self: flex-start;
-    font-family: var(--mono);
-    font-size: 3cqw;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.4cqw 0;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     background: none;
     border: 0;
-    border-bottom: 0.5cqw solid var(--ink);
-    color: var(--ink-soft);
+    border-radius: inherit;
     cursor: pointer;
 }
 
-.c-back:hover {
-    color: var(--accent);
-    border-color: var(--accent);
+.c-back:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: -4px;
 }
 
 .archive-note {
@@ -1285,7 +1301,7 @@ a {
     .card,
     .card::before,
     .card-inner,
-    .face-front,
+    .card::after,
     .c-flip::before,
     .c-flip::after,
     .c-foot {
