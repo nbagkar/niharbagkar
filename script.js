@@ -107,6 +107,7 @@ if (!document.documentElement.classList.contains("js") || !("IntersectionObserve
 document.addEventListener("click", (event) => {
     const link = event.target.closest("a[href]");
     if (!link) return;
+    if (link.dataset.track) track(link.dataset.track, `Clicked: ${link.textContent.trim()}`);
     const href = link.getAttribute("href");
     if (!/^(https?:|mailto:)/.test(href)) return;
     const card = link.closest(".card");

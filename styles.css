@@ -1317,3 +1317,270 @@ a {
         transition: none;
     }
 }
+
+
+/* Case file */
+
+.case-hero {
+    padding: clamp(2.5rem, 7vw, 5rem) 0 0;
+}
+
+.case-hero h1 {
+    margin-top: 1.2rem;
+    font-family: var(--serif-display);
+    font-weight: 500;
+    font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-variation-settings: "opsz" 144;
+    text-wrap: balance;
+}
+
+.case-meta {
+    margin-top: clamp(2.2rem, 5vw, 3.2rem);
+    padding-top: 1.4rem;
+    border-top: 1.5px solid var(--rule);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem 2rem;
+}
+
+.case-meta dt {
+    margin-bottom: 0.4rem;
+}
+
+.case-meta dd {
+    font-size: 1rem;
+    line-height: 1.45;
+}
+
+.case-section {
+    padding: clamp(3rem, 7vw, 5rem) 0 0;
+}
+
+.case-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: start;
+}
+
+.case-prose {
+    max-width: 40rem;
+}
+
+.case-prose p + p {
+    margin-top: 1.1rem;
+}
+
+.case-prose a,
+.case-related a {
+    border-bottom: 1.5px solid var(--accent);
+    text-decoration: none;
+}
+
+.case-prose a:hover {
+    color: var(--accent);
+}
+
+.case-list {
+    list-style: none;
+    counter-reset: case;
+    margin-top: 1.4rem;
+    border-top: 1.5px solid var(--rule);
+}
+
+.case-list li {
+    counter-increment: case;
+    position: relative;
+    padding: 1rem 0 1rem 2.6rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.case-list li::before {
+    content: counter(case, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+}
+
+.case-list strong,
+.case-features strong {
+    font-family: var(--serif-display);
+    font-weight: 700;
+}
+
+.case-features {
+    list-style: none;
+    margin-top: 2.2rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(1.5rem, 4vw, 3.5rem);
+    border-top: 1.5px solid var(--rule);
+}
+
+.case-features li {
+    padding: 1.1rem 0 1.2rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.case-features strong {
+    display: block;
+    font-size: 1.15rem;
+    line-height: 1.25;
+}
+
+.case-features p {
+    margin-top: 0.35rem;
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+}
+
+.case-shots {
+    margin-top: clamp(2.2rem, 5vw, 3.2rem);
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(0.7rem, 1.6vw, 1.2rem);
+}
+
+.case-shots figure {
+    margin: 0;
+}
+
+.case-shots img {
+    width: 100%;
+    height: auto;
+    border: 1.5px solid var(--ink);
+    border-radius: 1rem;
+    box-shadow: 4px 4px 0 var(--ink);
+    background: var(--paper-light);
+}
+
+.case-shots figcaption {
+    margin-top: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.case-map-intro {
+    margin-top: 1.6rem;
+}
+
+.case-map {
+    list-style: none;
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.case-map li {
+    position: relative;
+    padding-left: 1.6rem;
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+}
+
+.case-map li::before {
+    content: "\2192";
+    position: absolute;
+    left: 0;
+    top: 0.05rem;
+    font-family: var(--mono);
+    color: var(--accent);
+}
+
+.case-map strong {
+    font-family: var(--serif-display);
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.case-related {
+    margin-top: 1.6rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+    font-size: 1rem;
+    color: var(--ink-soft);
+}
+
+.case-cta {
+    padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+
+.case-cta h2 {
+    font-family: var(--serif-display);
+    font-weight: 500;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variation-settings: "opsz" 144;
+}
+
+/* Card back: two links */
+
+.c-links {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2cqw;
+}
+
+.c-links .c-link {
+    margin-top: 0;
+}
+
+.c-link-alt {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 0.6cqw var(--ink);
+}
+
+.c-link-alt:hover {
+    background: var(--ink);
+    color: var(--paper-light);
+}
+
+@media (max-width: 960px) {
+    .case-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .case-split {
+        grid-template-columns: 1fr;
+    }
+
+    .case-shots {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 1.8rem;
+    }
+}
+
+@media (max-width: 620px) {
+    .case-meta,
+    .case-features {
+        grid-template-columns: 1fr;
+    }
+
+    .case-shots {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 62%;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scroll-snap-type: x mandatory;
+    }
+
+    .case-shots figure {
+        scroll-snap-align: start;
+    }
+}

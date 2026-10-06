@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viridian: Vault &amp; Portfolio | Nihar Bagkar</title>
+    <meta name="description" content="Case file: Viridian, a fractional marketplace and portfolio app for collectible trading cards, live on the iOS App Store.">
+    <meta name="theme-color" content="#f1ead9">
+    <link rel="canonical" href="https://nbagkar.github.io/niharbagkar/viridian.html">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://nbagkar.github.io/niharbagkar/viridian.html">
+    <meta property="og:title" content="Viridian: Vault &amp; Portfolio, a case file">
+    <meta property="og:description" content="A fractional marketplace and portfolio app for collectible trading cards, live on the iOS App Store.">
+    <meta property="og:image" content="https://nbagkar.github.io/niharbagkar/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="masthead">
+        <div class="wrap masthead-row">
+            <a class="wordmark" href="index.html">Nihar Bagkar</a>
+            <p class="masthead-meta">Case file &middot; Viridian</p>
+            <nav class="masthead-nav" aria-label="Primary">
+                <a href="index.html#binder">All work</a>
+                <a href="index.html#path">Path</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="case-hero">
+            <div class="wrap">
+                <p class="label">Case file &middot; Fintech + iOS</p>
+                <h1>Viridian: Vault &amp; Portfolio</h1>
+                <p class="lede">A fractional marketplace and portfolio tracker for collectible trading cards, live on the iOS App Store.</p>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://apps.apple.com/us/app/viridian-vault-portfolio/id6782263013" target="_blank" rel="noopener" data-track="case-viridian-appstore">View on the App Store</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+
+                <dl class="case-meta">
+                    <div>
+                        <dt class="label">Status</dt>
+                        <dd>Live on the App Store since June 28, 2026. Free.</dd>
+                    </div>
+                    <div>
+                        <dt class="label">Platform</dt>
+                        <dd>iPhone and iPad, iOS 15.1 or later.</dd>
+                    </div>
+                    <div>
+                        <dt class="label">Built with</dt>
+                        <dd>SwiftUI and Supabase.</dd>
+                    </div>
+                    <div>
+                        <dt class="label">Built by</dt>
+                        <dd>Nihar Bagkar.</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="problem-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 01 &middot; The problem</p>
+                    <h2 id="problem-title">Cards are traded like assets. The tools aren&rsquo;t.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>In March 2025 I published an essay, <a href="https://niharbagkar.substack.com/p/reimagining-trust-in-the-collectibles?utm_source=post-email-title&amp;publication_id=4412004&amp;post_id=159298110&amp;utm_campaign=email-post-title&amp;isFreemail=true&amp;r=5ebe3x&amp;triedRedirect=true" target="_blank" rel="noopener" data-track="case-viridian-essay">Reimagining Trust in the Collectibles Market</a>, arguing that collecting has three connected problems.</p>
+                    <ol class="case-list">
+                        <li><strong>Opaque pricing.</strong> Prices swing on hype, and it is hard to tell what a card is really worth.</li>
+                        <li><strong>Fragile trust.</strong> Authenticity depends on a few grading companies, and counterfeits circulate.</li>
+                        <li><strong>Scattered tools.</strong> Tracking, verifying, and trading happen in different apps.</li>
+                    </ol>
+                    <p class="case-map-intro">Viridian takes on each one.</p>
+                    <ul class="case-map">
+                        <li><strong>Pricing.</strong> A live market tape, estimated prices and price movement, and a page for every card.</li>
+                        <li><strong>Trust.</strong> A Verified badge on card pages, and every value labelled as an estimate. <a href="https://binderchain.vercel.app/" target="_blank" rel="noopener" data-track="case-viridian-binderchain-trust">BinderChain</a> explores verifiable ownership records further.</li>
+                        <li><strong>Tools.</strong> Tracking, a market, and trading in one app.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="what-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 02 &middot; What it does</p>
+                    <h2 id="what-title">Your collection, read like a portfolio.</h2>
+                    <p class="section-note">Viridian puts tracking, pricing, and trading in one app, and lets you own cards in shares.</p>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>A home screen that reads like a brokerage.</strong>
+                        <p>Total value, profit and loss, and your holdings at a glance.</p>
+                    </li>
+                    <li>
+                        <strong>Vault drops.</strong>
+                        <p>Featured, curated collections with fractional ownership. The first, the Dream League Collection, is 18 cards.</p>
+                    </li>
+                    <li>
+                        <strong>A market tab.</strong>
+                        <p>A live market tape, browsing, a watchlist, and recently added listings.</p>
+                    </li>
+                    <li>
+                        <strong>Card pages.</strong>
+                        <p>Each card gets its own page, with a Verified badge on verified cards.</p>
+                    </li>
+                    <li>
+                        <strong>Orders in shares.</strong>
+                        <p>Buy or sell with a market order at the best available price, or a limit order at your price, with an estimated total before you confirm.</p>
+                    </li>
+                    <li>
+                        <strong>Submit a card.</strong>
+                        <p>Add a card by name, condition or grade, and estimated value.</p>
+                    </li>
+                </ul>
+
+                <div class="case-shots" role="list">
+                    <figure role="listitem">
+                        <img src="images/case/viridian-home.jpg" alt="Viridian's home screen with a featured vault drop, the Dream League Collection of 18 cards with fractional ownership" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>Home, with a vault drop</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/viridian-market.jpg" alt="Viridian's market tab with a market tape, browsing, a watchlist and live listings" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>Market and watchlist</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/viridian-card.jpg" alt="A Viridian card page for a Silvally GX card with a Verified badge" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>A verified card page</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/viridian-order.jpg" alt="Viridian's order screen for buying or selling shares with market or limit orders and an estimated total" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>Market or limit orders</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/viridian-submit.jpg" alt="Viridian's Submit a Card form with card name, condition or grade, and estimated value" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>Submit a card</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/viridian-news.jpg" alt="Viridian's news tab with market news, new sets and grading updates" width="505" height="1100" loading="lazy" decoding="async">
+                        <figcaption>Market news</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="choices-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 03 &middot; Design choices</p>
+                    <h2 id="choices-title">Four choices that shaped it.</h2>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>A portfolio, not a gallery.</strong>
+                        <p>The home screen leads with total value and profit and loss, so a collection reads like holdings and not a photo grid.</p>
+                    </li>
+                    <li>
+                        <strong>Shares, not all-or-nothing.</strong>
+                        <p>Cards are bought and sold in shares, with market and limit orders like a brokerage, so you can own a piece of a card instead of the whole thing.</p>
+                    </li>
+                    <li>
+                        <strong>Estimates, clearly labelled.</strong>
+                        <p>Values are shown as estimates, with a plain note that the app gives no financial advice. A Verified badge marks verified cards.</p>
+                    </li>
+                    <li>
+                        <strong>Ship small, then fix the basics.</strong>
+                        <p>Version 1.0 launched on June 28. Version 1.0.1 followed the next day, with sign-up, password reset, and wallet fixes.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="build-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 04 &middot; Under the hood</p>
+                    <h2 id="build-title">A native app on Supabase.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>Viridian is a native iOS app written in SwiftUI. Supabase handles authentication, portfolio tracking, market pricing, and order management.</p>
+                    <p>Accounts use email verification and password reset. A wallet tracks deposits, balances, and pending withdrawals.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="log-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 05 &middot; Shipping log</p>
+                    <h2 id="log-title">From essay to App Store.</h2>
+                </header>
+
+                <ol class="ledger">
+                    <li>
+                        <span class="when">March 2025</span>
+                        <div>
+                            <h3>The essay</h3>
+                            <p>Published &ldquo;Reimagining Trust in the Collectibles Market&rdquo; on Substack.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="when">June 28, 2026</span>
+                        <div>
+                            <h3>Live on the App Store</h3>
+                            <p>Viridian: Vault &amp; Portfolio launches as a free app in the Finance category.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="when">June 29, 2026</span>
+                        <div>
+                            <h3>Version 1.0.1</h3>
+                            <p>Email-verified sign-up, password reset, redesigned profile and trading screens, and wallet improvements: faster deposits, more reliable balance updates, and pending-withdrawal tracking.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="stands-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 06 &middot; Where it stands</p>
+                    <h2 id="stands-title">Early, and honest about it.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>Viridian describes itself as an early collectible card tracking and marketplace-style experience. What comes next is growing the vault, redemption, and the set of supported cards.</p>
+                    <p>Every price and value in the app is an estimate for information only. Viridian does not give financial advice or promise returns.</p>
+                    <p class="case-related">Related: <a href="https://binderchain.vercel.app/" target="_blank" rel="noopener" data-track="case-viridian-binderchain">BinderChain</a>, a concept for verifiable ownership records for collectibles.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-cta">
+            <div class="wrap">
+                <h2>See it for yourself.</h2>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://apps.apple.com/us/app/viridian-vault-portfolio/id6782263013" target="_blank" rel="noopener" data-track="case-viridian-appstore-end">View on the App Store</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="colophon">
+        <div class="wrap colophon-row">
+            <p>&copy; 2026 Nihar Bagkar</p>
+            <p>Set in Fraunces, Newsreader &amp; IBM Plex Mono. Hand-built, no framework.</p>
+            <a href="#top">Back to top</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("click", function (event) {
+            var link = event.target.closest("a[data-track]");
+            if (link && window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({ path: link.getAttribute("data-track"), title: "Clicked: " + link.textContent.trim(), event: true });
+            }
+        });
+    </script>
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
