@@ -1,5 +1,15 @@
 window.__dealReady = true;
 
+function track(name, title) {
+    if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({ path: name, title: title || name, event: true });
+    }
+}
+
+function slug(text) {
+    return text.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 const cards = document.querySelectorAll(".card");
 const canHover = window.matchMedia("(hover: hover)").matches;
 
@@ -14,7 +24,11 @@ function setFlipped(card, flipped) {
 }
 
 cards.forEach((card) => {
-    card.querySelector(".c-flip").addEventListener("click", () => setFlipped(card, true));
+    const cardName = card.querySelector(".c-head h3").textContent.trim();
+    card.querySelector(".c-flip").addEventListener("click", () => {
+        setFlipped(card, true);
+        track(`flip-${slug(cardName)}`, `Flipped card: ${cardName}`);
+    });
     card.querySelector(".c-back").addEventListener("click", () => setFlipped(card, false));
     card.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && card.classList.contains("is-flipped")) {
@@ -51,7 +65,10 @@ function showPage(tab, moveFocus) {
 }
 
 pageTabs.forEach((tab, index) => {
-    tab.addEventListener("click", () => showPage(tab, false));
+    tab.addEventListener("click", () => {
+        showPage(tab, false);
+        track(`binder-${tab.id}`, `Opened binder ${tab.firstChild.textContent.trim()}`);
+    });
     tab.addEventListener("keydown", (event) => {
         const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
         if (step) {
@@ -86,3 +103,18 @@ if (!document.documentElement.classList.contains("js") || !("IntersectionObserve
     }, { threshold: 0.15 });
     observer.observe(binderPage);
 }
+
+document.addEventListener("click", (event) => {
+    const link = event.target.closest("a[href]");
+    if (!link) return;
+    const href = link.getAttribute("href");
+    if (!/^(https?:|mailto:)/.test(href)) return;
+    const card = link.closest(".card");
+    const label = card ? card.querySelector(".c-head h3").textContent.trim() : link.textContent.trim();
+    const kind = href.startsWith("mailto:") ? "email" : "out";
+    if (kind === "email") {
+        track("email-click", "Clicked email link");
+    } else {
+        track(`out-${slug(label)}`, `Outbound: ${label} → ${href.split("?")[0]}`);
+    }
+});
