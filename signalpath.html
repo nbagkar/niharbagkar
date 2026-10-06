@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalPath | Nihar Bagkar</title>
+    <meta name="description" content="Case file: SignalPath, a zero-input IcM extension that traces the service-dependency graph to an incident&#x27;s root-cause service and routes it to the right on-call engineer.">
+    <meta name="theme-color" content="#f1ead9">
+    <link rel="canonical" href="https://nbagkar.github.io/niharbagkar/signalpath.html">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://nbagkar.github.io/niharbagkar/signalpath.html">
+    <meta property="og:title" content="SignalPath, a case file">
+    <meta property="og:description" content="Case file: SignalPath, a zero-input IcM extension that traces the service-dependency graph to an incident&#x27;s root-cause service and routes it to the right on-call engineer.">
+    <meta property="og:image" content="https://nbagkar.github.io/niharbagkar/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="masthead">
+        <div class="wrap masthead-row">
+            <a class="wordmark" href="index.html">Nihar Bagkar</a>
+            <p class="masthead-meta">Case file &middot; SignalPath</p>
+            <nav class="masthead-nav" aria-label="Primary">
+                <a href="index.html#binder">All work</a>
+                <a href="index.html#path">Path</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="case-hero">
+            <div class="wrap">
+                <p class="label">Case file &middot; AI + DevOps</p>
+                <h1>SignalPath</h1>
+                <p class="lede">A zero-input IcM extension that ends the scramble to find an incident&rsquo;s true owner. One click traces the service-dependency graph to the root-cause service and routes it to the right on-call engineer with a ready-to-act fix package.</p>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://signalpath-demo-sar75e.azurewebsites.net/" target="_blank" rel="noopener" data-track="case-signalpath-demo">View the live demo</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+
+                <dl class="case-meta">
+                    <div><dt class="label">Status</dt><dd>A hackathon build with a public demo.</dd></div><div><dt class="label">Where</dt><dd>A Microsoft intern hackathon.</dd></div><div><dt class="label">Evidence from</dt><dd>ICM, Azure DevOps, People Graph, WorkIQ, and a service graph.</dd></div><div><dt class="label">Demo</dt><dd>Three prepared incident scenarios.</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="problem-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 01 &middot; The problem</p>
+                    <h2 id="problem-title">When an outage is live, the first question is who owns it.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>During a high-severity incident, time goes to working out which team owns the failure, not to fixing it. The demo frames that triage as roughly 45 minutes, and the goal as a few minutes with guided escalation.</p>
+                    <p>The first name on an on-call list is not always the right one. A routing false lead is one of the three scenarios the demo walks through, next to an identity outage and a storage cross-service failure.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="what-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 02 &middot; What it does</p>
+                    <h2 id="what-title">Six steps from symptom to a sent message.</h2>
+                    <p class="section-note">The demo follows a six-step flow, with a guided tour to walk through it.</p>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>1. Describe</strong>
+                        <p>Paste a customer symptom, pick a prepared scenario, or drop in an incident file.</p>
+                    </li>
+                    <li>
+                        <strong>2. Diagnose</strong>
+                        <p>A summary of what is broken: severity, impact, likely services, and the likely root cause, with the evidence behind it.</p>
+                    </li>
+                    <li>
+                        <strong>3. Escalate</strong>
+                        <p>Ranked owners to contact, each with a confidence score and the reason they made the list.</p>
+                    </li>
+                    <li>
+                        <strong>4. Reach out</strong>
+                        <p>A drafted message for Teams, email, or a short note, ready to copy, plus backup contacts.</p>
+                    </li>
+                    <li>
+                        <strong>5. Evidence</strong>
+                        <p>Weighted signals from ICM, ADO, People Graph, and WorkIQ, with a permission-aware mode.</p>
+                    </li>
+                    <li>
+                        <strong>6. Visualize</strong>
+                        <p>A dependency graph that highlights likely impact and the root-cause path, with a presentation mode and scenario comparison.</p>
+                    </li>
+                </ul>
+
+                <div class="case-shots is-wide" role="list">
+                    <figure role="listitem">
+                        <img src="images/case/signalpath-top.jpg" alt="SignalPath inside the IcM incident page, with a six-step bar and prepared scenarios for an Azure HPC identity outage" width="1000" height="573" loading="lazy" decoding="async">
+                        <figcaption>Describe the incident, or pick a scenario</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/signalpath-broken.jpg" alt="SignalPath&#x27;s What&#x27;s broken panel listing severity, impact, likely services and root cause, with a before of 45 minutes of triage and an after of 5 minutes of guided escalation" width="1000" height="527" loading="lazy" decoding="async">
+                        <figcaption>What is broken, and the before and after</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/signalpath-evidence.jpg" alt="SignalPath&#x27;s Evidence across systems panel with weighted signals from ICM, ADO, People Graph and WorkIQ" width="1000" height="268" loading="lazy" decoding="async">
+                        <figcaption>Evidence, weighted by source</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/signalpath-graph.jpg" alt="SignalPath&#x27;s dependency graph with the Identity service and its dependent services highlighted as the root-cause path" width="1000" height="508" loading="lazy" decoding="async">
+                        <figcaption>The dependency graph and root-cause path</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="choices-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 03 &middot; Design choices</p>
+                    <h2 id="choices-title">Four choices that shaped it.</h2>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>Show the evidence.</strong>
+                        <p>Every recommendation carries a confidence score and the evidence behind it, from named sources.</p>
+                    </li>
+                    <li>
+                        <strong>Respect permissions.</strong>
+                        <p>A permission-aware mode, and results marked live are pulled read-only from your own org: ADO work items and ICM incident history.</p>
+                    </li>
+                    <li>
+                        <strong>Make the reasoning visible.</strong>
+                        <p>A dependency graph with the root-cause path highlighted, so a recommendation can be explained and not only trusted.</p>
+                    </li>
+                    <li>
+                        <strong>End with something sendable.</strong>
+                        <p>The last step is a drafted message you can copy, so the output is an action and not a report.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="build-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 04 &middot; Under the hood</p>
+                    <h2 id="build-title">Prepared scenarios, honest about the data.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>The demo runs on three prepared scenarios: an identity outage, a storage cross-service failure, and a routing false lead. The evidence shown in the demo is mocked.</p>
+                    <p>Automated ICM access is not connected yet. Real incidents can be loaded by pasting an ICM notification email or an Excel or CSV export, which SignalPath detects, extracts, and uses as live ICM evidence.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="stands-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 05 &middot; Where it stands</p>
+                    <h2 id="stands-title">A hackathon build, shared as a demo.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>SignalPath was built at a Microsoft intern hackathon and is shared as a public demo. The demo states its outcome as reducing time-to-identify from 45 minutes to just a few minutes. That is the goal it is built to show, not a measured result.</p>
+                    <p>What is missing is the connection to live systems: automated ICM access.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-cta">
+            <div class="wrap">
+                <h2>Try the demo.</h2>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://signalpath-demo-sar75e.azurewebsites.net/" target="_blank" rel="noopener" data-track="case-signalpath-demo-end">View the live demo</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="colophon">
+        <div class="wrap colophon-row">
+            <p>&copy; 2026 Nihar Bagkar</p>
+            <p>Set in Fraunces, Newsreader &amp; IBM Plex Mono. Hand-built, no framework.</p>
+            <a href="#top">Back to top</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("click", function (event) {
+            var link = event.target.closest("a[data-track]");
+            if (link && window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({ path: link.getAttribute("data-track"), title: "Clicked: " + link.textContent.trim(), event: true });
+            }
+        });
+    </script>
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
