@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cue | Nihar Bagkar</title>
-    <meta name="description" content="Case file: Cue, semantic sound search for music producers. Describe a sound in words and get production-ready audio.">
+    <meta name="description" content="Case file: Cue, semantic sound search for music producers. Describe a sound in words and get production-ready audio, then audition it, save it, and download it.">
     <meta name="theme-color" content="#f1ead9">
     <link rel="canonical" href="https://www.niharbagkar.com/cue.html">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://www.niharbagkar.com/cue.html">
     <meta property="og:title" content="Cue, a case file">
-    <meta property="og:description" content="Case file: Cue, semantic sound search for music producers. Describe a sound in words and get production-ready audio.">
+    <meta property="og:description" content="Case file: Cue, semantic sound search for music producers. Describe a sound in words and get production-ready audio, then audition it, save it, and download it.">
     <meta property="og:image" content="https://www.niharbagkar.com/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -50,7 +50,7 @@
                 </p>
 
                 <dl class="case-meta">
-                    <div><dt class="label">Status</dt><dd>Live. Searching needs an account.</dd></div><div><dt class="label">Built for</dt><dd>Music producers.</dd></div><div><dt class="label">Research</dt><dd>25+ producer interviews.</dd></div><div><dt class="label">Shipped</dt><dd>An MVP in one sprint cycle.</dd></div>
+                    <div><dt class="label">Status</dt><dd>Live. Searching needs an account.</dd></div><div><dt class="label">Built for</dt><dd>Music producers.</dd></div><div><dt class="label">Built with</dt><dd>Next.js, TypeScript, Supabase, and OpenAI.</dd></div><div><dt class="label">Research</dt><dd>25+ producer interviews, and an MVP in one sprint cycle.</dd></div>
                 </dl>
             </div>
         </section>
@@ -63,6 +63,7 @@
                 </header>
                 <div class="case-prose">
                     <p>Cue was built around the friction of finding the right sound in the middle of making something. Behind it are 25+ producer interviews and an MVP that shipped in a single sprint cycle.</p>
+                    <p>The idea is simple: describe the sound you want in plain language, and get production-ready audio back.</p>
                 </div>
             </div>
         </section>
@@ -78,19 +79,27 @@
                 <ul class="case-features">
                     <li>
                         <strong>Search in words.</strong>
-                        <p>Describe a sound in language, and Cue translates the description into production-ready audio.</p>
+                        <p>Describe a sound in language, and Cue turns the description into a search over its sound library. Tags can narrow the results.</p>
                     </li>
                     <li>
-                        <strong>Quick starting points.</strong>
-                        <p>Category chips such as Ambient, Music, Voice, and Effects, plus descriptors like Vintage, Warm, and Keys.</p>
+                        <strong>Audition in the browser.</strong>
+                        <p>Every result plays inline, one at a time, so you can compare sounds without stacking them up.</p>
                     </li>
                     <li>
-                        <strong>A home, a library, and new searches.</strong>
-                        <p>A simple sidebar with Home, Library, and New Search.</p>
+                        <strong>The details that matter.</strong>
+                        <p>Each sound carries its BPM and key, plus duration and tags, so you can tell whether it fits a track.</p>
                     </li>
                     <li>
-                        <strong>Accounts and Premium.</strong>
-                        <p>Search is behind a login, and the app has a Premium subscription.</p>
+                        <strong>Save and download.</strong>
+                        <p>Save a sound to your library, or download it, right from its card.</p>
+                    </li>
+                    <li>
+                        <strong>A personal library.</strong>
+                        <p>Your saved sounds live in one place with their own search, so a find is easy to come back to.</p>
+                    </li>
+                    <li>
+                        <strong>Search history.</strong>
+                        <p>Past searches are grouped by recency: today, yesterday, the past three days, and the past seven.</p>
                     </li>
                 </ul>
 
@@ -107,14 +116,81 @@
             </div>
         </section>
 
+        <section class="case-section" aria-labelledby="choices-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 03 &middot; Design choices</p>
+                    <h2 id="choices-title">Four choices that shaped it.</h2>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>Describe, don&rsquo;t browse.</strong>
+                        <p>One prompt is the whole front door, with category chips and tags as quick starting points and filters.</p>
+                    </li>
+                    <li>
+                        <strong>Audition before you commit.</strong>
+                        <p>Sounds play in place, and starting one stops the last, so you hear each sound on its own.</p>
+                    </li>
+                    <li>
+                        <strong>Producer metadata up front.</strong>
+                        <p>BPM and key sit on every sound, since those decide whether it will work in a track.</p>
+                    </li>
+                    <li>
+                        <strong>Accounts and a library.</strong>
+                        <p>Search and saving sit behind a login, so each producer builds their own collection over time.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="build-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 04 &middot; Under the hood</p>
+                    <h2 id="build-title">Next.js on Supabase, with OpenAI in the loop.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>Cue is a Next.js app written in TypeScript, with a shadcn/ui component set. Supabase handles sign-in, the sound library, user collections, and the audio files themselves.</p>
+                    <p>Search is a single endpoint that takes a text query and optional tags. An OpenAI-backed helper interprets the query, and the matching sounds come back from Supabase.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="log-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 05 &middot; Shipping log</p>
+                    <h2 id="log-title">From a starter to an app.</h2>
+                </header>
+
+                <ol class="ledger">
+                    <li>
+                        <span class="when">April 9, 2025</span>
+                        <div>
+                            <h3>A first repository</h3>
+                            <p>The first Cue repository starts from a Next.js starter.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="when">April 29, 2025</span>
+                        <div>
+                            <h3>The Cue app on GitHub</h3>
+                            <p>The app&rsquo;s code lands in a public repository, with semantic search, a saved library, search history, and accounts.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
         <section class="case-section" aria-labelledby="stands-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 03 &middot; Where it stands</p>
+                    <p class="label">&sect; 06 &middot; Where it stands</p>
                     <h2 id="stands-title">Live, and early.</h2>
                 </header>
                 <div class="case-prose">
-                    <p>Cue is live, and searching requires an account. An MVP shipped in one sprint cycle, alongside 25+ producer interviews.</p>
+                    <p>Cue is live at cue-self.vercel.app, and searching requires an account. The app also has a Premium subscription.</p>
                 </div>
             </div>
         </section>
