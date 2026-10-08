@@ -278,3 +278,46 @@ document.addEventListener("click", (event) => {
         track(`out-${slug(label)}`, `Outbound: ${label} → ${href.split("?")[0]}`);
     }
 });
+
+const ledger = document.querySelector(".ledger");
+
+if (ledger) {
+    const crests = Array.from(ledger.querySelectorAll(".crest"));
+    let centers = [];
+
+    function measureLedger() {
+        const box = ledger.getBoundingClientRect();
+        centers = crests.map((crest) => {
+            const rect = crest.getBoundingClientRect();
+            return { x: rect.left + rect.width / 2 - box.left, y: rect.top + rect.height / 2 - box.top };
+        });
+        const first = centers[0];
+        const last = centers[centers.length - 1];
+        ledger.style.setProperty("--line-x", `${first.x}px`);
+        ledger.style.setProperty("--line-top", `${first.y}px`);
+        ledger.style.setProperty("--line-len", `${last.y - first.y}px`);
+    }
+
+    function drawLedger() {
+        const box = ledger.getBoundingClientRect();
+        const first = centers[0].y;
+        const length = centers[centers.length - 1].y - first;
+        const reach = motionOK ? window.innerHeight * 0.62 - box.top - first : length;
+        const drawn = Math.max(0, Math.min(1, reach / length));
+        ledger.style.setProperty("--drawn", drawn.toFixed(4));
+        crests.forEach((crest, index) => {
+            crest.classList.toggle("is-reached", reach >= centers[index].y - first - 1);
+        });
+    }
+
+    function refreshLedger() {
+        measureLedger();
+        drawLedger();
+    }
+
+    refreshLedger();
+    window.addEventListener("load", refreshLedger);
+    if (document.fonts) document.fonts.ready.then(refreshLedger);
+    window.addEventListener("scroll", drawLedger, { passive: true });
+    window.addEventListener("resize", refreshLedger);
+}
