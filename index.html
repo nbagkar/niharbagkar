@@ -81,6 +81,7 @@
                             <span class="legend"><span class="swatch swatch-foil"></span>Foil: built &amp; running <span class="swatch swatch-matte"></span>Matte: concept</span>
                         </div>
 
+                        <div class="pages">
                         <div class="page-panel" role="tabpanel" id="page-1" aria-labelledby="tab-1">
                         <ul class="slots">
                             <li class="slot">
@@ -503,6 +504,8 @@
 
                         </ul>
                         </div>
+                        </div>
+                        <button class="page-corner" type="button" aria-label="Turn to the next binder page" title="Next page"></button>
                     </div>
                 </div>
             </div>
@@ -510,11 +513,36 @@
 
         <section class="about" id="about" aria-labelledby="about-title">
             <div class="wrap about-grid">
-                <figure class="print">
-                    <span class="tape" aria-hidden="true"></span>
-                    <img src="images/headshot.jpg" alt="Portrait of Nihar Bagkar standing in a bright, glass-walled atrium" width="800" height="1200">
-                    <figcaption><span class="label">Fig. 1</span> Nihar, New York.</figcaption>
-                </figure>
+                <div class="player-wrap">
+                    <div class="player-slot">
+                        <article class="card is-foil player" data-tone="mustard" style="--art-bg:#d9d2bf; --art-pos:50% 30%;">
+                            <div class="card-inner">
+                                <div class="face face-front">
+                                    <header class="c-head"><h3>Nihar Bagkar</h3><span class="c-no">PM</span></header>
+                                    <figure class="c-art"><img src="images/headshot.jpg" alt="Portrait of Nihar Bagkar standing in a bright, glass-walled atrium" width="800" height="1200"></figure>
+                                    <p class="c-type">Product &middot; Venture &middot; Fintech</p>
+                                    <p class="c-text">NYU Stern, New York. Last season: Microsoft, product intern.</p>
+                                    <footer class="c-foot"><span>Player card</span><span class="c-mark">Foil</span></footer>
+                                    <button class="c-flip" type="button" aria-expanded="false" aria-label="Turn over Nihar's player card to see the stats"></button>
+                                </div>
+                                <div class="face face-back" inert>
+                                    <header class="c-head"><h3>Season stats</h3><span class="c-no">2026</span></header>
+                                    <dl class="p-stats">
+                                        <div><dt>GPA at NYU Stern</dt><dd><span data-count="3.88" data-decimals="2">3.88</span></dd></div>
+                                        <div><dt>Startups screened</dt><dd><span data-count="75">75</span>+</dd></div>
+                                        <div><dt>Investment memos</dt><dd><span data-count="20">20</span>+</dd></div>
+                                        <div><dt>Budget files automated</dt><dd><span data-count="170">170</span>+</dd></div>
+                                        <div><dt>Producer interviews</dt><dd><span data-count="25">25</span>+</dd></div>
+                                        <div><dt>of 47 hackathon teams</dt><dd>Top <span data-count="5">5</span></dd></div>
+                                    </dl>
+                                    <a class="c-link" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener" data-track="player-resume">Resume (PDF) <span aria-hidden="true">&nearr;</span></a>
+                                    <button class="c-back" type="button" aria-label="Turn the player card back over"></button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <p class="player-cap"><span class="label">Fig. 1</span> Turn it over for the stats.</p>
+                </div>
                 <div class="about-copy">
                     <p class="label">&sect; 01 &middot; About</p>
                     <h2 id="about-title">A product builder in New York.</h2>
@@ -643,6 +671,18 @@
                         <a class="link-arrow" href="https://github.com/nbagkar" target="_blank" rel="noopener">GitHub</a>
                         <a class="link-arrow" href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener">LinkedIn</a>
                     </p>
+
+                    <div class="pitch" id="pitch">
+                        <div class="pitch-head">
+                            <p class="label">Extra time</p>
+                            <p class="pitch-score" aria-live="polite"><span data-score="goals">0</span> goals &middot; <span data-score="own">0</span> own goals</p>
+                        </div>
+                        <div class="pitch-stage">
+                            <canvas class="pitch-canvas" width="640" height="360" tabindex="0" aria-label="Mini game: drive the car into the ball and score in the right-hand goal. Arrow keys or WASD to drive, Space to boost, R to reset."></canvas>
+                            <p class="pitch-stamp" aria-hidden="true"></p>
+                        </div>
+                        <p class="pitch-hint"><span class="hint-hover">Click the pitch, then drive with the arrow keys. Space boosts.</span><span class="hint-tap">Hold your finger where you want the car to go.</span></p>
+                    </div>
                 </div>
 
                 <form class="contact-form" action="https://formspree.io/f/xldnoklw" method="POST">
@@ -671,6 +711,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="pitch.js"></script>
     <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

@@ -21,6 +21,25 @@ function setFlipped(card, flipped) {
     back.inert = !flipped;
     card.querySelector(".c-flip").setAttribute("aria-expanded", String(flipped));
     (flipped ? back.querySelector(".c-link") : card.querySelector(".c-flip")).focus({ preventScroll: true });
+    if (flipped && card.classList.contains("player")) countUp(back);
+}
+
+const motionOK = document.documentElement.classList.contains("js");
+
+function countUp(root) {
+    if (!motionOK) return;
+    const started = performance.now();
+    const counters = Array.from(root.querySelectorAll("[data-count]"));
+    function frame(now) {
+        const t = Math.min(1, (now - started) / 1100);
+        const eased = 1 - Math.pow(1 - t, 3);
+        counters.forEach((el) => {
+            const decimals = Number(el.dataset.decimals || 0);
+            el.textContent = (Number(el.dataset.count) * eased).toFixed(decimals);
+        });
+        if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
 }
 
 cards.forEach((card) => {
@@ -48,20 +67,140 @@ cards.forEach((card) => {
             front.style.setProperty("--bgy", `${y * 100}%`);
         });
     }
+
+    if (canHover && motionOK && card.classList.contains("player")) {
+        card.addEventListener("pointermove", (event) => {
+            const rect = card.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width - 0.5;
+            const y = (event.clientY - rect.top) / rect.height - 0.5;
+            card.classList.add("is-tilting");
+            card.style.setProperty("--rx", `${(-y * 14).toFixed(2)}deg`);
+            card.style.setProperty("--ry", `${(x * 18).toFixed(2)}deg`);
+        });
+        card.addEventListener("pointerleave", () => {
+            card.classList.remove("is-tilting");
+            card.style.removeProperty("--rx");
+            card.style.removeProperty("--ry");
+        });
+    }
 });
 
 const pageTabs = Array.from(document.querySelectorAll(".page-tab"));
 
+const pagesStage = document.querySelector(".pages");
+const TURN_MS = 620;
+let activeTurn = null;
+
+function panelFor(tab) {
+    return document.getElementById(tab.getAttribute("aria-controls"));
+}
+
+function endTurn() {
+    if (!activeTurn) return;
+    const turn = activeTurn;
+    activeTurn = null;
+    turn.animations.forEach((animation) => animation.cancel());
+    turn.cleanup();
+}
+
+function turnPage(fromPanel, toPanel, forward) {
+    const sheet = forward ? fromPanel : toPanel;
+    const under = forward ? toPanel : fromPanel;
+    const shades = [sheet, under].map((panel) => {
+        const shade = document.createElement("div");
+        shade.className = "turn-shade";
+        panel.appendChild(shade);
+        return shade;
+    });
+    sheet.classList.add("is-sheet");
+    under.classList.add("is-under");
+    pagesStage.classList.add("is-turning");
+
+    const flat = "rotateY(0deg)";
+    const lifted = "rotateY(-92deg)";
+    const timing = { duration: TURN_MS, easing: forward ? "cubic-bezier(0.45, 0, 0.7, 0.4)" : "cubic-bezier(0.3, 0.6, 0.55, 1)", fill: "both" };
+    const animations = [
+        sheet.animate({ transform: forward ? [flat, lifted] : [lifted, flat] }, timing),
+        shades[0].animate({ opacity: forward ? [0, 1] : [1, 0] }, timing),
+        shades[1].animate({ opacity: forward ? [1, 0] : [0, 1] }, timing),
+    ];
+
+    const turn = {
+        animations,
+        cleanup() {
+            shades.forEach((shade) => shade.remove());
+            sheet.classList.remove("is-sheet");
+            under.classList.remove("is-under");
+            pagesStage.classList.remove("is-turning");
+            fromPanel.hidden = true;
+        },
+    };
+    activeTurn = turn;
+    animations[0].onfinish = () => {
+        if (activeTurn === turn) endTurn();
+    };
+}
+
 function showPage(tab, moveFocus) {
+    const fromTab = pageTabs.find((other) => other.getAttribute("aria-selected") === "true");
+    if (moveFocus) tab.focus();
+    if (tab === fromTab) return;
+    endTurn();
     pageTabs.forEach((other) => {
         const selected = other === tab;
         other.setAttribute("aria-selected", String(selected));
         other.tabIndex = selected ? 0 : -1;
-        const panel = document.getElementById(other.getAttribute("aria-controls"));
-        panel.hidden = !selected;
-        if (selected) dealPanel(panel);
     });
-    if (moveFocus) tab.focus();
+    const fromPanel = panelFor(fromTab);
+    const toPanel = panelFor(tab);
+    toPanel.hidden = false;
+    dealPanel(toPanel);
+    if (motionOK && pagesStage && toPanel.animate) {
+        turnPage(fromPanel, toPanel, pageTabs.indexOf(tab) > pageTabs.indexOf(fromTab));
+    } else {
+        fromPanel.hidden = true;
+    }
+}
+
+function stepPage(step) {
+    const index = pageTabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    showPage(pageTabs[(index + step + pageTabs.length) % pageTabs.length], false);
+}
+
+const pageCorner = document.querySelector(".page-corner");
+if (pageCorner) {
+    pageCorner.addEventListener("click", () => {
+        stepPage(1);
+        track("binder-corner", "Turned binder page from the corner");
+    });
+}
+
+if (pagesStage) {
+    let swipeStart = null;
+    let suppressClick = false;
+    pagesStage.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        swipeStart = event.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+    }, { passive: true });
+    pagesStage.addEventListener("touchend", (event) => {
+        if (!swipeStart) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - swipeStart.x;
+        const dy = touch.clientY - swipeStart.y;
+        swipeStart = null;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            suppressClick = true;
+            window.setTimeout(() => { suppressClick = false; }, 400);
+            stepPage(dx < 0 ? 1 : -1);
+            track("binder-swipe", "Swiped binder page");
+        }
+    }, { passive: true });
+    pagesStage.addEventListener("click", (event) => {
+        if (!suppressClick) return;
+        suppressClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+    }, true);
 }
 
 pageTabs.forEach((tab, index) => {
