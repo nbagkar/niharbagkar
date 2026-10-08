@@ -100,7 +100,7 @@ if (!document.documentElement.classList.contains("js") || !("IntersectionObserve
             observer.disconnect();
             dealPanel(dealPages[0]);
         }
-    }, { threshold: 0.15 });
+    }, { threshold: 0 });
     observer.observe(binderPage);
 }
 

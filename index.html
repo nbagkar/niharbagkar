@@ -24,7 +24,7 @@
     <meta name="twitter:image" content="https://www.niharbagkar.com/og-image.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script>
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -39,12 +39,12 @@
     <a class="skip-link" href="#main">Skip to main content</a>
 
     <header class="masthead">
-        <div class="wrap masthead-row">
+        <div class="wrap wrap-wide masthead-row">
             <a class="wordmark" href="#top">Nihar Bagkar</a>
             <p class="masthead-meta">Portfolio &middot; Vol. 01 &middot; New York &middot; 2026</p>
             <nav class="masthead-nav" aria-label="Primary">
-                <a href="#binder">Work</a>
-                <a href="#notes">Notes</a>
+                <a href="#binder">Binder</a>
+                <a href="#about">About</a>
                 <a href="#path">Path</a>
                 <a href="#index">Index</a>
                 <a href="#contact">Contact</a>
@@ -53,52 +53,20 @@
     </header>
 
     <main id="main">
-        <section class="hero" id="top">
-            <div class="wrap hero-grid">
-                <div class="hero-copy">
-                    <p class="label">Product builder</p>
-                    <h1>I make software for money, music, and the things people <em>collect</em>.</h1>
-                    <p class="lede">I&rsquo;m Nihar. I study Business, Technology &amp; Entrepreneurship at NYU Stern, and I spent summer 2026 as a product management intern at Microsoft. Most of what I build starts as a messy workflow that someone is tired of doing by hand.</p>
-                    <p class="hero-links">
-                        <a class="link-arrow" href="#binder">Open the binder</a>
-                        <a class="link-arrow" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener">Resume (PDF)</a>
-                    </p>
-                </div>
-
-                <figure class="print">
-                    <span class="tape" aria-hidden="true"></span>
-                    <img src="images/headshot.jpg" alt="Portrait of Nihar Bagkar standing in a bright, glass-walled atrium" width="800" height="1200">
-                    <figcaption><span class="label">Fig. 1</span> Nihar, New York.</figcaption>
-                </figure>
+        <section class="intro" id="top">
+            <div class="wrap wrap-wide intro-row">
+                <h1>I make software for money, music, and the things people <em>collect</em>.</h1>
+                <p class="intro-links">
+                    <a class="link-arrow" href="#about">About me</a>
+                    <a class="link-arrow" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener">Resume (PDF)</a>
+                </p>
             </div>
-
-            <dl class="wrap glance">
-                <div>
-                    <dt class="label">Studying</dt>
-                    <dd>NYU Stern, BS in Business, Technology &amp; Entrepreneurship. 3.88 GPA.</dd>
-                </div>
-                <div>
-                    <dt class="label">Screening</dt>
-                    <dd>75+ startups and 20+ investment memos at the Berkley Center for Entrepreneurship.</dd>
-                </div>
-                <div>
-                    <dt class="label">Automating</dt>
-                    <dd>170+ budget files at Baltimore City Public Schools, saving 100+ hours.</dd>
-                </div>
-                <div>
-                    <dt class="label">Shipping</dt>
-                    <dd>Viridian, a collectibles exchange, and UPHouse, a social app for friend groups, are live on the App Store.</dd>
-                </div>
-            </dl>
         </section>
 
         <section class="binder-section" id="binder" aria-labelledby="binder-title">
-            <div class="wrap">
-                <header class="section-head">
-                    <p class="label">&sect; 01 &middot; Selected work</p>
-                    <h2 id="binder-title">Filed like a collection.</h2>
-                    <p class="section-note">Every project is a card. Page 01 holds what&rsquo;s built and running, in foil. Pages 02 and 03 hold concepts, prototypes, and case work, in matte. Hover a card to pull it from its sleeve and peel up its corner. Click or tap anywhere on it to turn it over, and again to turn it back.</p>
-                </header>
+            <div class="wrap wrap-wide">
+                <h2 id="binder-title" class="visually-hidden">Selected work</h2>
+                <p class="binder-hint"><span class="hint-hover">Every project is a card. Hover one to pull it from its sleeve, and click to turn it over.</span><span class="hint-tap">Every project is a card. Tap one to turn it over.</span></p>
 
                 <div class="binder">
                     <div class="binder-rings" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -107,8 +75,8 @@
                         <div class="binder-bar">
                             <div class="page-tabs" role="tablist" aria-label="Binder pages">
                                 <button class="page-tab" role="tab" id="tab-1" aria-controls="page-1" aria-selected="true" type="button">Page 01 <span>Built &amp; running</span></button>
-                                <button class="page-tab" role="tab" id="tab-2" aria-controls="page-2" aria-selected="false" tabindex="-1" type="button">Page 02 <span>Concepts</span></button>
-                                <button class="page-tab" role="tab" id="tab-3" aria-controls="page-3" aria-selected="false" tabindex="-1" type="button">Page 03 <span>Sketchbook</span></button>
+                                <button class="page-tab" role="tab" id="tab-2" aria-controls="page-2" aria-selected="false" tabindex="-1" type="button">Page 02 <span>Concepts &amp; prototypes</span></button>
+                                <button class="page-tab" role="tab" id="tab-3" aria-controls="page-3" aria-selected="false" tabindex="-1" type="button">Page 03 <span>Case work</span></button>
                             </div>
                             <span class="legend"><span class="swatch swatch-foil"></span>Foil: built &amp; running <span class="swatch swatch-matte"></span>Matte: concept</span>
                         </div>
@@ -143,7 +111,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="coral" style="--art-bg:#6a5acd;">
                                     <div class="card-inner">
@@ -172,7 +139,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="sky" style="--art-bg:#e9eef6; --art-fit:cover; --art-pos:left top;">
                                     <div class="card-inner">
@@ -197,7 +163,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="lilac" style="--art-bg:#161616; --art-fit:cover; --art-pos:center;">
                                     <div class="card-inner">
@@ -222,7 +187,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="mustard" style="--art-bg:#ffffff; --art-fit:contain; --art-pos:center;">
                                     <div class="card-inner">
@@ -244,7 +208,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="stone" style="--art-bg:#ffffff; --art-fit:contain; --art-pos:center;">
                                     <div class="card-inner">
@@ -266,8 +229,6 @@
                                     </div>
                                 </article>
                             </li>
-
-
                             <li class="slot">
                                 <article class="card is-foil" data-tone="teal" style="--art-bg:#161b26; --art-fit:contain; --art-pos:center;">
                                     <div class="card-inner">
@@ -289,18 +250,16 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot slot-empty" aria-label="Empty slot, next card in progress">
                                 <span class="label">Next up</span>
                                 <span class="empty-note">Next card in progress.</span>
                             </li>
-                            <li class="slot slot-empty slot-blank" aria-hidden="true"></li>
+
                         </ul>
                         </div>
 
                         <div class="page-panel" role="tabpanel" id="page-2" aria-labelledby="tab-2" hidden>
                         <ul class="slots">
-
                             <li class="slot">
                                 <article class="card" data-tone="clay" style="--art-bg:#f7f8f9; --art-fit:cover; --art-pos:center;">
                                     <div class="card-inner">
@@ -322,7 +281,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="rose" style="--art-bg:#000000; --art-fit:cover; --art-pos:82% center;">
                                     <div class="card-inner">
@@ -344,16 +302,6 @@
                                     </div>
                                 </article>
                             </li>
-
-                            <li class="slot slot-empty" aria-label="Empty slot, next card in progress">
-                                <span class="label">Next up</span>
-                                <span class="empty-note">Next card in progress.</span>
-                            </li>
-                        </ul>
-                        </div>
-
-                        <div class="page-panel" role="tabpanel" id="page-3" aria-labelledby="tab-3" hidden>
-                        <ul class="slots">
                             <li class="slot">
                                 <article class="card" data-tone="sky" style="--art-bg:#000000; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -375,7 +323,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="mustard" style="--art-bg:#f6f8fc; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -397,7 +344,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="lilac" style="--art-bg:#0a3552; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -419,7 +365,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="sage" style="--art-bg:#3d566f; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -441,7 +386,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="coral" style="--art-bg:#f3f2fa; --art-fit:cover; --art-pos:left top;">
                                     <div class="card-inner">
@@ -463,7 +407,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="stone" style="--art-bg:#2d2b28; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -486,6 +429,11 @@
                                 </article>
                             </li>
 
+                        </ul>
+                        </div>
+
+                        <div class="page-panel" role="tabpanel" id="page-3" aria-labelledby="tab-3" hidden>
+                        <ul class="slots">
                             <li class="slot">
                                 <article class="card" data-tone="teal" style="--art-bg:#0a0a12; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -507,7 +455,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="clay" style="--art-bg:#e9ecf1; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -529,7 +476,6 @@
                                     </div>
                                 </article>
                             </li>
-
                             <li class="slot">
                                 <article class="card" data-tone="rose" style="--art-bg:#eeeef0; --art-fit:contain; --art-pos:center; --art-pad:0;">
                                     <div class="card-inner">
@@ -550,10 +496,47 @@
                                         </div>
                                     </div>
                                 </article>
+                            </li>                            <li class="slot slot-empty" aria-label="Empty slot, next card in progress">
+                                <span class="label">Next up</span>
+                                <span class="empty-note">Next card in progress.</span>
                             </li>
+
                         </ul>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about" aria-labelledby="about-title">
+            <div class="wrap about-grid">
+                <figure class="print">
+                    <span class="tape" aria-hidden="true"></span>
+                    <img src="images/headshot.jpg" alt="Portrait of Nihar Bagkar standing in a bright, glass-walled atrium" width="800" height="1200">
+                    <figcaption><span class="label">Fig. 1</span> Nihar, New York.</figcaption>
+                </figure>
+                <div class="about-copy">
+                    <p class="label">&sect; 01 &middot; About</p>
+                    <h2 id="about-title">A product builder in New York.</h2>
+                    <p class="lede">I&rsquo;m Nihar. I study Business, Technology &amp; Entrepreneurship at NYU Stern, and I spent summer 2026 as a product management intern at Microsoft. Most of what I build starts as a messy workflow that someone is tired of doing by hand.</p>
+                    <dl class="glance">
+                <div>
+                    <dt class="label">Studying</dt>
+                    <dd>NYU Stern, BS in Business, Technology &amp; Entrepreneurship. 3.88 GPA.</dd>
+                </div>
+                <div>
+                    <dt class="label">Screening</dt>
+                    <dd>75+ startups and 20+ investment memos at the Berkley Center for Entrepreneurship.</dd>
+                </div>
+                <div>
+                    <dt class="label">Automating</dt>
+                    <dd>170+ budget files at Baltimore City Public Schools, saving 100+ hours.</dd>
+                </div>
+                <div>
+                    <dt class="label">Shipping</dt>
+                    <dd>Viridian, a collectibles exchange, and UPHouse, a social app for friend groups, are live on the App Store.</dd>
+                </div>
+            </dl>
                 </div>
             </div>
         </section>
@@ -680,9 +663,9 @@
     </main>
 
     <footer class="colophon">
-        <div class="wrap colophon-row">
+        <div class="wrap wrap-wide colophon-row">
             <p>&copy; 2026 Nihar Bagkar</p>
-            <p>Set in Fraunces, Newsreader &amp; IBM Plex Mono. Hand-built, no framework.</p>
+            <p>Set in Fraunces. Hand-built, no framework.</p>
             <a href="#top">Back to top</a>
         </div>
     </footer>
