@@ -387,3 +387,63 @@ if (motionOK && "IntersectionObserver" in window) {
 } else {
     chalkLines.forEach((line) => line.classList.add("is-drawn"));
 }
+
+if (canHover && motionOK) {
+    document.querySelectorAll(".slot:not(.slot-empty) .card").forEach((card) => {
+        const slot = card.closest(".slot");
+        let suppressClickUntil = 0;
+        // Swallow the click that ends a drag so the card does not flip.
+        card.addEventListener("click", (clickEvent) => {
+            if (performance.now() > suppressClickUntil) return;
+            clickEvent.stopPropagation();
+            clickEvent.preventDefault();
+        }, true);
+        card.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0 || card.classList.contains("is-flipped")) return;
+            const start = { x: event.clientX, y: event.clientY };
+            let lastX = event.clientX;
+            let tilt = 0;
+            let dragging = false;
+
+            function move(moveEvent) {
+                const dx = moveEvent.clientX - start.x;
+                const dy = moveEvent.clientY - start.y;
+                if (!dragging) {
+                    if (Math.hypot(dx, dy) < 6) return;
+                    dragging = true;
+                    card.setPointerCapture(event.pointerId);
+                    card.classList.remove("is-returning");
+                    card.classList.add("is-dragging");
+                    slot.classList.add("is-dragging");
+                }
+                tilt = Math.max(-14, Math.min(14, tilt * 0.8 + (moveEvent.clientX - lastX) * 0.9));
+                lastX = moveEvent.clientX;
+                card.style.transform = `translate(${dx}px, ${dy}px) rotate(${tilt.toFixed(2)}deg) scale(1.08)`;
+            }
+
+            function release() {
+                card.removeEventListener("pointermove", move);
+                card.removeEventListener("pointerup", release);
+                card.removeEventListener("pointercancel", release);
+                if (!dragging) return;
+                suppressClickUntil = performance.now() + 350;
+                card.classList.remove("is-dragging");
+                card.classList.add("is-returning");
+                card.style.transform = "";
+                window.setTimeout(() => {
+                    card.classList.remove("is-returning");
+                    slot.classList.remove("is-dragging");
+                }, 650);
+                track("card-drag", "Dragged a card out of its sleeve");
+            }
+
+            card.addEventListener("pointermove", move);
+            card.addEventListener("pointerup", release);
+            card.addEventListener("pointercancel", release);
+        });
+    });
+}
+
+document.querySelectorAll(".slot-empty").forEach((slot) => {
+    slot.addEventListener("click", () => slot.classList.toggle("is-peeled"));
+});
