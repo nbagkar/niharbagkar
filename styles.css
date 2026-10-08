@@ -1875,9 +1875,13 @@ a {
 
 /* Pitch mini-game */
 
+.kickoff {
+    padding: 0 0 clamp(4rem, 9vw, 7rem);
+}
+
 .pitch {
-    margin-top: clamp(2.2rem, 5vw, 3.2rem);
-    max-width: 36rem;
+    margin-top: 2rem;
+    max-width: 48rem;
 }
 
 .pitch-head {

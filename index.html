@@ -26,7 +26,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="hub.css">
     <script>
+        (function () {
+            var classic = /[?&]view=classic\b/.test(location.search);
+            try { classic = classic || localStorage.getItem("nb-view") === "classic"; } catch (e) {}
+            if (!classic) document.documentElement.classList.add("hub");
+            setTimeout(function () {
+                if (!window.__hubReady) document.documentElement.classList.remove("hub");
+            }, 3000);
+        })();
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             document.documentElement.classList.add("js");
             setTimeout(function () {
@@ -52,6 +61,8 @@
                 </svg>
             </span>
             <p class="masthead-meta">Portfolio &middot; Vol. 01 &middot; New York &middot; 2026</p>
+            <p class="hub-stats"><span><strong>18</strong> cards</span><span><strong>2</strong> live apps</span><span><strong>Top 5</strong> of 47</span></p>
+            <button class="view-toggle" type="button" data-to="classic">Classic view</button>
             <nav class="masthead-nav" aria-label="Primary">
                 <a href="#binder">Binder</a>
                 <a href="#about">About</a>
@@ -63,6 +74,69 @@
     </header>
 
     <main id="main">
+        <section class="home" id="home" aria-label="Home screen" hidden>
+            <div class="home-grid">
+                <nav class="tiles" aria-label="Menu">
+                    <a class="tile tile-squad" href="#binder">
+                        <span class="tile-art" aria-hidden="true">
+                            <img src="images/shots/viridian-market.jpg" alt="" loading="lazy">
+                            <img src="images/SignalPath.jpg" alt="" loading="lazy">
+                            <img src="images/Cue.jpg" alt="" loading="lazy">
+                        </span>
+                        <span class="tile-kicker">Squad</span>
+                        <span class="tile-title">The binder</span>
+                        <span class="tile-sub">18 project cards on three pages</span>
+                    </a>
+                    <a class="tile tile-profile" href="#about">
+                        <span class="tile-art tile-crest" aria-hidden="true">NB</span>
+                        <span class="tile-kicker">Player</span>
+                        <span class="tile-title">Profile</span>
+                        <span class="tile-sub">About me and how I work</span>
+                    </a>
+                    <a class="tile tile-career" href="#path">
+                        <span class="tile-art tile-crests" aria-hidden="true"><i>MS</i><i>BC</i><i>BCPS</i></span>
+                        <span class="tile-kicker">Career</span>
+                        <span class="tile-title">Transfers</span>
+                        <span class="tile-sub">Microsoft, Berkley Center, BCPS</span>
+                    </a>
+                    <a class="tile tile-trophies trophy-cup" href="#index">
+                        <span class="tile-art trophy-icon" aria-hidden="true"><svg viewBox="0 0 40 44"><path class="t-fill" d="M10 4 H30 V14 A10 10 0 0 1 10 14 Z"/><path d="M10 7 H5 A5 5 0 0 0 10 17 M30 7 H35 A5 5 0 0 1 30 17 M20 24 V31"/><path class="t-fill" d="M13 31 H27 V36 H13 Z"/><path d="M9 36 H31 V40 H9 Z"/></svg></span>
+                        <span class="tile-kicker">Cabinet</span>
+                        <span class="tile-title">Trophies</span>
+                        <span class="tile-sub">Six awards, two publications</span>
+                    </a>
+                    <a class="tile tile-kickoff" href="#kickoff">
+                        <span class="tile-art tile-pitch" aria-hidden="true"><i class="tile-car"></i><i class="tile-ball"></i></span>
+                        <span class="tile-kicker">Play</span>
+                        <span class="tile-title">Kick off</span>
+                        <span class="tile-sub">Drive the car, score a goal</span>
+                    </a>
+                    <a class="tile tile-transfer" href="#contact">
+                        <span class="tile-art tile-letter" aria-hidden="true"></span>
+                        <span class="tile-kicker">Contact</span>
+                        <span class="tile-title">Transfer request</span>
+                        <span class="tile-sub">Say hello</span>
+                    </a>
+                </nav>
+                <div class="hero" data-hero></div>
+            </div>
+            <div class="home-foot">
+                <div class="ticker" aria-label="News">
+                    <ul class="ticker-track">
+                        <li>Viridian is live on the App Store</li>
+                        <li>UPHouse is live on the App Store</li>
+                        <li>SignalPath placed top five of 47 teams at a Microsoft hackathon</li>
+                        <li>Product management intern at Microsoft, summer 2026</li>
+                        <li>Winner, Uber Finance Case Competition</li>
+                        <li>Read: Reimagining Trust in the Collectibles Market</li>
+                        <li>Book: A Quest For Glory, The Journey To State Cup</li>
+                    </ul>
+                </div>
+                <p class="hub-keys" aria-hidden="true"><span><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> Move</span><span><kbd>Enter</kbd> Select</span><span><kbd>Esc</kbd> Back</span></p>
+                <button class="pack-replay" type="button">Open the pack again</button>
+            </div>
+        </section>
+
         <section class="intro" id="top">
             <div class="wrap wrap-wide intro-row">
                 <h1>I make software for money, music, and the things people <em>collect</em>.</h1>
@@ -738,18 +812,6 @@
                         <a class="link-arrow" href="https://github.com/nbagkar" target="_blank" rel="noopener">GitHub</a>
                         <a class="link-arrow" href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener">LinkedIn</a>
                     </p>
-
-                    <div class="pitch" id="pitch">
-                        <div class="pitch-head">
-                            <p class="label">Extra time</p>
-                            <p class="pitch-score" aria-live="polite"><span data-score="goals">0</span> goals &middot; <span data-score="own">0</span> own goals</p>
-                        </div>
-                        <div class="pitch-stage">
-                            <canvas class="pitch-canvas" width="640" height="360" tabindex="0" aria-label="Mini game: drive the car into the ball and score in the right-hand goal. Arrow keys or WASD to drive, Space to boost, R to reset."></canvas>
-                            <p class="pitch-stamp" aria-hidden="true"></p>
-                        </div>
-                        <p class="pitch-hint"><span class="hint-hover">Click the pitch, then drive with the arrow keys. Space boosts.</span><span class="hint-tap">Hold your finger where you want the car to go.</span></p>
-                    </div>
                 </div>
 
                 <form class="contact-form" action="https://formspree.io/f/xldnoklw" method="POST">
@@ -767,6 +829,26 @@
                 </form>
             </div>
         </section>
+
+        <section class="kickoff" id="kickoff" aria-labelledby="kickoff-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 06 &middot; Extra time</p>
+                    <h2 id="kickoff-title">Take a shot.</h2>
+                </header>
+                <div class="pitch" id="pitch">
+                    <div class="pitch-head">
+                        <p class="label">Scoreboard</p>
+                        <p class="pitch-score" aria-live="polite"><span data-score="goals">0</span> goals &middot; <span data-score="own">0</span> own goals</p>
+                    </div>
+                    <div class="pitch-stage">
+                        <canvas class="pitch-canvas" width="640" height="360" tabindex="0" aria-label="Mini game: drive the car into the ball and score in the right-hand goal. Arrow keys or WASD to drive, Space to boost, R to reset."></canvas>
+                        <p class="pitch-stamp" aria-hidden="true"></p>
+                    </div>
+                    <p class="pitch-hint"><span class="hint-hover">Click the pitch, then drive with the arrow keys. Space boosts.</span><span class="hint-tap">Hold your finger where you want the car to go.</span></p>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer class="colophon">
@@ -777,8 +859,30 @@
         </div>
     </footer>
 
+    <div class="pack-intro" hidden>
+        <div class="pack-stage">
+            <button class="pack" type="button" aria-label="Open the pack">
+                <span class="pack-strip" aria-hidden="true"></span>
+                <span class="pack-face" aria-hidden="true">
+                    <span class="pack-mark">NB</span>
+                    <span class="pack-name">Player pack</span>
+                    <span class="pack-sub">Portfolio &middot; Vol. 01</span>
+                </span>
+            </button>
+            <p class="pack-hint">Click the pack to open it.</p>
+            <div class="walkout" aria-live="polite">
+                <p class="walkout-step" data-step="city">New York</p>
+                <p class="walkout-step" data-step="position">PM</p>
+                <p class="walkout-step" data-step="club"><span class="walkout-crest">NYU</span>Stern</p>
+            </div>
+            <div class="walkout-card"></div>
+            <button class="pack-continue btn" type="button">Continue</button>
+        </div>
+        <button class="pack-skip" type="button">Skip</button>
+    </div>
     <script src="script.js"></script>
     <script src="pitch.js"></script>
+    <script src="hub.js"></script>
     <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

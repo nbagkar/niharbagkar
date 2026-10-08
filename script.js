@@ -199,6 +199,10 @@ if (pagesStage) {
     let swipeStart = null;
     let suppressClick = false;
     pagesStage.addEventListener("touchstart", (event) => {
+        if (document.documentElement.classList.contains("hub") && window.innerWidth <= 620) {
+            swipeStart = null;
+            return;
+        }
         const touch = event.touches[0];
         swipeStart = event.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
     }, { passive: true });
@@ -298,11 +302,14 @@ if (ledger) {
         ledger.style.setProperty("--line-len", `${last.y - first.y}px`);
     }
 
-    function drawLedger() {
+    let playing = false;
+
+    function drawLedger(forced) {
+        if (playing && forced === undefined) return;
         const box = ledger.getBoundingClientRect();
         const first = centers[0].y;
         const length = centers[centers.length - 1].y - first;
-        const reach = motionOK ? window.innerHeight * 0.62 - box.top - first : length;
+        const reach = forced !== undefined ? forced * length : motionOK ? window.innerHeight * 0.62 - box.top - first : length;
         const drawn = Math.max(0, Math.min(1, reach / length));
         ledger.style.setProperty("--drawn", drawn.toFixed(4));
         crests.forEach((crest, index) => {
@@ -320,6 +327,24 @@ if (ledger) {
     if (document.fonts) document.fonts.ready.then(refreshLedger);
     window.addEventListener("scroll", drawLedger, { passive: true });
     window.addEventListener("resize", refreshLedger);
+
+    window.playLedger = () => {
+        measureLedger();
+        if (!motionOK) {
+            drawLedger(1);
+            return;
+        }
+        playing = true;
+        const started = performance.now();
+        function step(now) {
+            const t = Math.min(1, (now - started) / 1400);
+            drawLedger(t < 1 ? 1 - Math.pow(1 - t, 2) : 1);
+            if (t < 1) requestAnimationFrame(step);
+            else playing = false;
+        }
+        drawLedger(0);
+        requestAnimationFrame(step);
+    };
 }
 
 const tach = document.querySelector(".tach");
@@ -371,6 +396,15 @@ if (tach) {
 
     shown = scrollProgress() * 0.88;
     setNeedle(shown);
+
+    window.revTach = (amount) => {
+        if (!motionOK) return;
+        revs = Math.max(revs, amount);
+        if (spinning) return;
+        spinning = true;
+        lastT = performance.now();
+        requestAnimationFrame(spin);
+    };
 }
 
 const chalkLines = document.querySelectorAll(".chalk");
