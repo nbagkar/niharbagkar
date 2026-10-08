@@ -2033,3 +2033,164 @@ a {
         transition: none;
     }
 }
+
+
+/* Rev counter */
+
+.tach {
+    flex: none;
+    align-self: center;
+    display: block;
+    width: 2.9rem;
+    height: auto;
+    margin: -0.3rem 0 -0.4rem -0.6rem;
+}
+
+.tach svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.tach path,
+.tach line {
+    fill: none;
+    stroke-linecap: round;
+}
+
+.tach-dial {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.tach-red {
+    stroke: var(--accent);
+    stroke-width: 4;
+}
+
+.tach-ticks {
+    stroke: var(--ink-soft);
+    stroke-width: 1.4;
+}
+
+.tach-needle {
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    transform-box: view-box;
+    transform-origin: 32px 34px;
+    transform: rotate(var(--needle, -90deg));
+}
+
+.tach-hub {
+    fill: var(--ink);
+}
+
+.tach-shift {
+    fill: color-mix(in srgb, var(--accent) 18%, var(--paper));
+    stroke: var(--ink);
+    stroke-width: 1.2;
+}
+
+.tach.is-redline .tach-shift {
+    fill: var(--accent);
+    animation: shift-light 0.5s steps(2, jump-none) infinite;
+}
+
+@keyframes shift-light {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.25;
+    }
+}
+
+@media (max-width: 620px) {
+    .masthead-row {
+        position: relative;
+    }
+
+    .tach {
+        position: absolute;
+        top: 0.7rem;
+        right: 0;
+        margin: 0;
+    }
+}
+
+/* Chalk field lines */
+
+.chalk {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    color: color-mix(in srgb, var(--ink) 38%, transparent);
+}
+
+.chalk + .path {
+    padding-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.chalk-half + .notes {
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.chalk-box {
+    margin-top: 0;
+}
+
+.chalk-corner {
+    margin-top: clamp(2rem, 5vw, 3rem);
+    margin-bottom: calc(-1 * clamp(2rem, 6vw, 4rem));
+}
+
+.chalk svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 7.5rem;
+    overflow: visible;
+}
+
+.chalk path,
+.chalk circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.4s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.chalk circle {
+    transition-delay: 0.5s;
+}
+
+.chalk .chalk-spot {
+    fill: currentColor;
+    stroke: none;
+    opacity: 1;
+    transition: opacity 0.4s ease 1.2s;
+}
+
+.js .chalk:not(.is-drawn) path,
+.js .chalk:not(.is-drawn) circle {
+    stroke-dashoffset: 1;
+}
+
+.js .chalk:not(.is-drawn) .chalk-spot {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tach.is-redline .tach-shift {
+        animation: none;
+    }
+
+    .chalk path,
+    .chalk circle,
+    .chalk .chalk-spot {
+        transition: none;
+    }
+}

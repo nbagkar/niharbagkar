@@ -321,3 +321,69 @@ if (ledger) {
     window.addEventListener("scroll", drawLedger, { passive: true });
     window.addEventListener("resize", refreshLedger);
 }
+
+const tach = document.querySelector(".tach");
+
+if (tach) {
+    let shown = 0;
+    let lastY = window.scrollY;
+    let lastT = performance.now();
+    let revs = 0;
+    let spinning = false;
+
+    function scrollProgress() {
+        const room = document.documentElement.scrollHeight - window.innerHeight;
+        return room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)) : 0;
+    }
+
+    function setNeedle(value) {
+        tach.style.setProperty("--needle", `${(-90 + 180 * value).toFixed(2)}deg`);
+        tach.classList.toggle("is-redline", scrollProgress() > 0.97);
+    }
+
+    function spin(now) {
+        const dt = Math.max(1, now - lastT);
+        const speed = Math.abs(window.scrollY - lastY) / dt;
+        lastY = window.scrollY;
+        lastT = now;
+        // Scrolling fast revs the needle past the position it settles at.
+        revs = Math.max(revs * 0.9, Math.min(0.22, speed * 0.05));
+        const target = Math.min(1, scrollProgress() * 0.88 + revs);
+        shown += (target - shown) * 0.18;
+        setNeedle(shown);
+        if (Math.abs(target - shown) > 0.002 || revs > 0.002) {
+            requestAnimationFrame(spin);
+        } else {
+            spinning = false;
+        }
+    }
+
+    window.addEventListener("scroll", () => {
+        if (!motionOK) {
+            setNeedle(scrollProgress() * 0.88);
+            return;
+        }
+        if (spinning) return;
+        spinning = true;
+        lastT = performance.now();
+        requestAnimationFrame(spin);
+    }, { passive: true });
+
+    shown = scrollProgress() * 0.88;
+    setNeedle(shown);
+}
+
+const chalkLines = document.querySelectorAll(".chalk");
+
+if (motionOK && "IntersectionObserver" in window) {
+    const chalkObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting && entry.boundingClientRect.top > 0) return;
+            entry.target.classList.add("is-drawn");
+            chalkObserver.unobserve(entry.target);
+        });
+    }, { threshold: 0.6 });
+    chalkLines.forEach((line) => chalkObserver.observe(line));
+} else {
+    chalkLines.forEach((line) => line.classList.add("is-drawn"));
+}
