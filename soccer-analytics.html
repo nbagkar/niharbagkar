@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soccer Analytics | Nihar Bagkar</title>
+    <meta name="description" content="Case file: Soccer Analytics, a football forecasting app built on free data for $0, which grades its own predictions against the bookmaker&#x27;s closing odds.">
+    <meta name="theme-color" content="#f1ead9">
+    <link rel="canonical" href="https://www.niharbagkar.com/soccer-analytics.html">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.niharbagkar.com/soccer-analytics.html">
+    <meta property="og:title" content="Soccer Analytics, a case file">
+    <meta property="og:description" content="Case file: Soccer Analytics, a football forecasting app built on free data for $0, which grades its own predictions against the bookmaker&#x27;s closing odds.">
+    <meta property="og:image" content="https://www.niharbagkar.com/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="masthead">
+        <div class="wrap masthead-row">
+            <a class="wordmark" href="index.html">Nihar Bagkar</a>
+            <p class="masthead-meta">Case file &middot; Soccer Analytics</p>
+            <nav class="masthead-nav" aria-label="Primary">
+                <a href="index.html#binder">All work</a>
+                <a href="index.html#path">Path</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="case-hero">
+            <div class="wrap">
+                <p class="label">Case file &middot; Data + Forecasting</p>
+                <h1>Soccer Analytics</h1>
+                <p class="lede">A football analytics centre built under a hard $0 rule: no paid APIs, no subscriptions, no cloud hosting. It forecasts matches and full seasons, scouts players with xG and expected threat, and measures every model against the bookmaker&rsquo;s closing line instead of assuming it works. Every data source was checked by fetching it directly before any code relied on it.</p>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://github.com/nbagkar/soccer-analytics" target="_blank" rel="noopener" data-track="case-soccer-analytics-github">View the code on GitHub</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+
+                <dl class="case-meta">
+                    <div><dt class="label">Status</dt><dd>Built and running locally, in a public repo with GitHub Actions CI.</dd></div><div><dt class="label">Built with</dt><dd>Python, DuckDB, SQLite, Polars, NumPy and SciPy, Streamlit, and Altair.</dd></div><div><dt class="label">Data</dt><dd>About 274k match results across 34 divisions from 1993 to 2026, plus 3,500 StatsBomb matches with about 89k shots.</dd></div><div><dt class="label">Scale</dt><dd>About 20k lines of source code, 610 tests, and 155 commits. Solo, from July 2026.</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="problem-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 01 &middot; The problem</p>
+                    <h2 id="problem-title">Good football analytics usually sit behind paid data.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>Free sources exist, but their real limits are rarely written down: delayed scores, no lineups, endpoints nobody documents.</p>
+                    <p>Forecasting projects also tend to report accuracy without comparing it to the obvious benchmark, the betting market.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="what-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 02 &middot; What it does</p>
+                    <h2 id="what-title">Five steps from free data to a graded forecast.</h2>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>1. Collect</strong>
+                        <p>Pulls fixtures, results, squads, and near-live scores from free sources. Each fetch is kept as an unchanged raw snapshot that can be replayed later.</p>
+                    </li>
+                    <li>
+                        <strong>2. Match</strong>
+                        <p>Matches club names across sources, such as K&ouml;ln and Cologne or PSV and PSV Eindhoven, into one canonical record per club and per match.</p>
+                    </li>
+                    <li>
+                        <strong>3. Forecast</strong>
+                        <p>Rates teams and forecasts matches with Poisson and Dixon-Coles models, and simulates full seasons 10,000 times for title, top-four, and relegation odds.</p>
+                    </li>
+                    <li>
+                        <strong>4. Grade</strong>
+                        <p>Scores every forecast walk-forward, with each match predicted from earlier data only, against base rates and the closing odds, with calibration charts.</p>
+                    </li>
+                    <li>
+                        <strong>5. Ask</strong>
+                        <p>Shows it all in a Streamlit dashboard, plus an offline, rule-based assistant that answers plain-English questions like &ldquo;Arsenal vs Chelsea?&rdquo;</p>
+                    </li>
+                </ul>
+
+                <div class="case-shots is-wide" role="list">
+                    <figure role="listitem">
+                        <img src="images/case/soccer-matchup.jpg" alt="The Predictions page&#x27;s Matchup tab for Arsenal v Chelsea, with win, draw and loss prices, expected goals, double chance, total goals and correct-score markets, and a correct-score probability heatmap" width="1200" height="1437" loading="lazy" decoding="async">
+                        <figcaption>Any Premier League matchup, with odds, goals markets, and a correct-score heatmap</figcaption>
+                    </figure>
+                    <figure role="listitem">
+                        <img src="images/case/soccer-shotmap.jpg" alt="Shot map for France v Argentina at the 2018 World Cup, with France xG of 1.64 and Argentina xG of 1.45, and each shot drawn as a circle sized by xG" width="1200" height="600" loading="lazy" decoding="async">
+                        <figcaption>Match xG and shot map from StatsBomb event data: France 4&ndash;3 Argentina, 2018 World Cup. Data: StatsBomb.</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="choices-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <p class="label">&sect; 03 &middot; Design choices</p>
+                    <h2 id="choices-title">Four rules it was built under.</h2>
+                </header>
+
+                <ul class="case-features">
+                    <li>
+                        <strong>Check sources first.</strong>
+                        <p>Every claim about a data source was confirmed by a direct fetch. Several assumptions in the original plan were wrong, and the corrections are now regression tests.</p>
+                    </li>
+                    <li>
+                        <strong>Measure before shipping.</strong>
+                        <p>Changes like Dixon-Coles maximum-likelihood fitting and team-specific home advantage were backtested, and dropped when they didn&rsquo;t help.</p>
+                    </li>
+                    <li>
+                        <strong>Use the market as the benchmark.</strong>
+                        <p>The model learns from the closing odds of matches already played, which closed about a third of its gap to the bookmaker. It never uses odds for upcoming games.</p>
+                    </li>
+                    <li>
+                        <strong>Stay local and private.</strong>
+                        <p>No LLM and no cloud. Usage logging stays on the machine, and is used to decide which features to keep or cut.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="build-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 04 &middot; Under the hood</p>
+                    <h2 id="build-title">A replayable pipeline, with its limits written down.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>Source adapters write raw snapshots, which flow into canonical match resolution, a SQLite live store, and a DuckDB analytics store. The models are Elo, ratio-method and Dixon-Coles Poisson, a shots-on-target blend, market-implied ratings, Monte Carlo season simulation, and expected threat built from StatsBomb events.</p>
+                    <p>The caveats are part of the design. Free live scores come from one undocumented source. StatsBomb data has no current-season coverage and a licence that forbids redistribution. The Premier League team-news adjustment is a prior that hasn&rsquo;t been backtested. And the model still trails the closing line.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="stands-title">
+            <div class="wrap case-split">
+                <header class="section-head">
+                    <p class="label">&sect; 05 &middot; Where it stands</p>
+                    <h2 id="stands-title">Better informed, and still behind the market.</h2>
+                </header>
+                <div class="case-prose">
+                    <p>It works end to end, with automatic data refresh. On 10,021 matches across nine leagues the model was never tuned on, market-implied ratings cut the log-loss gap to the closing line from +0.0194 to +0.0127, and all 18 leagues tested improved.</p>
+                    <p>Cloud hosting is built but paused. Next, the chat assistant is meant to become the main interface.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-cta">
+            <div class="wrap">
+                <h2>Read the code.</h2>
+                <p class="hero-links">
+                    <a class="link-arrow" href="https://github.com/nbagkar/soccer-analytics" target="_blank" rel="noopener" data-track="case-soccer-analytics-github-end">View the code on GitHub</a>
+                    <a class="link-arrow" href="index.html#binder">Back to the binder</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="colophon">
+        <div class="wrap colophon-row">
+            <p>&copy; 2026 Nihar Bagkar</p>
+            <p>Set in Fraunces. Hand-built, no framework.</p>
+            <a href="#top">Back to top</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("click", function (event) {
+            var link = event.target.closest("a[data-track]");
+            if (link && window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({ path: link.getAttribute("data-track"), title: "Clicked: " + link.textContent.trim(), event: true });
+            }
+        });
+    </script>
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
