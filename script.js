@@ -88,7 +88,7 @@ cards.forEach((card) => {
 const pageTabs = Array.from(document.querySelectorAll(".page-tab"));
 
 const pagesStage = document.querySelector(".pages");
-const TURN_MS = 620;
+const TURN_MS = 900;
 let activeTurn = null;
 
 function panelFor(tab) {
@@ -112,15 +112,34 @@ function turnPage(fromPanel, toPanel, forward) {
         panel.appendChild(shade);
         return shade;
     });
+    const flap = document.createElement("div");
+    flap.className = "turn-flap";
+    sheet.appendChild(flap);
     sheet.classList.add("is-sheet");
     under.classList.add("is-under");
     pagesStage.classList.add("is-turning");
 
-    const flat = "rotateY(0deg)";
-    const lifted = "rotateY(-92deg)";
-    const timing = { duration: TURN_MS, easing: forward ? "cubic-bezier(0.45, 0, 0.7, 0.4)" : "cubic-bezier(0.3, 0.6, 0.55, 1)", fill: "both" };
+    // Peel the free corner up first, then swing the sheet over on the ring spine.
+    const rect = sheet.getBoundingClientRect();
+    const peel = `${Math.round(Math.min(rect.width, rect.height) * 0.28)}px`;
+    const cut = (size) => `polygon(0 0, 100% 0, 100% calc(100% - ${size}), calc(100% - ${size}) 100%, 0 100%)`;
+    const frames = {
+        sheet: [
+            { transform: "rotateY(0deg)", clipPath: cut("0px"), offset: 0 },
+            { transform: "rotateY(-4deg)", clipPath: cut(peel), offset: 0.38 },
+            { transform: "rotateY(-92deg)", clipPath: cut(peel), offset: 1 },
+        ],
+        flap: [
+            { width: "0px", height: "0px", offset: 0 },
+            { width: peel, height: peel, offset: 0.38 },
+            { width: peel, height: peel, offset: 1 },
+        ],
+    };
+    const ordered = (list) => (forward ? list : list.slice().reverse().map((frame) => ({ ...frame, offset: 1 - frame.offset })));
+    const timing = { duration: TURN_MS, easing: "cubic-bezier(0.4, 0, 0.4, 1)", fill: "both" };
     const animations = [
-        sheet.animate({ transform: forward ? [flat, lifted] : [lifted, flat] }, timing),
+        sheet.animate(ordered(frames.sheet), timing),
+        flap.animate(ordered(frames.flap), timing),
         shades[0].animate({ opacity: forward ? [0, 1] : [1, 0] }, timing),
         shades[1].animate({ opacity: forward ? [1, 0] : [0, 1] }, timing),
     ];
@@ -129,6 +148,7 @@ function turnPage(fromPanel, toPanel, forward) {
         animations,
         cleanup() {
             shades.forEach((shade) => shade.remove());
+            flap.remove();
             sheet.classList.remove("is-sheet");
             under.classList.remove("is-under");
             pagesStage.classList.remove("is-turning");

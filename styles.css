@@ -1721,6 +1721,19 @@ a {
     box-shadow: 1.5rem 0 2.5rem -1rem rgba(0, 0, 0, 0.6);
 }
 
+.turn-flap {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 21;
+    width: 0;
+    height: 0;
+    background: linear-gradient(135deg, #c9c1a8 0%, #f3eddc 55%, #fffdf6 100%);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+    pointer-events: none;
+}
+
 .pages.is-turning .page-panel {
     pointer-events: none;
 }
@@ -1800,8 +1813,10 @@ a {
 }
 
 .p-stats {
+    flex: 1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: space-evenly;
     gap: 2.4cqw 3cqw;
     padding-top: 2.6cqw;
     border-top: 0.5cqw solid var(--ink);
@@ -1810,6 +1825,7 @@ a {
 .p-stats div {
     display: flex;
     flex-direction: column-reverse;
+    justify-content: flex-end;
     gap: 0.4cqw;
 }
 

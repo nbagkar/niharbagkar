@@ -7,10 +7,10 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const W = 640;
-    const H = 360;
-    const FIELD = { left: 36, right: 604, top: 16, bottom: 344 };
-    const MOUTH = { top: 128, bottom: 232 };
+    let W = 640;
+    let H = 360;
+    const FIELD = { left: 0, right: 0, top: 0, bottom: 0 };
+    const MOUTH = { top: 0, bottom: 0 };
     const GOAL_DEPTH = 26;
     const CAR = { hx: 17, hy: 9 };
     const BALL_R = 11;
@@ -38,8 +38,20 @@
         }
     }
 
+    function setGeometry(width, height) {
+        W = width;
+        H = height;
+        FIELD.left = 36;
+        FIELD.right = W - 36;
+        FIELD.top = 16;
+        FIELD.bottom = H - 16;
+        MOUTH.top = H / 2 - 52;
+        MOUTH.bottom = H / 2 + 52;
+        canvas.style.aspectRatio = `${W} / ${H}`;
+    }
+
     function kickoff() {
-        car.x = 210;
+        car.x = W / 2 - 110;
         car.y = H / 2;
         car.angle = 0;
         car.speed = 0;
@@ -60,6 +72,13 @@
     function resize() {
         const dpr = window.devicePixelRatio || 1;
         const cssWidth = canvas.clientWidth || W;
+        const compact = cssWidth < 520;
+        if (compact !== (W === 440)) {
+            setGeometry(compact ? 440 : 640, compact ? 300 : 360);
+            trail.length = 0;
+            freezeUntil = 0;
+            kickoff();
+        }
         canvas.width = Math.round(cssWidth * dpr);
         canvas.height = Math.round((cssWidth * dpr * H) / W);
         scale = canvas.width / W;
@@ -266,8 +285,8 @@
 
         [FIELD.left, FIELD.right].forEach((lineX) => {
             const dir = lineX === FIELD.left ? 1 : -1;
-            ctx.strokeRect(Math.min(lineX, lineX + dir * 86), 92, 86, 176);
-            ctx.strokeRect(Math.min(lineX, lineX + dir * 34), 136, 34, 88);
+            ctx.strokeRect(Math.min(lineX, lineX + dir * 86), H / 2 - 88, 86, 176);
+            ctx.strokeRect(Math.min(lineX, lineX + dir * 34), H / 2 - 44, 34, 88);
             ctx.beginPath();
             ctx.arc(lineX + dir * 64, H / 2, 2.5, 0, Math.PI * 2);
             ctx.fill();
@@ -489,6 +508,7 @@
         });
     });
 
+    setGeometry(640, 360);
     kickoff();
     resize();
 
