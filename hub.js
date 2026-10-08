@@ -22,7 +22,7 @@
         kickoff: "Kick off",
         contact: "Transfer request",
     };
-    const ALIASES = { top: "home", main: "home", notes: "about", pitch: "kickoff" };
+    const ALIASES = { top: "home", main: "home", notes: "about", pitch: "kickoff", squad: "binder", formation: "binder" };
     let current = null;
 
     function count(name, title) {
@@ -89,7 +89,10 @@
         document.title = id === "home" ? "Nihar Bagkar" : `${SCREENS[id]} · Nihar Bagkar`;
         if (window.revTach) window.revTach(id === "home" ? 0.25 : 0.6);
 
-        if (id === "binder") redeal();
+        if (id === "binder") {
+            redeal();
+            if (window.dealFormation) window.setTimeout(window.dealFormation, 0);
+        }
         if (id === "path" && window.playLedger) window.setTimeout(window.playLedger, 120);
 
         if (id === "home") {
