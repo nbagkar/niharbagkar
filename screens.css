@@ -1436,6 +1436,97 @@
     animation-delay: 180ms;
 }
 
+/* Kick off: bot difficulty and car colour */
+
+.pitch-setup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1.5rem;
+    margin-bottom: 0.7rem;
+}
+
+.pitch-setup fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.pitch-setup legend {
+    float: left;
+    margin-right: 0.4rem;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.pitch-levels {
+    padding: 0.2rem;
+}
+
+.pitch-seg input,
+.pitch-swatch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pitch-seg span {
+    display: inline-block;
+    padding: 0.15rem 0.85rem;
+    background: var(--paper-light);
+    border: 1.5px solid var(--ink);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pitch-seg input:checked + span {
+    color: var(--paper-light);
+    background: var(--ink);
+}
+
+.pitch-levels:disabled .pitch-seg span {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pitch-levels:disabled .pitch-seg input:checked + span {
+    opacity: 1;
+}
+
+.pitch-swatch span {
+    display: block;
+    width: 1.7rem;
+    height: 1.7rem;
+    background: var(--swatch);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2px var(--paper-light);
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.pitch-swatch span:hover {
+    transform: scale(1.1);
+}
+
+.pitch-swatch input:checked + span {
+    box-shadow: inset 0 0 0 2px var(--paper-light), 0 0 0 3px var(--accent);
+    transform: scale(1.12);
+}
+
+.pitch-seg input:focus-visible + span,
+.pitch-swatch input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
 /* Kick off: arcade overlay */
 
 .pitch-overlay {

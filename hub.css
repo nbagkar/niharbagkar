@@ -279,8 +279,29 @@ kbd {
 /* Kick off: fit the pitch to the screen */
 
 .hub .kickoff .pitch {
-    max-width: min(100%, calc((100dvh - 30.5rem) * 16 / 9));
+    /* Everything around the canvas takes --pitch-chrome of the window; the
+       setup row and scoreboard keep a minimum width so they never wrap. */
+    --pitch-chrome: 27.5rem;
+    --pitch-w: calc((100dvh - var(--pitch-chrome)) * 16 / 9);
+    max-width: min(100%, max(36rem, var(--pitch-w)));
     margin: 1.2rem auto 0;
+}
+
+.hub .kickoff .pitch-stage {
+    max-width: var(--pitch-w);
+    margin: 0 auto;
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+    .hub .kickoff .section-head,
+    .hub .kickoff .pitch-hint {
+        display: none;
+    }
+
+    .hub .kickoff .pitch {
+        --pitch-chrome: 19rem;
+        margin-top: 0.4rem;
+    }
 }
 
 /* Home */
