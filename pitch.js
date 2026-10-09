@@ -32,13 +32,14 @@
 
     // How the bot plays at each level: how often it rethinks (ms), how far
     // ahead it reads the ball (s), how sloppy its aim is (px), how sharply
-    // it steers, its engine power, how often it boosts, whether it falls
-    // back to defend, how lined up it must be to shoot, and whether it aims
-    // past the player's car. Tuned against a simulated ball-chasing player.
+    // it steers, its engine power, how often it boosts and whether it also
+    // boosts while chasing, whether it falls back to defend or keeps goal,
+    // how lined up it must be to shoot, whether it aims past the player's
+    // car, and its reaction pause at each kickoff (ms).
     const LEVELS = {
-        easy: { name: "Easy", think: 500, lead: 0, noise: 110, steer: 1.6, power: 0.62, boost: 0, defends: false, lineUp: 0.2, aims: false },
-        medium: { name: "Medium", think: 110, lead: 0.15, noise: 28, steer: 2.6, power: 0.92, boost: 0.5, defends: true, lineUp: 0.25, aims: true },
-        hard: { name: "Hard", think: 40, lead: 0.3, noise: 6, steer: 3.4, power: 1.08, boost: 1, defends: true, lineUp: 0.2, aims: true },
+        easy: { name: "Easy", think: 500, lead: 0, noise: 110, steer: 1.6, power: 0.62, boost: 0, chaseBoost: false, defends: false, keeps: false, lineUp: 0.2, aims: false, react: 400 },
+        medium: { name: "Medium", think: 110, lead: 0.15, noise: 28, steer: 2.6, power: 0.92, boost: 0.5, chaseBoost: false, defends: true, keeps: false, lineUp: 0.25, aims: true, react: 250 },
+        hard: { name: "Hard", think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.18, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 150 },
     };
 
     const player = { x: 0, y: 0, angle: 0, speed: 0, power: 1 };
@@ -290,6 +291,7 @@
         bot.target = null;
         bot.nextThink = 0;
         bot.reverseUntil = 0;
+        bot.fresh = true;
         ball.x = W / 2;
         ball.y = H / 2;
         ball.vx = 0;
@@ -394,6 +396,19 @@
             return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3, true);
         }
 
+        // Goalkeeping: the ball is near the bot's goal and the player will
+        // reach it first, so stand between the ball and the goal.
+        if (skill.keeps && bx > W * 0.6) {
+            const playerGap = Math.hypot(ball.x - player.x, ball.y - player.y);
+            if (playerGap < dist - 10) {
+                const gx = FIELD.right;
+                const gy = H / 2;
+                const span = Math.hypot(bx - gx, by - gy) || 1;
+                const reach = Math.min(60, span * 0.5);
+                return inField(gx + ((bx - gx) / span) * reach, gy + ((by - gy) / span) * reach, false);
+            }
+        }
+
         // Beaten (the ball is between the bot and its own goal): get back
         // goal-side, going round the ball rather than through it.
         if (skill.defends && bx > bot.x + 15 && bx > W * 0.45) {
@@ -423,6 +438,13 @@
         if (mode !== "match" || freezeUntil) return { throttle: 0, steer: 0, boost: false };
         const skill = LEVELS[level];
         bot.power = skill.power;
+        // A beat to react at each kickoff, like a person would, so a faster
+        // bot cannot simply win every restart.
+        if (bot.fresh) {
+            bot.fresh = false;
+            bot.holdUntil = now + skill.react;
+        }
+        if (now < bot.holdUntil) return { throttle: 0, steer: 0, boost: false };
         if (now >= bot.nextThink || !bot.target) {
             bot.target = botTarget(skill);
             bot.nextThink = now + skill.think;
@@ -445,7 +467,11 @@
         else if (bot.target.attack) throttle = 1;
         else if (turn > 1) throttle = 0.35;
         else throttle = aim.distance < 40 ? 0.5 : 1;
-        const boost = bot.target.attack && turn < 0.25 && aim.distance > 50 && Math.random() < skill.boost;
+        // Players can hold boost the whole game; the hard bot does the same
+        // whenever it is heading roughly where it wants to go.
+        const lined = turn < (skill.chaseBoost ? 0.5 : 0.25);
+        const wantsBoost = bot.target.attack ? aim.distance > 50 : skill.chaseBoost && aim.distance > 60;
+        const boost = throttle > 0 && lined && wantsBoost && Math.random() < skill.boost;
         return { throttle, steer: throttle < 0 ? -aim.steer : aim.steer, boost };
     }
 
