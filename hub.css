@@ -1513,7 +1513,6 @@ kbd {
     line-height: 1.35;
 }
 
-.scout-meta,
 .scout-hint {
     margin-top: 0.3rem;
     font-style: italic;
