@@ -162,10 +162,12 @@
 
     setTab("overview", false);
 
-    // Transfers: one club at a time, stepped along a rail.
+    // Transfers: one club at a time, stepped along a rail. Classic view's
+    // ledger lists the newest first; the transfer history runs oldest to
+    // newest, so it reads as a career moving forward.
 
     const path = document.getElementById("path");
-    const clubs = Array.from(path.querySelectorAll(".ledger li")).map((item) => {
+    const clubs = Array.from(path.querySelectorAll(".ledger li")).reverse().map((item) => {
         const heading = item.querySelector("h3").textContent.trim();
         const comma = heading.indexOf(", ");
         return {
@@ -180,12 +182,12 @@
     const tx = el("div", "tx");
     tx.innerHTML = `
         <div class="tx-stage">
-            <button class="tx-nav" type="button" data-step="-1" aria-label="Newer club"><span aria-hidden="true">&larr;</span></button>
+            <button class="tx-nav" type="button" data-step="-1" aria-label="Earlier club"><span aria-hidden="true">&larr;</span></button>
             <div class="tx-window"><article class="tx-card" aria-live="polite"></article></div>
-            <button class="tx-nav" type="button" data-step="1" aria-label="Older club"><span aria-hidden="true">&rarr;</span></button>
+            <button class="tx-nav" type="button" data-step="1" aria-label="Later club"><span aria-hidden="true">&rarr;</span></button>
         </div>
         <div class="tx-rail-wrap">
-            <ol class="tx-rail" aria-label="Clubs, newest first"></ol>
+            <ol class="tx-rail" aria-label="Clubs, oldest first"></ol>
         </div>
         <p class="tx-hint"><span class="hint-hover"><kbd>&larr;</kbd><kbd>&rarr;</kbd> Step through clubs</span><span class="hint-tap">Swipe the card to step through clubs</span></p>`;
     path.querySelector(".wrap").appendChild(tx);
@@ -193,23 +195,25 @@
     const txCard = tx.querySelector(".tx-card");
     const rail = tx.querySelector(".tx-rail");
     rail.style.setProperty("--n", String(clubs.length));
+    const latest = clubs.length - 1;
     clubs.forEach((club, index) => {
         const item = el("li");
         const node = el("button", "tx-node");
         node.type = "button";
         node.dataset.index = String(index);
         node.style.setProperty("--i", String(index));
-        node.append(el("span", `tx-crest${index === 0 ? " is-accent" : ""}`, club.crest), el("span", "tx-node-when", club.when));
+        node.append(el("span", `tx-crest${index === latest ? " is-accent" : ""}`, club.crest), el("span", "tx-node-when", club.when));
         node.setAttribute("aria-label", `${club.club}, ${club.when}`);
         item.appendChild(node);
         rail.appendChild(item);
     });
     const nodes = Array.from(rail.querySelectorAll(".tx-node"));
-    let clubIndex = 0;
+    // Open on the most recent club, with the rail filled in behind it.
+    let clubIndex = latest;
 
     function renderClub(index) {
         const club = clubs[index];
-        const crest = el("span", `tx-big-crest${index === 0 ? " is-accent" : ""}`, club.crest);
+        const crest = el("span", `tx-big-crest${index === latest ? " is-accent" : ""}`, club.crest);
         crest.setAttribute("aria-hidden", "true");
         const copy = el("div", "tx-copy");
         const meta = el("p", "tx-meta");
@@ -278,7 +282,7 @@
         },
     };
 
-    showClub(0, 0);
+    showClub(latest, 0);
 
     // Trophies: a lit cabinet; pick a piece to see its plaque.
 
