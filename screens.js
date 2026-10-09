@@ -306,11 +306,9 @@
     cab.innerHTML = `
         <div class="cab-case">
             <p class="cab-label">Awards</p>
-            <div class="cab-row" data-row="0"></div>
-            <div class="cab-row" data-row="1"></div>
-            <div class="cab-row" data-row="2"></div>
+            <div class="cab-awards"></div>
             <p class="cab-label">Publications</p>
-            <div class="cab-row cab-books" data-row="3"></div>
+            <div class="cab-row cab-books"></div>
         </div>
         <aside class="cab-plaque" aria-live="polite">
             <div class="cab-spot"><span class="cab-big"></span></div>
@@ -343,10 +341,32 @@
         }
         button.appendChild(el("span", "cab-new", "New"));
         button.setAttribute("aria-label", `${piece.name}, ${piece.where}`);
-        const row = piece.kind === "book" ? 3 : Math.floor(i / 3);
-        cab.querySelector(`[data-row="${row}"]`).appendChild(button);
+        if (piece.kind === "book") cab.querySelector(".cab-books").appendChild(button);
         button.addEventListener("click", () => pick(i, true));
         return button;
+    });
+
+    // Awards go three to a shelf with name plates, or five to a shelf with
+    // just the trophies when the window is too short for three shelves.
+    const compactShelves = window.matchMedia("(max-height: 900px) and (min-width: 761px)");
+    const awardItems = items.filter((item, i) => pieces[i].kind === "award");
+
+    function layoutShelves() {
+        const perRow = compactShelves.matches ? 5 : 3;
+        const holder = cab.querySelector(".cab-awards");
+        cab.dataset.perRow = String(perRow);
+        holder.replaceChildren();
+        for (let start = 0; start < awardItems.length; start += perRow) {
+            const row = el("div", "cab-row");
+            row.append(...awardItems.slice(start, start + perRow));
+            holder.appendChild(row);
+        }
+    }
+
+    layoutShelves();
+    compactShelves.addEventListener("change", () => {
+        layoutShelves();
+        fitScreen();
     });
     let picked = 0;
 
@@ -402,7 +422,7 @@
             pick(picked, false);
         },
         key(event) {
-            const rows = [0, 1, 2].map((row) => items.filter((item) => item.parentElement.dataset.row === String(row)));
+            const rows = Array.from(cab.querySelectorAll(".cab-row")).map((row) => items.filter((item) => item.parentElement === row));
             const current = items[picked];
             const row = rows.findIndex((list) => list.includes(current));
             const col = rows[row].indexOf(current);

@@ -849,6 +849,26 @@
     box-shadow: 0 12px 14px -8px rgba(0, 0, 0, 0.75);
 }
 
+/* Five to a shelf: one spotlight over each trophy. */
+.cab[data-per-row="5"] .cab-awards .cab-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.3rem;
+    background:
+        radial-gradient(ellipse 14% 95% at 10% 0, rgba(255, 236, 170, 0.2), transparent),
+        radial-gradient(ellipse 14% 95% at 30% 0, rgba(255, 236, 170, 0.2), transparent),
+        radial-gradient(ellipse 14% 95% at 50% 0, rgba(255, 236, 170, 0.2), transparent),
+        radial-gradient(ellipse 14% 95% at 70% 0, rgba(255, 236, 170, 0.2), transparent),
+        radial-gradient(ellipse 14% 95% at 90% 0, rgba(255, 236, 170, 0.2), transparent);
+}
+
+.cab[data-per-row="5"] .cab-awards .cab-plate {
+    display: none;
+}
+
+.cab[data-per-row="5"] .cab-awards .cab-item {
+    padding: 1.3rem 0.2rem 0.6rem;
+}
+
 .cab-books {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 66%;
