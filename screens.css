@@ -1476,6 +1476,10 @@
     margin-top: 0.4rem;
 }
 
+.po-actions[hidden] {
+    display: none;
+}
+
 .po-actions .btn {
     margin-top: 0;
     color: var(--ink);
