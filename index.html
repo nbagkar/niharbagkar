@@ -27,6 +27,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="hub.css">
+    <link rel="stylesheet" href="screens.css">
     <script>
         (function () {
             var classic = /[?&]view=classic\b/.test(location.search);
@@ -660,19 +661,19 @@
                     <dl class="glance">
                 <div>
                     <dt class="label">Studying</dt>
-                    <dd>NYU Stern, BS in Business, Technology &amp; Entrepreneurship. 3.88 GPA.</dd>
+                    <dd><b class="glance-big" aria-hidden="true"><span data-count="3.88" data-decimals="2">3.88</span> <i>GPA</i></b>NYU Stern, BS in Business, Technology &amp; Entrepreneurship. 3.88 GPA.</dd>
                 </div>
                 <div>
                     <dt class="label">Screening</dt>
-                    <dd>75+ startups and 20+ investment memos at the Berkley Center for Entrepreneurship.</dd>
+                    <dd><b class="glance-big" aria-hidden="true"><span data-count="75">75</span>+ <i>startups</i></b>75+ startups and 20+ investment memos at the Berkley Center for Entrepreneurship.</dd>
                 </div>
                 <div>
                     <dt class="label">Automating</dt>
-                    <dd>170+ budget files at Baltimore City Public Schools, saving 100+ hours.</dd>
+                    <dd><b class="glance-big" aria-hidden="true"><span data-count="170">170</span>+ <i>budget files</i></b>170+ budget files at Baltimore City Public Schools, saving 100+ hours.</dd>
                 </div>
                 <div>
                     <dt class="label">Shipping</dt>
-                    <dd>Viridian, a collectibles exchange, and UPHouse, a social app for friend groups, are live on the App Store.</dd>
+                    <dd><b class="glance-big" aria-hidden="true"><span data-count="2">2</span> <i>live apps</i></b>Viridian, a collectibles exchange, and UPHouse, a social app for friend groups, are live on the App Store.</dd>
                 </div>
             </dl>
                     <p class="about-cta"><a class="btn" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener" data-track="about-resume">Resume (PDF) <span aria-hidden="true">&nearr;</span></a></p>
@@ -861,7 +862,8 @@
                 <div class="pitch" id="pitch">
                     <div class="pitch-head">
                         <p class="label">Scoreboard</p>
-                        <p class="pitch-score" aria-live="polite"><span data-score="goals">0</span> goals &middot; <span data-score="own">0</span> own goals</p>
+                        <p class="pitch-clock" hidden><span data-score="clock">1:00</span></p>
+                        <p class="pitch-score" aria-live="polite"><span data-score="goals">0</span> <span data-word="goal">goals</span> &middot; <span data-score="own">0</span> own <span data-word="own">goals</span><span class="pitch-best" hidden> &middot; best <span data-score="best">0</span></span></p>
                     </div>
                     <div class="pitch-stage">
                         <canvas class="pitch-canvas" width="640" height="360" tabindex="0" aria-label="Mini game: drive the car into the ball and score in the right-hand goal. Arrow keys or WASD to drive, Space to boost, R to reset."></canvas>
@@ -905,6 +907,7 @@
     <script src="script.js"></script>
     <script src="pitch.js"></script>
     <script src="sound.js"></script>
+    <script src="screens.js"></script>
     <script src="hub.js"></script>
     <script src="formation.js"></script>
     <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

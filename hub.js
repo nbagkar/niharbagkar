@@ -92,6 +92,116 @@
         dealPanel(panel);
     }
 
+    // Warp: the chosen tile grows into the screen while the screen's name
+    // sweeps across, the way a game menu cuts between screens.
+
+    const warpEl = document.createElement("div");
+    warpEl.className = "warp";
+    warpEl.hidden = true;
+    warpEl.setAttribute("aria-hidden", "true");
+    warpEl.innerHTML = '<span class="warp-band"></span><span class="warp-title"><span class="warp-kicker"></span><span class="warp-name"></span></span>';
+    document.body.appendChild(warpEl);
+    let warpAnims = [];
+    let warpTimer = 0;
+    let arriveTimer = 0;
+    const WARP_GROW = 420;
+    const WARP_REVEAL = 640;
+
+    function tileFor(id) {
+        return tiles.find((tile) => tile.hash === `#${id}`);
+    }
+
+    function box(rect) {
+        return { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` };
+    }
+
+    function stopWarp() {
+        window.clearTimeout(warpTimer);
+        warpAnims.forEach((animation) => animation.cancel());
+        warpAnims = [];
+        warpEl.hidden = true;
+    }
+
+    function warp(from, to) {
+        stopWarp();
+        if (!motion || !from) return 0;
+        const named = to === "home" ? from : to;
+        const tile = tileFor(named);
+        const sheet = document.getElementById(named).getBoundingClientRect();
+        const tileBox = tile ? tile.getBoundingClientRect() : sheet;
+        warpEl.querySelector(".warp-kicker").textContent = tile ? tile.querySelector(".tile-kicker").textContent : "";
+        warpEl.querySelector(".warp-name").textContent = tile ? tile.querySelector(".tile-title").textContent : SCREENS[named];
+        warpEl.classList.toggle("is-dark", named === "binder");
+        warpEl.hidden = false;
+        const ease = "cubic-bezier(0.7, 0, 0.2, 1)";
+        const band = warpEl.querySelector(".warp-band");
+        const title = warpEl.querySelector(".warp-title");
+
+        if (to === "home") {
+            warpEl.classList.add("is-back");
+            warpAnims = [
+                warpEl.animate([{ ...box(sheet), opacity: 1 }, { ...box(tileBox), opacity: 1, offset: 0.85 }, { ...box(tileBox), opacity: 0 }], { duration: 420, easing: ease, fill: "both" }),
+                title.animate([{ opacity: 1 }, { opacity: 0, offset: 0.35 }, { opacity: 0 }], { duration: 420, fill: "both" }),
+            ];
+            if (tile) {
+                tile.classList.remove("is-landing");
+                window.setTimeout(() => tile.classList.add("is-landing"), 360);
+                window.setTimeout(() => tile.classList.remove("is-landing"), 900);
+            }
+            warpAnims[0].onfinish = stopWarp;
+            warpTimer = window.setTimeout(stopWarp, 800);
+            return 0;
+        }
+
+        warpEl.classList.remove("is-back");
+        const total = WARP_REVEAL + 260;
+        const at = (ms) => ms / total;
+        warpAnims = [
+            warpEl.animate([
+                { ...box(from === "home" ? tileBox : sheet), opacity: from === "home" ? 1 : 0, offset: 0 },
+                { ...box(sheet), opacity: 1, offset: at(from === "home" ? WARP_GROW : 160) },
+                { ...box(sheet), opacity: 1, offset: at(WARP_REVEAL) },
+                { ...box(sheet), opacity: 0, offset: 1 },
+            ], { duration: total, easing: ease, fill: "both" }),
+            band.animate([
+                { transform: "translateX(-120%) skewX(-18deg)", offset: 0 },
+                { transform: "translateX(-120%) skewX(-18deg)", offset: at(120) },
+                { transform: "translateX(260%) skewX(-18deg)", offset: at(WARP_REVEAL) },
+                { transform: "translateX(260%) skewX(-18deg)", offset: 1 },
+            ], { duration: total, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "both" }),
+            title.animate([
+                { opacity: 0, transform: "translateX(-8%) scale(1.2)", offset: 0 },
+                { opacity: 0, transform: "translateX(-8%) scale(1.2)", offset: at(200) },
+                { opacity: 1, transform: "translateX(0) scale(1.45)", offset: at(420) },
+                { opacity: 1, transform: "translateX(2%) scale(1.5)", offset: at(WARP_REVEAL) },
+                { opacity: 0, transform: "translateX(6%) scale(1.55)", offset: 1 },
+            ], { duration: total, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)", fill: "both" }),
+        ];
+        warpAnims[0].onfinish = stopWarp;
+        // Paused timelines (a hidden tab) must not leave the warp on screen.
+        warpTimer = window.setTimeout(stopWarp, total + 400);
+        return WARP_REVEAL;
+    }
+
+    // Each screen gets told when it is actually visible, after the warp.
+    function arrive(id, previous, wait) {
+        window.clearTimeout(arriveTimer);
+        const section = document.getElementById(id);
+        if (id !== "home") section.classList.remove("is-arriving");
+        arriveTimer = window.setTimeout(() => {
+            if (id === "binder") {
+                // A direct link lands on a settled lineup; only a visit from the menu deals it.
+                if (previous) redeal();
+                if (window.dealFormation) window.dealFormation(Boolean(previous));
+            }
+            if (id !== "home" && motion) {
+                void section.offsetWidth;
+                section.classList.add("is-arriving");
+            }
+            window.dispatchEvent(new CustomEvent("hub:screen", { detail: { id, previous } }));
+        }, wait);
+    }
+
     function show(id) {
         if (id === current) return;
         const previous = current;
@@ -103,16 +213,19 @@
         document.title = id === "home" ? "Nihar Bagkar" : `${SCREENS[id]} · Nihar Bagkar`;
         if (window.revTach) window.revTach(id === "home" ? 0.25 : 0.6);
 
-        if (id === "binder") {
-            // A direct link lands on a settled lineup; only a visit from the menu deals it.
-            if (previous) redeal();
-            window.setTimeout(() => window.dealFormation && window.dealFormation(Boolean(previous)), 0);
+        // The player card lives on the home screen and walks over to the profile.
+        const profileSlot = about.querySelector(".pf-card");
+        if (profileSlot) {
+            if (id === "about") profileSlot.appendChild(playerWrap);
+            else if (playerWrap.parentElement !== hero) hero.appendChild(playerWrap);
         }
-        if (id === "path" && window.playLedger) window.setTimeout(window.playLedger, 120);
+
+        const wait = warp(previous, id);
+        arrive(id, previous, wait);
 
         if (previous) sound(id === "home" ? "back" : "select");
         if (id === "home") {
-            focusTile(tiles.find((tile) => tile.hash === `#${previous}`) || tiles[0], true);
+            focusTile(tileFor(previous) || tiles[0], true);
         } else {
             const section = document.getElementById(id);
             // The browser's own jump to #id can scroll the sheet; undo it.
@@ -121,7 +234,7 @@
                 section.scrollTop = 0;
                 document.documentElement.scrollTop = 0;
             });
-            const target = id === "kickoff" ? section.querySelector(".pitch-canvas") : section.querySelector(".screen-back");
+            const target = section.querySelector("[data-autofocus]:not([hidden])") || section.querySelector(".screen-back");
             window.setTimeout(() => target.focus({ preventScroll: true }), 60);
         }
         if (previous) count(`screen-${id}`, `Opened screen: ${SCREENS[id]}`);
@@ -147,6 +260,8 @@
     }
 
     function leaveHub() {
+        stopWarp();
+        window.clearTimeout(arriveTimer);
         root.classList.remove("hub");
         home.hidden = true;
         playerSlot.after(playerWrap);

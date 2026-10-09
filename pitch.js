@@ -4,6 +4,9 @@
 
     const canvas = root.querySelector(".pitch-canvas");
     const stamp = root.querySelector(".pitch-stamp");
+    const stage = root.querySelector(".pitch-stage");
+    const clock = root.querySelector(".pitch-clock");
+    const bestWrap = root.querySelector(".pitch-best");
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -31,6 +34,151 @@
     let running = false;
     let last = 0;
     let scale = 1;
+
+    // Arcade: a 60-second match with a countdown and a saved best score.
+    // "idle" shows the menu, "count" the 3-2-1, "match" the clock, "over"
+    // the result; "free" is the old open pitch.
+    const MATCH_MS = 60000;
+    let mode = "idle";
+    let matchEnd = 0;
+    let shownSeconds = -1;
+    let best = 0;
+    let countTimers = [];
+    try {
+        best = Number(localStorage.getItem("nb-best")) || 0;
+    } catch (error) {
+        /* Private mode: the best score lasts for this visit only. */
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "pitch-overlay";
+    overlay.innerHTML = `<p class="po-big"></p><p class="po-sub"></p>
+        <p class="po-actions"><button class="btn po-start" type="button"></button><button class="po-free" type="button">Free play</button></p>`;
+    stage.appendChild(overlay);
+    const startButton = overlay.querySelector(".po-start");
+    const freeButton = overlay.querySelector(".po-free");
+
+    function sound(name) {
+        if (window.sfx) window.sfx(name);
+    }
+
+    function formatClock(ms) {
+        const seconds = Math.max(0, Math.ceil(ms / 1000));
+        return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+    }
+
+    function setOverlay(big, sub, startLabel) {
+        overlay.hidden = false;
+        overlay.classList.remove("is-counting");
+        overlay.querySelector(".po-big").textContent = big;
+        overlay.querySelector(".po-sub").textContent = sub;
+        overlay.querySelector(".po-actions").hidden = !startLabel;
+        if (startLabel) startButton.textContent = startLabel;
+        startButton.toggleAttribute("data-autofocus", Boolean(startLabel));
+        canvas.removeAttribute("data-autofocus");
+    }
+
+    function hideOverlay() {
+        overlay.hidden = true;
+        startButton.removeAttribute("data-autofocus");
+        canvas.setAttribute("data-autofocus", "");
+    }
+
+    function showBest() {
+        root.querySelector('[data-score="best"]').textContent = best;
+        bestWrap.hidden = best === 0;
+    }
+
+    function setScore(goals, own) {
+        score.goals = goals;
+        score.own = own;
+        root.querySelector('[data-score="goals"]').textContent = score.goals;
+        root.querySelector('[data-score="own"]').textContent = score.own;
+        root.querySelector('[data-word="goal"]').textContent = score.goals === 1 ? "goal" : "goals";
+        root.querySelector('[data-word="own"]').textContent = score.own === 1 ? "goal" : "goals";
+    }
+
+    function idle() {
+        mode = "idle";
+        setOverlay("Kick off", "A 60-second match. Drive the car into the ball and score in the red goal.", "Start match");
+    }
+
+    function startMatch() {
+        countTimers.forEach(window.clearTimeout);
+        countTimers = [];
+        mode = "count";
+        setScore(0, 0);
+        freezeUntil = 0;
+        trail.length = 0;
+        kickoff();
+        draw(performance.now());
+        clock.hidden = false;
+        clock.classList.remove("is-low");
+        root.querySelector('[data-score="clock"]').textContent = formatClock(MATCH_MS);
+        overlay.querySelector(".po-actions").hidden = true;
+        overlay.querySelector(".po-sub").textContent = "";
+        overlay.hidden = false;
+        overlay.classList.add("is-counting");
+        canvas.focus({ preventScroll: true });
+        const big = overlay.querySelector(".po-big");
+        const beats = ["3", "2", "1", "Go!"];
+        const step = motionOn() ? 700 : 0;
+        beats.forEach((beat, i) => {
+            countTimers.push(window.setTimeout(() => {
+                big.textContent = beat;
+                overlay.classList.remove("is-counting");
+                void overlay.offsetWidth;
+                overlay.classList.add("is-counting");
+                sound(i === beats.length - 1 ? "go" : "tick");
+            }, i * step));
+        });
+        countTimers.push(window.setTimeout(() => {
+            mode = "match";
+            matchEnd = performance.now() + MATCH_MS;
+            shownSeconds = -1;
+            hideOverlay();
+            canvas.focus({ preventScroll: true });
+            wake();
+        }, beats.length * step - (step ? 250 : 0)));
+        started = true;
+        track("pitch-match", "Started a 60-second match");
+    }
+
+    function endMatch() {
+        mode = "over";
+        keys.clear();
+        pointer.active = false;
+        sound("whistle");
+        const goals = score.goals;
+        const record = goals > best;
+        if (record) {
+            best = goals;
+            try {
+                localStorage.setItem("nb-best", String(best));
+            } catch (error) {
+                /* Private mode: keep it for this visit. */
+            }
+        }
+        showBest();
+        const scored = goals === 1 ? "1 goal" : `${goals} goals`;
+        setOverlay("Full time", record ? `You scored ${scored}. New best!` : `You scored ${scored}. Best: ${best}.`, "Play again");
+        window.setTimeout(() => startButton.focus({ preventScroll: true }), 50);
+        track("pitch-full-time", `Full time: ${goals} goals`);
+    }
+
+    function motionOn() {
+        return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    startButton.addEventListener("click", startMatch);
+    freeButton.addEventListener("click", () => {
+        countTimers.forEach(window.clearTimeout);
+        mode = "free";
+        clock.hidden = true;
+        hideOverlay();
+        canvas.focus({ preventScroll: true });
+        start();
+    });
 
     function track(name, title) {
         if (window.goatcounter && window.goatcounter.count) {
@@ -88,6 +236,7 @@
     function controls() {
         let throttle = 0;
         let steer = 0;
+        if (mode !== "match" && mode !== "free") return { throttle, steer, boost: false };
         if (pointer.active) {
             const dx = pointer.x - car.x;
             const dy = pointer.y - car.y;
@@ -247,12 +396,35 @@
         else if (ball.x + BALL_R < FIELD.left) scored(false, now);
     }
 
+    function celebrate() {
+        const mouthX = FIELD.right + GOAL_DEPTH / 2;
+        const colors = [ACCENT, "#e5cb78", "#8fd99a", "#b7ecff", INK];
+        for (let i = 0; i < 60; i++) {
+            const angle = Math.PI + (Math.random() - 0.5) * 2.4;
+            const speed = 120 + Math.random() * 260;
+            sparks.push({
+                x: mouthX,
+                y: H / 2 + (Math.random() - 0.5) * (MOUTH.bottom - MOUTH.top),
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 0.9 + Math.random() * 0.6,
+                max: 1.5,
+                color: colors[i % colors.length],
+            });
+        }
+        stage.classList.remove("is-shaking");
+        void stage.offsetWidth;
+        stage.classList.add("is-shaking");
+    }
+
     function scored(forUs, now) {
         freezeUntil = now + 1500;
+        if (mode === "over" || mode === "count" || mode === "idle") return;
         if (forUs) score.goals += 1;
         else score.own += 1;
-        root.querySelector('[data-score="goals"]').textContent = score.goals;
-        root.querySelector('[data-score="own"]').textContent = score.own;
+        setScore(score.goals, score.own);
+        if (forUs && motionOn()) celebrate();
+        sound(forUs ? "goal" : "stamp");
         stamp.textContent = forUs ? "Goal!" : "Own goal";
         stamp.classList.remove("is-on");
         void stamp.offsetWidth;
@@ -342,8 +514,8 @@
             spark.x += spark.vx * dt;
             spark.y += spark.vy * dt;
             const t = spark.life / spark.max;
-            ctx.globalAlpha = t;
-            ctx.fillStyle = t > 0.55 ? "#e5cb78" : ACCENT;
+            ctx.globalAlpha = Math.min(1, t * 1.5);
+            ctx.fillStyle = spark.color || (t > 0.55 ? "#e5cb78" : ACCENT);
             ctx.beginPath();
             ctx.arc(spark.x, spark.y, 2 + 3 * t, 0, Math.PI * 2);
             ctx.fill();
@@ -416,7 +588,7 @@
     }
 
     function busy(input) {
-        return pointer.active || input.throttle !== 0 || Math.abs(car.speed) > 2 ||
+        return mode === "match" || pointer.active || input.throttle !== 0 || Math.abs(car.speed) > 2 ||
             Math.hypot(ball.vx, ball.vy) > 2 || sparks.length > 0 || trail.length > 0 || freezeUntil > 0;
     }
 
@@ -430,6 +602,17 @@
         if (freezeUntil && now > freezeUntil) {
             freezeUntil = 0;
             kickoff();
+        }
+        if (mode === "match") {
+            const left = matchEnd - now;
+            const seconds = Math.ceil(left / 1000);
+            if (seconds !== shownSeconds) {
+                shownSeconds = seconds;
+                root.querySelector('[data-score="clock"]').textContent = formatClock(left);
+                clock.classList.toggle("is-low", seconds <= 10);
+                if (seconds <= 5 && seconds > 0) sound("tick");
+            }
+            if (left <= 0) endMatch();
         }
         draw(now, dt);
         if (visible && busy(input)) {
@@ -511,6 +694,8 @@
     setGeometry(640, 360);
     kickoff();
     resize();
+    showBest();
+    idle();
 
     if ("ResizeObserver" in window) {
         new ResizeObserver(resize).observe(canvas);
