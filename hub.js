@@ -211,7 +211,6 @@
             section.classList.toggle("is-active", section.id === id);
         });
         document.title = id === "home" ? "Nihar Bagkar" : `${SCREENS[id]} · Nihar Bagkar`;
-        if (window.revTach) window.revTach(id === "home" ? 0.25 : 0.6);
 
         // The player card lives on the home screen and walks over to the profile.
         const profileSlot = about.querySelector(".pf-card");
@@ -444,7 +443,6 @@
             intro.dataset.step = "card";
             intro.classList.add("is-reveal");
             sound("reveal");
-            if (window.revTach) window.revTach(0.9);
         }, 3350);
         later(() => intro.querySelector(".pack-continue").focus({ preventScroll: true }), 4300);
     });

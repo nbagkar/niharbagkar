@@ -154,27 +154,6 @@ kbd {
     color: #c7c3b2;
 }
 
-.hub .tach {
-    position: static;
-    margin: -0.3rem 0 -0.4rem -0.4rem;
-}
-
-.hub .tach-dial {
-    stroke: var(--paper-light);
-}
-
-.hub .tach-ticks {
-    stroke: #c7c3b2;
-}
-
-.hub .tach-hub {
-    fill: var(--paper-light);
-}
-
-.hub .tach-shift {
-    stroke: var(--paper-light);
-}
-
 .hub main {
     position: relative;
     flex: 1;
@@ -787,7 +766,6 @@ kbd {
 }
 
 @media (max-width: 480px) {
-    .hub .tach,
     .hub .vt-more,
     .hub .hub-resume span {
         display: none;
