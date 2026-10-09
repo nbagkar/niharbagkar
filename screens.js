@@ -478,17 +478,61 @@
         next.click();
     });
 
-    // Sign first, then hand the form to its usual endpoint.
-    form.addEventListener("submit", (event) => {
+    const done = el("div", "offer-done offer-hub");
+    done.setAttribute("role", "status");
+    done.innerHTML = '<p class="offer-done-title">Offer received.</p><p class="offer-done-text"></p><button class="offer-again" type="button">Send another offer</button>';
+    form.insertBefore(done, nav);
+
+    function finish(name) {
+        done.querySelector(".offer-done-text").textContent = `Thanks${name ? `, ${name}` : ""}. Your offer is on its way to my inbox.`;
+        form.dataset.step = "done";
+        head.querySelectorAll(".offer-steps li").forEach((item) => {
+            item.classList.add("is-done");
+            item.removeAttribute("aria-current");
+        });
+        done.querySelector(".offer-again").focus({ preventScroll: true });
+    }
+
+    done.querySelector(".offer-again").addEventListener("click", () => {
+        form.reset();
+        form.classList.remove("is-signed");
+        nameInput.dispatchEvent(new Event("input"));
+        sending = false;
+        submit.disabled = false;
+        setOfferStep(1, true);
+    });
+
+    // Send in the background so visitors stay on the site. If Formspree turns
+    // the request down (reCAPTCHA still on for the form, or a network error),
+    // fall back to the classic post so the message is never lost.
+    form.addEventListener("submit", async (event) => {
         if (!inHub()) return;
         event.preventDefault();
         if (sending) return;
         if (![1, 2, 3].every(stepIsValid)) return;
         sending = true;
+        submit.disabled = true;
+        const name = nameInput.value.trim();
+        let sent = false;
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+                headers: { Accept: "application/json" },
+            });
+            sent = response.ok;
+        } catch (error) {
+            sent = false;
+        }
+        if (!sent) {
+            count("offer-fallback", "Offer fell back to the Formspree page");
+            HTMLFormElement.prototype.submit.call(form);
+            return;
+        }
         form.classList.add("is-signed");
         sound("stamp");
         count("offer-signed", "Signed the transfer offer");
-        window.setTimeout(() => HTMLFormElement.prototype.submit.call(form), motion ? 1100 : 0);
+        window.setTimeout(() => finish(name), motion ? 650 : 0);
     });
 
     handlers.contact = {

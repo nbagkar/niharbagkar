@@ -13,6 +13,15 @@
     display: none;
 }
 
+/* Honeypot for Formspree: people never see it, bots fill it in. */
+.form-gotcha {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
 .offer-step:not(.offer-hub),
 .offer-nav {
     display: contents;
@@ -1188,8 +1197,44 @@
 }
 
 .hub .contact-form:not([data-step="3"]) [type="submit"],
-.hub .contact-form[data-step="3"] .offer-next {
+.hub .contact-form[data-step="3"] .offer-next,
+.hub .contact-form[data-step="done"] .offer-nav {
     display: none;
+}
+
+.hub .contact-form[data-step="done"] .offer-done {
+    display: grid;
+    justify-items: start;
+    gap: 0.4rem;
+    padding: 0.4rem 1.4rem 1.6rem;
+    animation: panel-in 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+.offer-done-title {
+    font-size: var(--title);
+    font-weight: 600;
+    line-height: 1.05;
+}
+
+.offer-done-text {
+    color: var(--ink-soft);
+}
+
+.offer-again {
+    margin-top: 0.6rem;
+    padding: 0;
+    font: inherit;
+    font-style: italic;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    cursor: pointer;
+}
+
+.hub .contact-form[data-step="done"] .offer-stamp {
+    top: 84%;
+    left: 74%;
 }
 
 .hub .offer-stamp {
