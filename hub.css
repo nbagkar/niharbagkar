@@ -2,8 +2,15 @@
    (Classic view, no JavaScript) the page reads as the long-form portfolio. */
 
 .hub-stats,
-.screen-bar {
+.screen-bar,
+.hub-resume,
+.sound-toggle {
     display: none;
+}
+
+.about-cta .btn {
+    margin-top: 1.6rem;
+    text-decoration: none;
 }
 
 .view-toggle {
@@ -87,6 +94,63 @@ kbd {
     font-style: normal;
     font-weight: 700;
     color: var(--paper-light);
+}
+
+.hub .hub-resume {
+    display: inline-block;
+    flex: none;
+    padding: 0.15rem 0.85rem;
+    font-style: italic;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+    background: var(--paper-light);
+    border-radius: 99px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.hub .hub-resume:hover {
+    color: var(--paper-light);
+    background: var(--accent);
+}
+
+.hub .sound-toggle {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: 1px solid rgba(241, 234, 217, 0.3);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.hub .sound-toggle:hover {
+    border-color: var(--paper-light);
+}
+
+.sound-toggle path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sound-toggle .spk {
+    fill: currentColor;
+}
+
+.sound-toggle[aria-pressed="true"] .spk-off,
+.sound-toggle[aria-pressed="false"] .spk-on {
+    display: none;
+}
+
+.sound-toggle[aria-pressed="false"] {
+    color: #c7c3b2;
 }
 
 .hub .tach {
@@ -412,11 +476,16 @@ kbd {
     color: #c7c3b2;
 }
 
+.tile-squad .tile-sub {
+    padding-right: 5.5rem;
+}
+
 .tile-squad .tile-art {
     top: 10%;
     right: 8%;
     display: flex;
-    height: 58%;
+    /* Stop above the kicker, title and subtitle on short screens. */
+    height: min(58%, calc(90% - 8.5rem));
 }
 
 .tile-squad .tile-art img {
@@ -723,6 +792,23 @@ kbd {
     }
 }
 
+@media (max-height: 680px) {
+    .tile:not(.tile-squad) .tile-art {
+        scale: 0.8;
+        transform-origin: top right;
+    }
+}
+
+@media (max-width: 1000px) {
+    .hub .hub-stats {
+        display: none;
+    }
+
+    .hub .hub-resume {
+        margin-left: auto;
+    }
+}
+
 /* Phone and narrow screens */
 
 @media (max-width: 760px) {
@@ -730,8 +816,26 @@ kbd {
         display: none;
     }
 
-    .hub .view-toggle {
+    .hub .masthead-row {
+        gap: 0.7rem;
+    }
+
+    .hub .hub-resume {
         margin-left: auto;
+        padding: 0.1rem 0.7rem;
+    }
+
+    .hub .sound-toggle {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hub .tach,
+    .hub .vt-more,
+    .hub .hub-resume span {
+        display: none;
     }
 
     .hub .home {
@@ -1454,12 +1558,12 @@ kbd {
 }
 
 .formation.is-dealing .mini {
-    animation: mini-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) backwards;
-    animation-delay: calc(var(--i) * 45ms);
+    animation: mini-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) backwards;
+    animation-delay: calc(var(--i) * 30ms);
 }
 
 .formation.is-dealing .chem {
-    animation: chem-in 0.6s ease 0.6s backwards;
+    animation: chem-in 0.5s ease 0.45s backwards;
 }
 
 @keyframes mini-in {

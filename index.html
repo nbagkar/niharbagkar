@@ -62,6 +62,8 @@
             </span>
             <p class="masthead-meta">Portfolio &middot; Vol. 01 &middot; New York &middot; 2026</p>
             <p class="hub-stats"><span><strong>19</strong> cards</span><span><strong>2</strong> live apps</span><span><strong>Top 5</strong> of 47</span></p>
+            <a class="hub-resume" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener" data-track="bar-resume">Resume <span aria-hidden="true">&nearr;</span></a>
+            <button class="sound-toggle" type="button" aria-pressed="false" aria-label="Sound effects"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="spk" d="M4 9.5 H8 L13 5 V19 L8 14.5 H4 Z"/><path class="spk-on" d="M16.5 8.5 A5 5 0 0 1 16.5 15.5 M19 6 A8.5 8.5 0 0 1 19 18"/><path class="spk-off" d="M16.5 9.5 L21.5 14.5 M21.5 9.5 L16.5 14.5"/></svg></button>
             <button class="view-toggle" type="button" data-to="classic">Classic view</button>
             <nav class="masthead-nav" aria-label="Primary">
                 <a href="#binder">Binder</a>
@@ -652,7 +654,7 @@
                     <p class="player-cap"><span class="label">Fig. 1</span> Turn it over for the stats.</p>
                 </div>
                 <div class="about-copy">
-                    <p class="label">&sect; 01 &middot; About</p>
+                    <p class="label" data-hub="Player profile">&sect; 01 &middot; About</p>
                     <h2 id="about-title">A product builder in New York.</h2>
                     <p class="lede">I&rsquo;m Nihar. I study Business, Technology &amp; Entrepreneurship at NYU Stern, and I spent summer 2026 as a product management intern at Microsoft. Most of what I build starts as a messy workflow that someone is tired of doing by hand.</p>
                     <dl class="glance">
@@ -673,6 +675,7 @@
                     <dd>Viridian, a collectibles exchange, and UPHouse, a social app for friend groups, are live on the App Store.</dd>
                 </div>
             </dl>
+                    <p class="about-cta"><a class="btn" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener" data-track="about-resume">Resume (PDF) <span aria-hidden="true">&nearr;</span></a></p>
                 </div>
             </div>
         </section>
@@ -688,7 +691,7 @@
         <section class="notes" id="notes" aria-labelledby="notes-title">
             <div class="wrap notes-grid">
                 <header class="section-head">
-                    <p class="label">&sect; 02 &middot; Notes</p>
+                    <p class="label" data-hub="How I work">&sect; 02 &middot; Notes</p>
                     <h2 id="notes-title">How I work.</h2>
                 </header>
 
@@ -717,8 +720,8 @@
         <section class="path" id="path" aria-labelledby="path-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 03 &middot; Path</p>
-                    <h2 id="path-title">Where I&rsquo;ve been working.</h2>
+                    <p class="label" data-hub="Career">&sect; 03 &middot; Path</p>
+                    <h2 id="path-title" data-hub="Transfers.">Where I&rsquo;ve been working.</h2>
                 </header>
 
                 <ol class="ledger">
@@ -761,8 +764,8 @@
         <section class="index" id="index" aria-labelledby="index-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 04 &middot; Index</p>
-                    <h2 id="index-title">Writing &amp; recognition.</h2>
+                    <p class="label" data-hub="Cabinet">&sect; 04 &middot; Index</p>
+                    <h2 id="index-title" data-hub="Trophies.">Writing &amp; recognition.</h2>
                 </header>
 
                 <div class="index-grid">
@@ -823,8 +826,8 @@
         <section class="contact" id="contact" aria-labelledby="contact-title">
             <div class="wrap contact-grid">
                 <div>
-                    <p class="label">&sect; 05 &middot; Contact</p>
-                    <h2 id="contact-title">Say hello.</h2>
+                    <p class="label" data-hub="Contact">&sect; 05 &middot; Contact</p>
+                    <h2 id="contact-title" data-hub="Transfer request.">Say hello.</h2>
                     <p class="lede">If you&rsquo;re working on product strategy, venture workflows, or something that should be automated and isn&rsquo;t yet, I&rsquo;d like to hear about it.</p>
                     <p class="contact-links">
                         <a class="link-arrow" href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a>
@@ -852,8 +855,8 @@
         <section class="kickoff" id="kickoff" aria-labelledby="kickoff-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 06 &middot; Extra time</p>
-                    <h2 id="kickoff-title">Take a shot.</h2>
+                    <p class="label" data-hub="Play">&sect; 06 &middot; Extra time</p>
+                    <h2 id="kickoff-title" data-hub="Kick off.">Take a shot.</h2>
                 </header>
                 <div class="pitch" id="pitch">
                     <div class="pitch-head">
@@ -901,6 +904,7 @@
     </div>
     <script src="script.js"></script>
     <script src="pitch.js"></script>
+    <script src="sound.js"></script>
     <script src="hub.js"></script>
     <script src="formation.js"></script>
     <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

@@ -421,15 +421,15 @@
         }
     }, true);
 
-    window.dealFormation = () => {
+    window.dealFormation = (animate = true) => {
         attachViews();
         if (!section.dataset.view) setView("formation");
         drawChem();
-        if (!motion) return;
+        if (!motion || !animate) return;
         formation.classList.remove("is-dealing");
         void formation.offsetWidth;
         formation.classList.add("is-dealing");
-        window.setTimeout(() => formation.classList.remove("is-dealing"), lineup.length * 45 + 700);
+        window.setTimeout(() => formation.classList.remove("is-dealing"), lineup.length * 30 + 600);
     };
 
     render();

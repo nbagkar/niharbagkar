@@ -17,8 +17,8 @@
         home: "Home",
         binder: "Squad",
         about: "Player profile",
-        path: "Career",
-        index: "Trophy cabinet",
+        path: "Transfers",
+        index: "Trophies",
         kickoff: "Kick off",
         contact: "Transfer request",
     };
@@ -27,6 +27,19 @@
 
     function count(name, title) {
         if (typeof track === "function") track(name, title);
+    }
+
+    function sound(name) {
+        if (window.sfx) window.sfx(name);
+    }
+
+    // Section headings read as editorial copy in Classic view and as the
+    // menu's own names on the home screen.
+    const retitled = Array.from(document.querySelectorAll("[data-hub]"));
+    retitled.forEach((node) => (node.dataset.classic = node.textContent));
+
+    function retitle(hub) {
+        retitled.forEach((node) => (node.textContent = hub ? node.dataset.hub : node.dataset.classic));
     }
 
     // Moved nodes leave a marker so the classic page can put them back.
@@ -61,7 +74,8 @@
         return SCREENS[id] ? id : "home";
     }
 
-    function focusTile(tile) {
+    function focusTile(tile, quiet) {
+        if (!quiet && tile && !tile.classList.contains("is-selected")) sound("move");
         tiles.concat(heroButton()).forEach((other) => other && other.classList.toggle("is-selected", other === tile));
         if (tile) tile.focus({ preventScroll: true });
     }
@@ -90,13 +104,15 @@
         if (window.revTach) window.revTach(id === "home" ? 0.25 : 0.6);
 
         if (id === "binder") {
-            redeal();
-            if (window.dealFormation) window.setTimeout(window.dealFormation, 0);
+            // A direct link lands on a settled lineup; only a visit from the menu deals it.
+            if (previous) redeal();
+            window.setTimeout(() => window.dealFormation && window.dealFormation(Boolean(previous)), 0);
         }
         if (id === "path" && window.playLedger) window.setTimeout(window.playLedger, 120);
 
+        if (previous) sound(id === "home" ? "back" : "select");
         if (id === "home") {
-            focusTile(tiles.find((tile) => tile.hash === `#${previous}`) || tiles[0]);
+            focusTile(tiles.find((tile) => tile.hash === `#${previous}`) || tiles[0], true);
         } else {
             const section = document.getElementById(id);
             // The browser's own jump to #id can scroll the sheet; undo it.
@@ -123,7 +139,8 @@
         home.hidden = false;
         hero.appendChild(playerWrap);
         about.appendChild(notes);
-        toggle.textContent = "Classic view";
+        retitle(true);
+        toggle.innerHTML = "Classic<span class=\"vt-more\"> view</span>";
         current = null;
         show(screenFor(location.hash));
         window.scrollTo(0, 0);
@@ -134,6 +151,7 @@
         home.hidden = true;
         playerSlot.after(playerWrap);
         notesSlot.after(notes);
+        retitle(false);
         main.querySelectorAll(":scope > section").forEach((section) => section.classList.remove("is-active"));
         delete main.dataset.screen;
         toggle.textContent = "Home screen";
@@ -293,12 +311,13 @@
             intro.hidden = true;
             intro.className = "pack-intro";
         }, 450);
-        if (current === "home") focusTile(tiles[0]);
+        if (current === "home") focusTile(tiles[0], true);
     }
 
     pack.addEventListener("click", () => {
         if (intro.classList.contains("is-tearing")) return;
         intro.classList.add("is-tearing");
+        sound("rip");
         count("pack-open", "Opened the player pack");
         later(() => {
             intro.classList.add("is-walkout");
@@ -309,6 +328,7 @@
         later(() => {
             intro.dataset.step = "card";
             intro.classList.add("is-reveal");
+            sound("reveal");
             if (window.revTach) window.revTach(0.9);
         }, 3350);
         later(() => intro.querySelector(".pack-continue").focus({ preventScroll: true }), 4300);
