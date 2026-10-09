@@ -1298,8 +1298,10 @@
     background: var(--paper-light);
 }
 
-.po-actions .btn:hover {
+.po-actions .btn:hover,
+.po-actions .btn:focus-visible {
     color: var(--paper-light);
+    background: var(--accent);
 }
 
 .po-free {
