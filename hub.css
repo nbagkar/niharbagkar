@@ -511,10 +511,17 @@ kbd {
 .tile-crests i {
     width: 3rem;
     height: 3rem;
-    margin-left: -0.9rem;
+    margin-left: -0.6rem;
 }
 
-.tile-crests i:first-child {
+/* The end crests sit over the middle one so BCPS and MS both read in full. */
+.tile-crests i:first-child,
+.tile-crests i:last-child {
+    z-index: 1;
+}
+
+/* The latest club, Microsoft, sits last and in red. */
+.tile-crests i:last-child {
     background: var(--accent);
     box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px var(--paper-light);
 }
@@ -836,7 +843,7 @@ kbd {
 
     .tile-sub,
     .tile::after,
-    .tile-crests i + i {
+    .tile-crests i:not(:last-child) {
         display: none;
     }
 
