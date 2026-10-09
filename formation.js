@@ -26,6 +26,7 @@
         ["bench", "SUB", "AbroadRomantics"], ["bench", "SUB", "Altbert"], ["bench", "SUB", "The Digital Graveyard"],
         ["bench", "SUB", "Celsius AI Campaign"],
         ["reserves", "RES", "Internship Case"],
+        ["reserves", "RES", "Uber AV Strategy"],
     ];
     // Chemistry: real shared themes between projects.
     const LINKS = [
@@ -42,6 +43,7 @@
         UPHouse: "App Store",
         SignalPath: "Top 5 of 47",
         "Soccer Analytics": "610 tests",
+        "Uber AV Strategy": "1st place",
     };
 
     const cards = new Map();
