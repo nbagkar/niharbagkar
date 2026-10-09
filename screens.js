@@ -308,8 +308,9 @@
             <p class="cab-label">Awards</p>
             <div class="cab-row" data-row="0"></div>
             <div class="cab-row" data-row="1"></div>
+            <div class="cab-row" data-row="2"></div>
             <p class="cab-label">Publications</p>
-            <div class="cab-row cab-books" data-row="2"></div>
+            <div class="cab-row cab-books" data-row="3"></div>
         </div>
         <aside class="cab-plaque" aria-live="polite">
             <div class="cab-spot"><span class="cab-big"></span></div>
@@ -342,7 +343,7 @@
         }
         button.appendChild(el("span", "cab-new", "New"));
         button.setAttribute("aria-label", `${piece.name}, ${piece.where}`);
-        const row = piece.kind === "book" ? 2 : i < 3 ? 0 : 1;
+        const row = piece.kind === "book" ? 3 : Math.floor(i / 3);
         cab.querySelector(`[data-row="${row}"]`).appendChild(button);
         button.addEventListener("click", () => pick(i, true));
         return button;
