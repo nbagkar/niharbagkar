@@ -62,6 +62,40 @@
         if (handler && handler.key) handler.key(event);
     });
 
+    // Fit to the window: when a screen's content is taller than the window,
+    // shrink it just enough to fit (down to 75%) instead of scrolling. Below
+    // that, on very small windows, the screen scrolls. Phones always scroll.
+    const FIT_SCREENS = ["about", "path", "index", "contact"];
+    const narrow = window.matchMedia("(max-width: 760px)");
+
+    function fitScreen() {
+        const id = main.dataset.screen;
+        if (!FIT_SCREENS.includes(id)) return;
+        const section = document.getElementById(id);
+        const fits = () => section.scrollHeight <= section.clientHeight;
+        section.style.removeProperty("--fit");
+        if (!inHub() || narrow.matches || fits()) return;
+        let low = 0.75;
+        let high = 1;
+        section.style.setProperty("--fit", String(low));
+        if (!fits()) return;
+        for (let i = 0; i < 6; i++) {
+            const mid = (low + high) / 2;
+            section.style.setProperty("--fit", mid.toFixed(3));
+            if (fits()) low = mid;
+            else high = mid;
+        }
+        section.style.setProperty("--fit", low.toFixed(3));
+    }
+
+    let fitTimer = 0;
+    window.addEventListener("resize", () => {
+        window.clearTimeout(fitTimer);
+        fitTimer = window.setTimeout(fitScreen, 120);
+    });
+    window.addEventListener("hub:screen", fitScreen);
+    if (document.fonts) document.fonts.ready.then(fitScreen);
+
     // Player profile: tabs on the left, the player card on the right.
 
     const about = document.getElementById("about");
@@ -84,6 +118,7 @@
     function setTab(next, animate) {
         profileTab = next;
         about.dataset.tab = next;
+        fitScreen();
         pfTabs.querySelectorAll("[role=tab]").forEach((tab) => {
             const on = tab.dataset.tab === next;
             tab.setAttribute("aria-selected", String(on));
@@ -346,7 +381,7 @@
             sound("tab");
             count(`cabinet-${i}`, `Inspected: ${piece.name}`);
             // On narrow screens the plaque sits above the shelves.
-            if (window.matchMedia("(max-width: 860px)").matches) {
+            if (window.matchMedia("(max-width: 760px)").matches) {
                 cab.querySelector(".cab-plaque").scrollIntoView({ block: "nearest", behavior: motion ? "smooth" : "auto" });
             }
         }

@@ -34,7 +34,7 @@
 @keyframes screen-rise {
     from {
         opacity: 0;
-        transform: translateY(0.9rem);
+        transform: scale(0.96);
     }
 }
 
@@ -110,6 +110,15 @@
     color: var(--ink-soft);
 }
 
+/* --fit is set by screens.js when a screen is taller than the window. */
+.hub #about > .about-grid,
+.hub #about > .notes,
+.hub #path > .wrap,
+.hub #index > .wrap,
+.hub #contact > .wrap {
+    zoom: var(--fit, 1);
+}
+
 .hub #about > .about-grid {
     grid-area: a;
     padding: 1rem 0 0;
@@ -133,7 +142,7 @@
     display: block;
     align-self: start;
     /* Sized by the window's height so the card and its caption always fit. */
-    width: min(23rem, calc((100dvh - 17rem) * 5 / 7));
+    width: min(23rem, 30vw, calc((100dvh - 17rem) * 5 / 7));
     margin: 0.2rem clamp(1rem, 3vw, 2.4rem) 1rem 0;
     perspective: 1400px;
 }
@@ -141,7 +150,7 @@
 .hub .pf-card::before {
     content: "";
     position: absolute;
-    inset: -12% -20%;
+    inset: 0 -20%;
     z-index: -1;
     background: radial-gradient(closest-side, rgba(229, 203, 120, 0.4), rgba(200, 57, 31, 0.1) 60%, transparent);
     pointer-events: none;
@@ -476,7 +485,7 @@
     grid-template-columns: auto minmax(0, 1fr);
     gap: clamp(1.2rem, 3vw, 2.6rem);
     align-items: center;
-    min-height: clamp(14rem, 34dvh, 19rem);
+    min-height: clamp(11rem, 34dvh, 19rem);
     padding: clamp(1.2rem, 3vw, 2.2rem) clamp(1.2rem, 3vw, 2.4rem);
     color: var(--paper-light);
     background:
@@ -970,7 +979,7 @@
     display: grid;
     place-items: center;
     width: 100%;
-    height: clamp(9rem, 25dvh, 14rem);
+    height: clamp(6rem, 22dvh, 14rem);
     background:
         radial-gradient(ellipse 45% 55% at 50% 35%, rgba(229, 203, 120, 0.5), transparent 70%),
         radial-gradient(ellipse 30% 8% at 50% 90%, rgba(27, 24, 18, 0.22), transparent);
@@ -1055,7 +1064,7 @@
     }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 760px) {
     .hub .cab {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -1088,7 +1097,35 @@
     }
 }
 
+/* Short windows: trim chrome so screens fit without scrolling. */
+@media (max-height: 760px) and (min-width: 761px) {
+    .hub main > section .section-head .label {
+        display: none;
+    }
+
+    /* The plaque names the piece, so the shelves show just the trophies. */
+    .cab-row:not(.cab-books) .cab-plate {
+        display: none;
+    }
+
+    .cab-row:not(.cab-books) .cab-item {
+        padding: 1.3rem 0.4rem 0.6rem;
+    }
+
+    .cab-cover {
+        width: min(100%, 4.4rem);
+    }
+}
+
 /* Transfer request: the offer sheet */
+
+/* Keep the pitch and the offer sheet side by side on any desktop window. */
+@media (min-width: 761px) {
+    .hub .contact-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+        gap: clamp(1.5rem, 4vw, 4rem);
+    }
+}
 
 .hub .contact-form {
     position: relative;
@@ -1359,7 +1396,7 @@
 @keyframes offer-in {
     from {
         opacity: 0;
-        transform: translateY(10%) rotate(3deg);
+        transform: translateX(10%);
     }
 }
 
