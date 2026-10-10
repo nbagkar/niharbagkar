@@ -1,0 +1,504 @@
+/* Mockup: EA FC Ultimate Team menu. Loaded only with ?theme=fut, and only
+   the home screen and the top bar are restyled. */
+
+@import url("https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap");
+
+.hub[data-theme="fut"] {
+    --fut-bg: #06060d;
+    --fut-glass: rgba(255, 255, 255, 0.07);
+    --fut-line: rgba(255, 255, 255, 0.16);
+    --fut-dim: rgba(255, 255, 255, 0.62);
+    --fut-aqua: #1ef2c8;
+    --fut-pink: #ff2d87;
+    --fut-gold-1: #fff1b8;
+    --fut-gold-2: #e8c25a;
+    --fut-gold-3: #9c7322;
+    --fut-cut: 1.1rem;
+}
+
+.hub[data-theme="fut"] body {
+    color: #fff;
+    background:
+        radial-gradient(ellipse 55% 60% at 88% 8%, rgba(255, 45, 135, 0.38), transparent 60%),
+        radial-gradient(ellipse 50% 55% at 6% 96%, rgba(30, 242, 200, 0.26), transparent 60%),
+        radial-gradient(ellipse 40% 45% at 60% 55%, rgba(92, 52, 255, 0.22), transparent 70%),
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 46px),
+        var(--fut-bg);
+}
+
+.hub[data-theme="fut"] .masthead,
+.hub[data-theme="fut"] .home {
+    font-family: "Saira", "Arial Narrow", sans-serif;
+    font-stretch: 100%;
+}
+
+/* Top bar */
+
+.hub[data-theme="fut"] .masthead {
+    color: #fff;
+    border-bottom: 1px solid var(--fut-line);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+}
+
+.hub[data-theme="fut"] .wordmark {
+    font-family: "Saira", sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 70%;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="fut"] .wordmark::after {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.45rem;
+    background: var(--fut-aqua);
+    transform: skewX(-18deg);
+}
+
+.hub[data-theme="fut"] .hub-stats {
+    gap: 0.5rem;
+    font-style: normal;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .hub-stats span {
+    padding: 0.2rem 0.75rem;
+    background: var(--fut-glass);
+    border: 1px solid var(--fut-line);
+    clip-path: polygon(0.45rem 0, 100% 0, calc(100% - 0.45rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .hub-stats strong {
+    font-weight: 800;
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .hub-resume {
+    padding: 0.25rem 1.1rem;
+    font-style: normal;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #000;
+    background: #fff;
+    border-radius: 0;
+    clip-path: polygon(0.5rem 0, 100% 0, calc(100% - 0.5rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .hub-resume:hover {
+    color: #000;
+    background: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .sound-toggle {
+    border-radius: 0.2rem;
+    border-color: var(--fut-line);
+    background: var(--fut-glass);
+}
+
+.hub[data-theme="fut"] .view-toggle {
+    font-family: "Saira", sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.95rem;
+    border-bottom: 0;
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .view-toggle:hover {
+    color: var(--fut-aqua);
+}
+
+/* Tiles */
+
+.hub[data-theme="fut"] .tiles {
+    gap: 0.7rem;
+}
+
+.hub[data-theme="fut"] .tile {
+    color: #fff;
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%),
+        rgba(14, 14, 28, 0.72);
+    border: 0;
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--fut-line);
+    clip-path: polygon(0 0, calc(100% - var(--fut-cut)) 0, 100% var(--fut-cut), 100% 100%, 0 100%);
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.25, 1), background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* A colour bar along the bottom edge, lit on the selected tile. */
+.hub[data-theme="fut"] .tile::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--fut-aqua), #6b5cff 60%, var(--fut-pink));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.hub[data-theme="fut"] .tile.is-selected,
+.hub[data-theme="fut"] .tile:focus-visible {
+    background:
+        linear-gradient(160deg, rgba(30, 242, 200, 0.22), rgba(107, 92, 255, 0.12) 55%, rgba(255, 45, 135, 0.14)),
+        rgba(14, 14, 28, 0.8);
+    box-shadow: inset 0 0 0 2px var(--fut-aqua), inset 0 0 2.2rem rgba(30, 242, 200, 0.18);
+    transform: scale(1.025);
+}
+
+.hub[data-theme="fut"] .tile.is-selected::before {
+    transform: none;
+}
+
+.hub[data-theme="fut"] .tile::after {
+    content: "Enter";
+    padding: 0.05rem 0.7rem;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #000;
+    background: var(--fut-aqua);
+    border-radius: 0;
+    clip-path: polygon(0.35rem 0, 100% 0, calc(100% - 0.35rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .tile-kicker {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .tile-title {
+    font-family: "Saira", sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="fut"] .tile-sub {
+    font-size: 0.95rem;
+    color: var(--fut-dim);
+}
+
+/* Squad: the feature tile, lit like a stadium. */
+.hub[data-theme="fut"] .tile-squad {
+    --fut-cut: 1.8rem;
+    background:
+        radial-gradient(ellipse 70% 60% at 72% 18%, rgba(255, 255, 255, 0.22), transparent 60%),
+        linear-gradient(135deg, #3b1ed6 0%, #9b1fd1 50%, #ff2d87 100%);
+}
+
+.hub[data-theme="fut"] .tile-squad.is-selected {
+    background:
+        radial-gradient(ellipse 70% 60% at 72% 18%, rgba(255, 255, 255, 0.3), transparent 60%),
+        linear-gradient(135deg, #3b1ed6 0%, #9b1fd1 50%, #ff2d87 100%);
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+.hub[data-theme="fut"] .tile-squad .tile-kicker {
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .tile-squad .tile-sub {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.hub[data-theme="fut"] .tile-squad .tile-title {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+}
+
+.hub[data-theme="fut"] .tile-squad .tile-art img {
+    border: 2px solid #fff;
+    border-radius: 0.3rem;
+}
+
+.hub[data-theme="fut"] .tile-squad::after {
+    color: #000;
+    background: #fff;
+}
+
+/* Small tile art on dark glass */
+.hub[data-theme="fut"] .tile-crest,
+.hub[data-theme="fut"] .tile-crests i {
+    font-family: "Saira", sans-serif;
+    font-weight: 800;
+    font-stretch: 75%;
+    color: #fff;
+    background: #15152a;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 0 0 3px #15152a, inset 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.hub[data-theme="fut"] .tile-crest,
+.hub[data-theme="fut"] .tile-crests i:last-child {
+    color: #000;
+    background: var(--fut-aqua);
+    border-color: var(--fut-aqua);
+    box-shadow: inset 0 0 0 3px var(--fut-aqua), inset 0 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.hub[data-theme="fut"] .tile-trophies .trophy-icon path,
+.hub[data-theme="fut"] .tile-trophies .trophy-icon circle {
+    stroke: #fff;
+}
+
+.hub[data-theme="fut"] .tile-trophies .t-fill {
+    fill: var(--fut-gold-2);
+}
+
+.hub[data-theme="fut"] .tile-pitch {
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)) 50% 0 / 1.5px 100% no-repeat,
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 0.7rem, transparent 0.7rem 1.4rem),
+        #157a45;
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.hub[data-theme="fut"] .tile-car {
+    background: var(--fut-pink);
+    border-color: #fff;
+}
+
+.hub[data-theme="fut"] .tile-ball {
+    border-color: #000;
+}
+
+.hub[data-theme="fut"] .tile-letter {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+/* Hero: the player card as a gold Ultimate Team card */
+
+.hub[data-theme="fut"] .hero .player-wrap::before {
+    background: radial-gradient(closest-side, rgba(255, 214, 102, 0.42), rgba(255, 45, 135, 0.16) 60%, transparent);
+}
+
+.hub[data-theme="fut"] .hero .card.player {
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+}
+
+.hub[data-theme="fut"] .hero .card.player::before {
+    box-shadow: none;
+}
+
+.hub[data-theme="fut"] .hero .card.player .face {
+    --fut-shield: polygon(0 7%, 12% 0, 30% 2.5%, 50% 0, 70% 2.5%, 88% 0, 100% 7%, 100% 88%, 50% 100%, 0 88%);
+    font-family: "Saira", sans-serif;
+    color: #2a1d05;
+    border: 0;
+    border-radius: 0;
+    clip-path: var(--fut-shield);
+    padding: 9cqw 7cqw 16cqw;
+}
+
+.hub[data-theme="fut"] .hero .card.player .face * {
+    font-family: "Saira", sans-serif;
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-front {
+    background:
+        radial-gradient(ellipse 80% 45% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 70%),
+        linear-gradient(160deg, var(--fut-gold-1) 0%, var(--fut-gold-2) 42%, #c99a3a 70%, var(--fut-gold-2) 100%);
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-front::after {
+    content: "";
+    position: absolute;
+    inset: 2.4cqw;
+    z-index: 1;
+    clip-path: var(--fut-shield);
+    box-shadow: inset 0 0 0 0.8cqw rgba(110, 76, 18, 0.55);
+    pointer-events: none;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-head {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 3cqw;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-head h3 {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 70%;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-no {
+    padding: 0.3cqw 2cqw;
+    font-weight: 800;
+    color: var(--fut-gold-1);
+    background: #2a1d05;
+    opacity: 1;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-art {
+    border: 0;
+    border-radius: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    -webkit-mask-image: linear-gradient(#000 80%, transparent);
+    mask-image: linear-gradient(#000 80%, transparent);
+    background: transparent;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-type {
+    align-self: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fut-gold-1);
+    background: #2a1d05;
+    border-radius: 0;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-text {
+    padding: 0;
+    text-align: center;
+    background: none;
+    border: 0;
+    border-top: 0.5cqw solid rgba(110, 76, 18, 0.45);
+    padding-top: 2.4cqw;
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-foot {
+    justify-content: center;
+    gap: 4cqw;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-back {
+    background: linear-gradient(160deg, #23233d, #0c0c18);
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-back .p-stats {
+    border-top-color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-back .p-stats dt {
+    font-style: normal;
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .hero .card.player .face-back .p-stats dd {
+    color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .hero .card.player .c-link {
+    color: #000;
+    background: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .hero .player-cap .label {
+    display: none;
+}
+
+.hub[data-theme="fut"] .hero .player-cap,
+.hub[data-theme="fut"] .hero .player-cap .label {
+    font-family: "Saira", sans-serif;
+    font-style: normal;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .hero .c-flip.is-selected {
+    outline-color: var(--fut-aqua);
+}
+
+/* Footer: news ticker and button prompts */
+
+.hub[data-theme="fut"] .home-foot {
+    gap: 0.9rem;
+    color: var(--fut-dim);
+    border-top: 1px solid var(--fut-line);
+    font-size: 0.95rem;
+}
+
+.hub[data-theme="fut"] .ticker {
+    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
+}
+
+.hub[data-theme="fut"] .home-foot::before {
+    content: "Latest";
+    flex: none;
+    padding: 0.05rem 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: var(--fut-pink);
+    clip-path: polygon(0.35rem 0, 100% 0, calc(100% - 0.35rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .ticker-track li {
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .ticker-track li::before {
+    content: "";
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-right: 0.8rem;
+    vertical-align: 0.15em;
+    background: var(--fut-aqua);
+    transform: skewX(-18deg);
+}
+
+.hub[data-theme="fut"] .hub-keys {
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+}
+
+.hub[data-theme="fut"] .hub-keys kbd {
+    font-family: "Saira", sans-serif;
+    font-weight: 700;
+    color: #000;
+    background: #fff;
+    border: 0;
+    border-radius: 0.2rem;
+    opacity: 1;
+}
+
+.hub[data-theme="fut"] .pack-replay {
+    font-family: "Saira", sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+    color: var(--fut-dim);
+}

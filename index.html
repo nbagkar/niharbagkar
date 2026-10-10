@@ -29,6 +29,16 @@
     <link rel="stylesheet" href="hub.css">
     <link rel="stylesheet" href="screens.css">
     <script>
+        // Design mockups: ?theme=fut or ?theme=ps2 restyles the home screen.
+        (function () {
+            var theme = (location.search.match(/[?&]theme=(fut|ps2)\b/) || [])[1];
+            if (!theme) return;
+            document.documentElement.dataset.theme = theme;
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "theme-" + theme + ".css";
+            document.head.appendChild(link);
+        })();
         (function () {
             var classic = /[?&]view=classic\b/.test(location.search);
             try { classic = classic || localStorage.getItem("nb-view") === "classic"; } catch (e) {}
