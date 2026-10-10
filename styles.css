@@ -156,6 +156,51 @@ a {
     color: var(--accent);
 }
 
+/* Retro switch: the PS2-era look on, the Ultimate Team look off. */
+.theme-toggle {
+    display: none;
+}
+
+.hub .theme-toggle,
+.case-page .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.theme-switch {
+    position: relative;
+    width: 2.3rem;
+    height: 1.25rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 99px;
+    transition: background 0.2s ease;
+}
+
+.theme-switch::after {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.theme-toggle[aria-pressed="true"] .theme-switch::after {
+    transform: translateX(1.05rem);
+}
+
 /* Hero */
 
 .lede {
@@ -968,6 +1013,11 @@ a {
     gap: 1rem 2rem;
     padding: 1.5rem 0;
     border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+/* Case-file timelines have no crest column. */
+.case-page .ledger li {
+    grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
 }
 
 .when {
@@ -2282,5 +2332,34 @@ a {
     .sticker,
     .trophy-icon {
         transition: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .case-page .theme-label {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+    .case-page .ledger li {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .case-page .ledger .when,
+    .case-page .ledger li > div {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .case-page .masthead-row {
+        position: relative;
+    }
+
+    .case-page .theme-toggle {
+        position: absolute;
+        top: 0.85rem;
+        right: 0;
     }
 }

@@ -1,7 +1,8 @@
 /* Retro mode: an early-2000s console FIFA menu (PS2 era). Applies when
    html has data-theme="ps2", set by the Retro switch. */
 
-.hub[data-theme="ps2"] {
+.hub[data-theme="ps2"],
+.case-page[data-theme="ps2"] {
     --font: "Exo 2", Verdana, sans-serif;
     --ps2-navy: #04123a;
     --ps2-blue: #0f4fc4;
@@ -11,7 +12,8 @@
     --ps2-chrome: linear-gradient(180deg, #ffffff 0%, #dfe6f0 45%, #9aa7ba 50%, #c4cedb 75%, #eef2f7 100%);
 }
 
-.hub[data-theme="ps2"] body {
+.hub[data-theme="ps2"] body,
+.case-page[data-theme="ps2"] body {
     color: #fff;
     background:
         linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.07) 30% 34%, transparent 34% 37%, rgba(255, 255, 255, 0.05) 37% 46%, transparent 46%),
@@ -43,20 +45,23 @@
 }
 
 .hub[data-theme="ps2"] .masthead,
-.hub[data-theme="ps2"] .home {
+.hub[data-theme="ps2"] .home,
+.case-page[data-theme="ps2"] .masthead {
     font-family: "Exo 2", Verdana, sans-serif;
 }
 
 /* Top bar: a chrome strip */
 
-.hub[data-theme="ps2"] .masthead {
+.hub[data-theme="ps2"] .masthead,
+.case-page[data-theme="ps2"] .masthead {
     color: var(--ps2-navy);
     background: var(--ps2-chrome);
     border-bottom: 3px solid var(--ps2-navy);
     box-shadow: 0 4px 0 rgba(79, 163, 255, 0.5);
 }
 
-.hub[data-theme="ps2"] .wordmark {
+.hub[data-theme="ps2"] .wordmark,
+.case-page[data-theme="ps2"] .wordmark {
     font-family: "Exo 2", sans-serif;
     font-size: 1.4rem;
     font-weight: 900;
@@ -115,7 +120,8 @@
     border-radius: 50%;
 }
 
-.hub[data-theme="ps2"] .theme-toggle {
+.hub[data-theme="ps2"] .theme-toggle,
+.case-page[data-theme="ps2"] .theme-toggle {
     font-family: "Exo 2", sans-serif;
     font-style: italic;
     font-weight: 800;
@@ -124,12 +130,14 @@
     color: var(--ps2-blue);
 }
 
-.hub[data-theme="ps2"] .theme-switch {
+.hub[data-theme="ps2"] .theme-switch,
+.case-page[data-theme="ps2"] .theme-switch {
     background: var(--ps2-navy);
     box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
 }
 
-.hub[data-theme="ps2"] .theme-switch::after {
+.hub[data-theme="ps2"] .theme-switch::after,
+.case-page[data-theme="ps2"] .theme-switch::after {
     background: linear-gradient(180deg, #ffe680, var(--ps2-yellow) 49%, #f0a800 51%, #ffc93a);
 }
 
@@ -693,7 +701,8 @@
 }
 
 @media (max-width: 480px) {
-    .hub[data-theme="ps2"] .wordmark {
+    .hub[data-theme="ps2"] .wordmark,
+.case-page[data-theme="ps2"] .wordmark {
         font-size: 1.1rem;
     }
 
@@ -711,4 +720,175 @@
     .hub[data-theme="ps2"] .pf-tabs button {
         font-size: 0.85rem;
     }
+}
+
+/* Player photo: the cut-out portrait against a floodlit blue. */
+.hub[data-theme="ps2"] .card.player .c-art {
+    flex-basis: 60%;
+    background:
+        radial-gradient(ellipse 60% 45% at 50% 30%, rgba(190, 225, 255, 0.85), transparent 70%),
+        linear-gradient(180deg, #4f9bff, #1552c4 55%, #072062);
+}
+
+.hub[data-theme="ps2"] .card.player .c-art img {
+    object-fit: cover;
+    object-position: 50% 0;
+}
+
+/* Case files: the blue menu, long-form. No scan lines over reading text. */
+
+.case-page[data-theme="ps2"] {
+    --paper: #0d3a9e;
+    --paper-light: #0a2a78;
+    --paper-deep: #072062;
+    --ink: #ffffff;
+    --ink-soft: #d3e3ff;
+    --rule: rgba(201, 220, 255, 0.45);
+    --accent: var(--ps2-yellow);
+}
+
+.case-page[data-theme="ps2"] body {
+    background-attachment: fixed;
+}
+
+.case-page[data-theme="ps2"] .masthead-row {
+    align-items: center;
+}
+
+.case-page[data-theme="ps2"] .masthead-meta,
+.case-page[data-theme="ps2"] .masthead-nav a {
+    font-size: 0.9rem;
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--ps2-blue);
+}
+
+.case-page[data-theme="ps2"] .masthead-meta {
+    color: #4b5a74;
+}
+
+.case-page[data-theme="ps2"] .masthead-nav a:hover {
+    color: var(--ps2-navy);
+    border-color: var(--ps2-orange);
+}
+
+.case-page[data-theme="ps2"] main .label,
+.case-page[data-theme="ps2"] .when {
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ps2-yellow);
+    text-shadow: 1px 1px 0 var(--ps2-navy);
+}
+
+.case-page[data-theme="ps2"] main *:not(.label, .when, h1, h2) {
+    font-style: normal;
+}
+
+.case-page[data-theme="ps2"] .case-hero h1,
+.case-page[data-theme="ps2"] main h2 {
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 var(--ps2-navy);
+}
+
+.case-page[data-theme="ps2"] .case-hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    text-shadow: 3px 3px 0 var(--ps2-navy);
+}
+
+.case-page[data-theme="ps2"] main h2 {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+}
+
+.case-page[data-theme="ps2"] .link-arrow {
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    color: var(--ps2-yellow);
+    border-bottom: 2px solid var(--ps2-yellow);
+}
+
+.case-page[data-theme="ps2"] .link-arrow:hover {
+    color: #fff;
+    border-color: #fff;
+}
+
+.case-page[data-theme="ps2"] .case-prose a:hover {
+    color: var(--ps2-yellow);
+}
+
+/* Fact strip and feature lists as gel panels */
+
+.case-page[data-theme="ps2"] .case-meta {
+    gap: 0.8rem;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.case-page[data-theme="ps2"] .case-meta > div,
+.case-page[data-theme="ps2"] .case-features li {
+    padding: 1rem 1.1rem 1.1rem;
+    background: linear-gradient(180deg, #3f86f2 0%, #1f5fd6 49%, #1149b8 51%, #1a5ad0 100%);
+    border: 2px solid #cfe0ff;
+    border-radius: 0.8rem;
+    box-shadow: 0 0 0 2px var(--ps2-navy), 0 6px 12px rgba(0, 0, 0, 0.35);
+}
+
+.case-page[data-theme="ps2"] .case-features {
+    gap: 0.9rem;
+    border-top: 0;
+}
+
+.case-page[data-theme="ps2"] .case-features p {
+    color: #e3edff;
+}
+
+.case-page[data-theme="ps2"] .case-shots img {
+    border: 3px solid #c4cedb;
+    border-radius: 0.8rem;
+    box-shadow: 0 0 0 3px var(--ps2-navy), 0 14px 24px rgba(0, 0, 0, 0.45);
+}
+
+.case-page[data-theme="ps2"] .case-shots figcaption {
+    color: #d3e3ff;
+}
+
+/* Closing call to action: a yellow gel panel */
+
+.case-page[data-theme="ps2"] .case-cta .wrap {
+    padding: clamp(1.6rem, 4vw, 2.6rem);
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 49%, #f5a300 51%, var(--ps2-orange) 100%);
+    border: 3px solid #fff;
+    border-radius: 1rem;
+    box-shadow: 0 0 0 3px var(--ps2-navy), 0 16px 30px rgba(0, 0, 0, 0.45);
+}
+
+.case-page[data-theme="ps2"] .case-cta h2 {
+    color: #fff;
+}
+
+.case-page[data-theme="ps2"] .case-cta .link-arrow {
+    color: var(--ps2-navy);
+    border-color: var(--ps2-navy);
+}
+
+.case-page[data-theme="ps2"] .colophon {
+    font-style: italic;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: #d3e3ff;
+    border-top: 2px solid var(--ps2-sky);
+}
+
+.case-page[data-theme="ps2"] :focus-visible {
+    outline-color: var(--ps2-yellow);
 }

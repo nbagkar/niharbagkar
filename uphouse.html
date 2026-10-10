@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="case-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UPHouse | Nihar Bagkar</title>
     <meta name="description" content="Case file: UPHouse, a private, invite-only iOS app that gives a friend group one home for birthdays, a shared calendar, polls, forums, trackers, and daily games.">
-    <meta name="theme-color" content="#f1ead9">
+    <meta name="theme-color" content="#06060d">
     <link rel="canonical" href="https://www.niharbagkar.com/uphouse.html">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
@@ -20,8 +20,17 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme-fut.css">
+    <link rel="stylesheet" href="theme-ps2.css">
+    <script>
+        (function () {
+            var theme;
+            try { theme = localStorage.getItem("nb-theme"); } catch (e) {}
+            document.documentElement.dataset.theme = theme === "ps2" ? "ps2" : "fut";
+        })();
+    </script>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -35,6 +44,7 @@
                 <a href="index.html#path">Path</a>
                 <a href="index.html#contact">Contact</a>
             </nav>
+            <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Retro mode"><span class="theme-switch" aria-hidden="true"></span><span class="theme-label" aria-hidden="true">Retro</span></button>
         </div>
     </header>
 
@@ -58,8 +68,8 @@
         <section class="case-section" aria-labelledby="problem-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 01 &middot; The problem</p>
-                    <h2 id="problem-title">Friend groups run on a dozen scattered chats.</h2>
+                    <p class="label">The problem</p>
+                    <h2 id="problem-title">Friend groups run on a dozen scattered chats</h2>
                 </header>
                 <div class="case-prose">
                     <p>Plans, birthdays, and decisions for a friend group tend to live in group chats, where they scroll away. UPHouse is built as one calm home for everything a crew shares, instead of a dozen scattered chats.</p>
@@ -71,8 +81,8 @@
         <section class="case-section" aria-labelledby="what-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 02 &middot; What it does</p>
-                    <h2 id="what-title">One house for the whole crew.</h2>
+                    <p class="label">What it does</p>
+                    <h2 id="what-title">One house for the whole crew</h2>
                     <p class="section-note">Everything a group shares, in one app.</p>
                 </header>
 
@@ -135,8 +145,8 @@
         <section class="case-section" aria-labelledby="choices-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 03 &middot; Design choices</p>
-                    <h2 id="choices-title">Four choices that shaped it.</h2>
+                    <p class="label">Design choices</p>
+                    <h2 id="choices-title">Four choices that shaped it</h2>
                 </header>
 
                 <ul class="case-features">
@@ -163,8 +173,8 @@
         <section class="case-section" aria-labelledby="stands-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 04 &middot; Where it stands</p>
-                    <h2 id="stands-title">Version 1.0, just launched.</h2>
+                    <p class="label">Where it stands</p>
+                    <h2 id="stands-title">Version 1.0, just launched</h2>
                 </header>
                 <div class="case-prose">
                     <p>UPHouse launched on September 14, 2026 as version 1.0, a free app rated 4+. The App Store flags that it contains user-generated content.</p>
@@ -175,7 +185,7 @@
 
         <section class="case-cta">
             <div class="wrap">
-                <h2>Gather your people.</h2>
+                <h2>Gather your people</h2>
                 <p class="hero-links">
                     <a class="link-arrow" href="https://apps.apple.com/us/app/viridian-uphouse/id6793402489" target="_blank" rel="noopener" data-track="case-uphouse-appstore-end">View on the App Store</a>
                     <a class="link-arrow" href="index.html#binder">Back to the binder</a>
@@ -187,12 +197,26 @@
     <footer class="colophon">
         <div class="wrap colophon-row">
             <p>&copy; 2026 Nihar Bagkar</p>
-            <p>Set in Fraunces. Hand-built, no framework.</p>
+            <p>Hand-built, no framework.</p>
             <a href="#top">Back to top</a>
         </div>
     </footer>
 
     <script>
+        (function () {
+            var root = document.documentElement;
+            var toggle = document.querySelector(".theme-toggle");
+            function set(theme) {
+                root.dataset.theme = theme;
+                toggle.setAttribute("aria-pressed", String(theme === "ps2"));
+            }
+            set(root.dataset.theme);
+            toggle.addEventListener("click", function () {
+                var theme = root.dataset.theme === "ps2" ? "fut" : "ps2";
+                set(theme);
+                try { localStorage.setItem("nb-theme", theme); } catch (e) {}
+            });
+        })();
         document.addEventListener("click", function (event) {
             var link = event.target.closest("a[data-track]");
             if (link && window.goatcounter && window.goatcounter.count) {

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="case-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uber AV Strategy | Nihar Bagkar</title>
     <meta name="description" content="Case file: the first-place answer to Uber&#x27;s case competition, a phased autonomous-vehicle launch in Atlanta that moves from Waymo on Uber to a Rivian R2 fleet Uber owns.">
-    <meta name="theme-color" content="#f1ead9">
+    <meta name="theme-color" content="#06060d">
     <link rel="canonical" href="https://www.niharbagkar.com/uber-av-strategy.html">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
@@ -20,8 +20,17 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme-fut.css">
+    <link rel="stylesheet" href="theme-ps2.css">
+    <script>
+        (function () {
+            var theme;
+            try { theme = localStorage.getItem("nb-theme"); } catch (e) {}
+            document.documentElement.dataset.theme = theme === "ps2" ? "ps2" : "fut";
+        })();
+    </script>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -35,6 +44,7 @@
                 <a href="index.html#path">Path</a>
                 <a href="index.html#contact">Contact</a>
             </nav>
+            <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Retro mode"><span class="theme-switch" aria-hidden="true"></span><span class="theme-label" aria-hidden="true">Retro</span></button>
         </div>
     </header>
 
@@ -59,7 +69,7 @@
         <section class="case-section" aria-labelledby="problem-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 01 &middot; The brief</p>
+                    <p class="label">The brief</p>
                     <h2 id="problem-title">Expand to a new city, or make the current ones pay?</h2>
                 </header>
                 <div class="case-prose">
@@ -72,8 +82,8 @@
         <section class="case-section" aria-labelledby="what-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 02 &middot; The recommendation</p>
-                    <h2 id="what-title">Atlanta, in three phases.</h2>
+                    <p class="label">The recommendation</p>
+                    <h2 id="what-title">Atlanta, in three phases</h2>
                     <p class="section-note">Start with low capital on a partner&rsquo;s fleet, then move to owned-fleet economics once the vehicles exist.</p>
                 </header>
 
@@ -108,8 +118,8 @@
         <section class="case-section" aria-labelledby="choices-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 03 &middot; Why Atlanta</p>
-                    <h2 id="choices-title">The demand is proven, and the supply is nearby.</h2>
+                    <p class="label">Why Atlanta</p>
+                    <h2 id="choices-title">The demand is proven, and the supply is nearby</h2>
                 </header>
 
                 <ul class="case-features">
@@ -147,8 +157,8 @@
         <section class="case-section" aria-labelledby="build-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 04 &middot; The numbers</p>
-                    <h2 id="build-title">Same city, same demand, a better model.</h2>
+                    <p class="label">The numbers</p>
+                    <h2 id="build-title">Same city, same demand, a better model</h2>
                 </header>
                 <div class="case-prose">
                     <p>The base case assumes a $20 fare and 25 trips per vehicle per day. On Waymo&rsquo;s fleet, Uber keeps about 17%, or about $3.06 of net revenue per trip. With an owned Rivian R2 fleet at about $66,300 per vehicle, the take rate rises to about 32% and net revenue to about $5.76 per trip, up 88%. For a 400-vehicle fleet, annual EBITDA potential rises from about $10 million to $28&ndash;48 million.</p>
@@ -171,8 +181,8 @@
         <section class="case-section" aria-labelledby="risks-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 05 &middot; Risks</p>
-                    <h2 id="risks-title">Three risks, each with a mitigant.</h2>
+                    <p class="label">Risks</p>
+                    <h2 id="risks-title">Three risks, each with a mitigant</h2>
                 </header>
 
                 <ul class="case-features">
@@ -195,8 +205,8 @@
         <section class="case-section" aria-labelledby="stands-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 06 &middot; How it landed</p>
-                    <h2 id="stands-title">First place, and one note for next time.</h2>
+                    <p class="label">How it landed</p>
+                    <h2 id="stands-title">First place, and one note for next time</h2>
                 </header>
                 <div class="case-prose">
                     <p>The judges pointed to the utilization anchor, about 25 trips a day against a breakeven of about 12, and to how the case tied Atlanta&rsquo;s airport, Rivian&rsquo;s supply chain, and its talent pool together. They also singled out the bridge from today&rsquo;s Waymo economics to a Rivian-owned fleet, and a roadmap that linked feasibility to financial outcomes.</p>
@@ -207,7 +217,7 @@
 
         <section class="case-cta">
             <div class="wrap">
-                <h2>See the full case.</h2>
+                <h2>See the full case</h2>
                 <p class="hero-links">
                     <a class="link-arrow" href="https://canva.link/6xrpu0uywghgwhw" target="_blank" rel="noopener" data-track="case-uber-deck-end">View the deck</a>
                     <a class="link-arrow" href="https://claude.ai/public/artifacts/aec9d677-cf51-4c71-a3b5-52e7b7548a85" target="_blank" rel="noopener" data-track="case-uber-model-end">Open the financial model</a>
@@ -220,12 +230,26 @@
     <footer class="colophon">
         <div class="wrap colophon-row">
             <p>&copy; 2026 Nihar Bagkar</p>
-            <p>Set in Fraunces. Hand-built, no framework.</p>
+            <p>Hand-built, no framework.</p>
             <a href="#top">Back to top</a>
         </div>
     </footer>
 
     <script>
+        (function () {
+            var root = document.documentElement;
+            var toggle = document.querySelector(".theme-toggle");
+            function set(theme) {
+                root.dataset.theme = theme;
+                toggle.setAttribute("aria-pressed", String(theme === "ps2"));
+            }
+            set(root.dataset.theme);
+            toggle.addEventListener("click", function () {
+                var theme = root.dataset.theme === "ps2" ? "fut" : "ps2";
+                set(theme);
+                try { localStorage.setItem("nb-theme", theme); } catch (e) {}
+            });
+        })();
         document.addEventListener("click", function (event) {
             var link = event.target.closest("a[data-track]");
             if (link && window.goatcounter && window.goatcounter.count) {

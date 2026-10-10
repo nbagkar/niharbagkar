@@ -1,7 +1,8 @@
 /* Current look: an EA FC Ultimate Team menu. Applies when html has
    data-theme="fut", the default. */
 
-.hub[data-theme="fut"] {
+.hub[data-theme="fut"],
+.case-page[data-theme="fut"] {
     --font: "Saira", "Arial Narrow", sans-serif;
     --fut-bg: #06060d;
     --fut-glass: rgba(255, 255, 255, 0.07);
@@ -15,7 +16,8 @@
     --fut-cut: 1.1rem;
 }
 
-.hub[data-theme="fut"] body {
+.hub[data-theme="fut"] body,
+.case-page[data-theme="fut"] body {
     color: #fff;
     background:
         radial-gradient(ellipse 55% 60% at 88% 8%, rgba(255, 45, 135, 0.38), transparent 60%),
@@ -26,20 +28,23 @@
 }
 
 .hub[data-theme="fut"] .masthead,
-.hub[data-theme="fut"] .home {
+.hub[data-theme="fut"] .home,
+.case-page[data-theme="fut"] .masthead {
     font-family: "Saira", "Arial Narrow", sans-serif;
     font-stretch: 100%;
 }
 
 /* Top bar */
 
-.hub[data-theme="fut"] .masthead {
+.hub[data-theme="fut"] .masthead,
+.case-page[data-theme="fut"] .masthead {
     color: #fff;
     border-bottom: 1px solid var(--fut-line);
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
 }
 
-.hub[data-theme="fut"] .wordmark {
+.hub[data-theme="fut"] .wordmark,
+.case-page[data-theme="fut"] .wordmark {
     font-family: "Saira", sans-serif;
     font-size: 1.35rem;
     font-weight: 900;
@@ -49,7 +54,8 @@
     text-transform: uppercase;
 }
 
-.hub[data-theme="fut"] .wordmark::after {
+.hub[data-theme="fut"] .wordmark::after,
+.case-page[data-theme="fut"] .wordmark::after {
     content: "";
     display: inline-block;
     width: 0.5rem;
@@ -103,7 +109,8 @@
     background: var(--fut-glass);
 }
 
-.hub[data-theme="fut"] .theme-toggle {
+.hub[data-theme="fut"] .theme-toggle,
+.case-page[data-theme="fut"] .theme-toggle {
     font-family: "Saira", sans-serif;
     font-style: normal;
     font-weight: 600;
@@ -114,7 +121,8 @@
     color: var(--fut-dim);
 }
 
-.hub[data-theme="fut"] .theme-toggle:hover {
+.hub[data-theme="fut"] .theme-toggle:hover,
+.case-page[data-theme="fut"] .theme-toggle:hover {
     color: var(--fut-aqua);
 }
 
@@ -778,7 +786,8 @@
 }
 
 @media (max-width: 480px) {
-    .hub[data-theme="fut"] .wordmark {
+    .hub[data-theme="fut"] .wordmark,
+.case-page[data-theme="fut"] .wordmark {
         font-size: 1.1rem;
     }
 
@@ -796,4 +805,168 @@
     .hub[data-theme="fut"] .pf-tabs button {
         font-size: 0.85rem;
     }
+}
+
+/* Player photo: the cut-out portrait stands on the gold, lit from behind. */
+.hub[data-theme="fut"] .card.player .c-art {
+    flex-basis: 64%;
+    margin: -3cqw -3cqw 0;
+    background: radial-gradient(ellipse 55% 50% at 50% 38%, rgba(255, 255, 255, 0.6), transparent 70%);
+}
+
+.hub[data-theme="fut"] .card.player .c-art img {
+    object-fit: cover;
+    object-position: 50% 0;
+}
+
+/* Case files: the same dark stadium, long-form. */
+
+.case-page[data-theme="fut"] {
+    --paper: #12121f;
+    --paper-light: #1c1c30;
+    --paper-deep: #0b0b15;
+    --ink: #ffffff;
+    --ink-soft: rgba(255, 255, 255, 0.68);
+    --rule: rgba(255, 255, 255, 0.22);
+    --accent: var(--fut-aqua);
+}
+
+.case-page[data-theme="fut"] body {
+    background-attachment: fixed;
+}
+
+.case-page[data-theme="fut"] .masthead {
+    background: rgba(6, 6, 13, 0.86);
+    backdrop-filter: blur(10px);
+}
+
+.case-page[data-theme="fut"] .masthead-row {
+    align-items: center;
+}
+
+.case-page[data-theme="fut"] .masthead-meta,
+.case-page[data-theme="fut"] .masthead-nav a,
+.case-page[data-theme="fut"] .colophon {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fut-dim);
+}
+
+.case-page[data-theme="fut"] .masthead-nav a:hover {
+    color: var(--fut-aqua);
+    border-color: var(--fut-aqua);
+}
+
+.case-page[data-theme="fut"] main * {
+    font-style: normal;
+}
+
+.case-page[data-theme="fut"] main .label,
+.case-page[data-theme="fut"] .when {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fut-aqua);
+}
+
+.case-page[data-theme="fut"] .case-hero h1,
+.case-page[data-theme="fut"] main h2 {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+.case-page[data-theme="fut"] .case-hero h1 {
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+}
+
+.case-page[data-theme="fut"] main h2 {
+    font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+}
+
+.case-page[data-theme="fut"] .link-arrow {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.95rem;
+    border-bottom: 2px solid var(--fut-aqua);
+}
+
+.case-page[data-theme="fut"] .link-arrow:hover {
+    color: var(--fut-aqua);
+}
+
+/* Fact strip and feature lists as glass panels */
+
+.case-page[data-theme="fut"] .case-meta {
+    gap: 0.7rem;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.case-page[data-theme="fut"] .case-meta > div,
+.case-page[data-theme="fut"] .case-features li {
+    padding: 1rem 1.1rem 1.1rem;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03) 60%);
+    border: 1px solid var(--fut-line);
+    box-shadow: inset 0 -3px 0 var(--fut-aqua);
+    clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 0.9rem, 100% 100%, 0 100%);
+}
+
+.case-page[data-theme="fut"] .case-features {
+    gap: 0.7rem;
+    border-top: 0;
+}
+
+.case-page[data-theme="fut"] .case-list li,
+.case-page[data-theme="fut"] .case-related,
+.case-page[data-theme="fut"] .ledger li {
+    border-color: var(--fut-line);
+}
+
+.case-page[data-theme="fut"] .case-list li::before {
+    font-weight: 800;
+}
+
+.case-page[data-theme="fut"] .case-shots img {
+    border: 1px solid var(--fut-line);
+    border-radius: 0.4rem;
+    box-shadow: 0 18px 30px -14px rgba(0, 0, 0, 0.8);
+}
+
+.case-page[data-theme="fut"] .case-shots figcaption {
+    color: var(--fut-dim);
+}
+
+/* Closing call to action: the Squad tile's colours */
+
+.case-page[data-theme="fut"] .case-cta .wrap {
+    padding: clamp(1.6rem, 4vw, 2.6rem);
+    background:
+        radial-gradient(ellipse 70% 60% at 80% 10%, rgba(255, 255, 255, 0.2), transparent 60%),
+        linear-gradient(135deg, #3b1ed6 0%, #9b1fd1 55%, #ff2d87 100%);
+    clip-path: polygon(0 0, calc(100% - 1.8rem) 0, 100% 1.8rem, 100% 100%, 0 100%);
+}
+
+.case-page[data-theme="fut"] .case-cta .link-arrow {
+    border-color: #fff;
+}
+
+.case-page[data-theme="fut"] .case-cta .link-arrow:hover {
+    color: #fff;
+    opacity: 0.8;
+}
+
+.case-page[data-theme="fut"] .colophon {
+    border-top: 1px solid var(--fut-line);
+}
+
+.case-page[data-theme="fut"] :focus-visible {
+    outline-color: var(--fut-aqua);
 }

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="case-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soccer Analytics | Nihar Bagkar</title>
     <meta name="description" content="Case file: Soccer Analytics, a football forecasting app built on free data for $0, which grades its own predictions against the bookmaker&#x27;s closing odds.">
-    <meta name="theme-color" content="#f1ead9">
+    <meta name="theme-color" content="#06060d">
     <link rel="canonical" href="https://www.niharbagkar.com/soccer-analytics.html">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
@@ -20,8 +20,17 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme-fut.css">
+    <link rel="stylesheet" href="theme-ps2.css">
+    <script>
+        (function () {
+            var theme;
+            try { theme = localStorage.getItem("nb-theme"); } catch (e) {}
+            document.documentElement.dataset.theme = theme === "ps2" ? "ps2" : "fut";
+        })();
+    </script>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -35,6 +44,7 @@
                 <a href="index.html#path">Path</a>
                 <a href="index.html#contact">Contact</a>
             </nav>
+            <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Retro mode"><span class="theme-switch" aria-hidden="true"></span><span class="theme-label" aria-hidden="true">Retro</span></button>
         </div>
     </header>
 
@@ -58,8 +68,8 @@
         <section class="case-section" aria-labelledby="problem-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 01 &middot; The problem</p>
-                    <h2 id="problem-title">Good football analytics usually sit behind paid data.</h2>
+                    <p class="label">The problem</p>
+                    <h2 id="problem-title">Good football analytics usually sit behind paid data</h2>
                 </header>
                 <div class="case-prose">
                     <p>Free sources exist, but their real limits are rarely written down: delayed scores, no lineups, endpoints nobody documents.</p>
@@ -71,8 +81,8 @@
         <section class="case-section" aria-labelledby="what-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 02 &middot; What it does</p>
-                    <h2 id="what-title">Five steps from free data to a graded forecast.</h2>
+                    <p class="label">What it does</p>
+                    <h2 id="what-title">Five steps from free data to a graded forecast</h2>
                 </header>
 
                 <ul class="case-features">
@@ -114,8 +124,8 @@
         <section class="case-section" aria-labelledby="choices-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label">&sect; 03 &middot; Design choices</p>
-                    <h2 id="choices-title">Four rules it was built under.</h2>
+                    <p class="label">Design choices</p>
+                    <h2 id="choices-title">Four rules it was built under</h2>
                 </header>
 
                 <ul class="case-features">
@@ -142,8 +152,8 @@
         <section class="case-section" aria-labelledby="build-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 04 &middot; Under the hood</p>
-                    <h2 id="build-title">A replayable pipeline, with its limits written down.</h2>
+                    <p class="label">Under the hood</p>
+                    <h2 id="build-title">A replayable pipeline, with its limits written down</h2>
                 </header>
                 <div class="case-prose">
                     <p>Source adapters write raw snapshots, which flow into canonical match resolution, a SQLite live store, and a DuckDB analytics store. The models are Elo, ratio-method and Dixon-Coles Poisson, a shots-on-target blend, market-implied ratings, Monte Carlo season simulation, and expected threat built from StatsBomb events.</p>
@@ -155,8 +165,8 @@
         <section class="case-section" aria-labelledby="stands-title">
             <div class="wrap case-split">
                 <header class="section-head">
-                    <p class="label">&sect; 05 &middot; Where it stands</p>
-                    <h2 id="stands-title">Better informed, and still behind the market.</h2>
+                    <p class="label">Where it stands</p>
+                    <h2 id="stands-title">Better informed, and still behind the market</h2>
                 </header>
                 <div class="case-prose">
                     <p>It works end to end, with automatic data refresh. On 10,021 matches across nine leagues the model was never tuned on, market-implied ratings cut the log-loss gap to the closing line from +0.0194 to +0.0127, and all 18 leagues tested improved.</p>
@@ -167,7 +177,7 @@
 
         <section class="case-cta">
             <div class="wrap">
-                <h2>Read the code.</h2>
+                <h2>Read the code</h2>
                 <p class="hero-links">
                     <a class="link-arrow" href="https://github.com/nbagkar/soccer-analytics" target="_blank" rel="noopener" data-track="case-soccer-analytics-github-end">View the code on GitHub</a>
                     <a class="link-arrow" href="index.html#binder">Back to the binder</a>
@@ -179,12 +189,26 @@
     <footer class="colophon">
         <div class="wrap colophon-row">
             <p>&copy; 2026 Nihar Bagkar</p>
-            <p>Set in Fraunces. Hand-built, no framework.</p>
+            <p>Hand-built, no framework.</p>
             <a href="#top">Back to top</a>
         </div>
     </footer>
 
     <script>
+        (function () {
+            var root = document.documentElement;
+            var toggle = document.querySelector(".theme-toggle");
+            function set(theme) {
+                root.dataset.theme = theme;
+                toggle.setAttribute("aria-pressed", String(theme === "ps2"));
+            }
+            set(root.dataset.theme);
+            toggle.addEventListener("click", function () {
+                var theme = root.dataset.theme === "ps2" ? "fut" : "ps2";
+                set(theme);
+                try { localStorage.setItem("nb-theme", theme); } catch (e) {}
+            });
+        })();
         document.addEventListener("click", function (event) {
             var link = event.target.closest("a[data-track]");
             if (link && window.goatcounter && window.goatcounter.count) {
