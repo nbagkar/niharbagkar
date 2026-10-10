@@ -604,8 +604,9 @@
     text-transform: uppercase;
 }
 
-.hub[data-theme="ps2"] .book-name {
-    font-size: clamp(1.3rem, 2.1vw, 1.8rem);
+.hub[data-theme="ps2"] .book-name,
+.hub[data-theme="ps2"] #about .book-name {
+    font-size: clamp(1.05rem, 1.6vw, 1.4rem);
     font-weight: 900;
     font-style: italic;
     text-transform: uppercase;

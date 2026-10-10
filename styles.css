@@ -955,6 +955,10 @@ a {
     line-height: 1;
 }
 
+.book-name .nowrap {
+    white-space: nowrap;
+}
+
 .book-by {
     line-height: 1.2;
     opacity: 0.85;
