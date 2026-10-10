@@ -72,28 +72,8 @@
     text-shadow: 1px 1px 0 #fff, 2px 2px 0 var(--ps2-navy);
 }
 
-.hub[data-theme="ps2"] .hub-stats {
-    gap: 0.5rem;
-    font-style: normal;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #8fd0ff;
-}
 
-/* Stats read like a scoreboard: recessed, glowing digits. */
-.hub[data-theme="ps2"] .hub-stats span {
-    padding: 0.15rem 0.7rem;
-    background: linear-gradient(180deg, #020b26, #0a2264);
-    border: 1px solid #5d6b82;
-    border-radius: 0.3rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
-}
 
-.hub[data-theme="ps2"] .hub-stats strong {
-    font-weight: 800;
-    color: var(--ps2-yellow);
-    text-shadow: 0 0 6px rgba(255, 210, 31, 0.7);
-}
 
 .hub[data-theme="ps2"] .hub-resume,
 .hub[data-theme="ps2"] .sound-toggle {

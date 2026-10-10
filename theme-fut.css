@@ -65,26 +65,8 @@
     transform: skewX(-18deg);
 }
 
-.hub[data-theme="fut"] .hub-stats {
-    gap: 0.5rem;
-    font-style: normal;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fut-dim);
-}
 
-.hub[data-theme="fut"] .hub-stats span {
-    padding: 0.2rem 0.75rem;
-    background: var(--fut-glass);
-    border: 1px solid var(--fut-line);
-    clip-path: polygon(0.45rem 0, 100% 0, calc(100% - 0.45rem) 100%, 0 100%);
-}
 
-.hub[data-theme="fut"] .hub-stats strong {
-    font-weight: 800;
-    color: #fff;
-}
 
 .hub[data-theme="fut"] .hub-resume {
     padding: 0.25rem 1.1rem;

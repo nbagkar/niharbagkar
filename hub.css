@@ -1,7 +1,6 @@
 /* Home-screen view. Everything here applies only with html.hub; without it
    (no JavaScript) the page reads as the long-form portfolio. */
 
-.hub-stats,
 .screen-bar,
 .hub-resume,
 .sound-toggle {
@@ -65,23 +64,10 @@ kbd {
     display: none;
 }
 
-.hub .hub-stats {
-    display: flex;
-    gap: 1.4rem;
-    margin-left: auto;
-    font-style: italic;
-    color: #c7c3b2;
-}
-
-.hub .hub-stats strong {
-    font-style: normal;
-    font-weight: 700;
-    color: var(--paper-light);
-}
-
 .hub .hub-resume {
     display: inline-block;
     flex: none;
+    margin-left: auto;
     padding: 0.15rem 0.85rem;
     font-style: italic;
     color: var(--ink);
@@ -743,23 +729,9 @@ kbd {
     }
 }
 
-@media (max-width: 1000px) {
-    .hub .hub-stats {
-        display: none;
-    }
-
-    .hub .hub-resume {
-        margin-left: auto;
-    }
-}
-
 /* Phone and narrow screens */
 
 @media (max-width: 760px) {
-    .hub .hub-stats {
-        display: none;
-    }
-
     .hub .masthead-row {
         gap: 0.7rem;
     }
