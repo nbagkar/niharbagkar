@@ -192,32 +192,44 @@
 .hub #about .reading-grid {
     display: block;
     width: auto;
-    margin: 0 0 1rem clamp(1rem, 3vw, 2.4rem);
+    margin: 0 clamp(1rem, 3vw, 2.4rem) 1rem;
 }
 
 .hub #about .reading .section-head .label {
     display: none;
 }
 
-/* One row that scrolls sideways, so the shelf can keep growing. */
+/* A grid that adds rows as the shelf grows; the screen zooms to fit. */
 .hub #about .books {
-    flex-wrap: nowrap;
-    gap: clamp(0.9rem, 2vw, 1.6rem);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(6.5rem, 9vw, 9rem), 1fr));
+    gap: 1.2rem clamp(0.9rem, 1.8vw, 1.4rem);
     margin-top: 1.2rem;
-    padding: 0.4rem 0.2rem 0.8rem;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: thin;
 }
 
 .hub #about .book {
-    flex: none;
-    width: clamp(7.5rem, 10.2vw, 10.5rem);
-    scroll-snap-align: start;
+    width: auto;
+    max-width: 10rem;
+    container-type: inline-size;
+}
+
+/* Cover type scales with the cover, so every book keeps its shape. */
+.hub #about .book-cover {
+    padding: 10cqi 8cqi 9cqi 12cqi;
+    overflow: hidden;
 }
 
 .hub #about .book-name {
-    font-size: clamp(1.25rem, 1.9vw, 1.7rem);
+    font-size: 15cqi;
+}
+
+.hub #about .book-by {
+    font-size: 10cqi;
+}
+
+.hub #about .book-status,
+.hub #about .book-meta {
+    font-size: 0.9rem;
 }
 
 /* Bio: the intro across the top, the notes in two balanced columns. */

@@ -970,3 +970,7 @@
 .case-page[data-theme="fut"] :focus-visible {
     outline-color: var(--fut-aqua);
 }
+
+.hub[data-theme="fut"] #about .book-name {
+    font-size: 18cqi;
+}
