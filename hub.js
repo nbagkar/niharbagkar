@@ -9,7 +9,8 @@
     const playerWrap = document.querySelector(".player-wrap");
     const about = document.getElementById("about");
     const notes = document.getElementById("notes");
-    const toggle = document.querySelector(".view-toggle");
+    const reading = document.getElementById("reading");
+    const themeToggle = document.querySelector(".theme-toggle");
     const tiles = Array.from(home.querySelectorAll(".tile"));
     const motion = typeof motionOK !== "undefined" && motionOK;
 
@@ -22,7 +23,7 @@
         kickoff: "Kick off",
         contact: "Transfer request",
     };
-    const ALIASES = { top: "home", main: "home", notes: "about", pitch: "kickoff", squad: "binder", formation: "binder" };
+    const ALIASES = { top: "home", main: "home", notes: "about", reading: "about", pitch: "kickoff", squad: "binder", formation: "binder" };
     let current = null;
 
     function count(name, title) {
@@ -33,23 +34,11 @@
         if (window.sfx) window.sfx(name);
     }
 
-    // Section headings read as editorial copy in Classic view and as the
+    // Section headings read as long-form copy without JavaScript and as the
     // menu's own names on the home screen.
-    const retitled = Array.from(document.querySelectorAll("[data-hub]"));
-    retitled.forEach((node) => (node.dataset.classic = node.textContent));
-
-    function retitle(hub) {
-        retitled.forEach((node) => (node.textContent = hub ? node.dataset.hub : node.dataset.classic));
+    function retitle() {
+        document.querySelectorAll("[data-hub]").forEach((node) => (node.textContent = node.dataset.hub));
     }
-
-    // Moved nodes leave a marker so the classic page can put them back.
-    function marker(node) {
-        const mark = document.createComment("hub-slot");
-        node.before(mark);
-        return mark;
-    }
-    const playerSlot = marker(playerWrap);
-    const notesSlot = marker(notes);
 
     Object.keys(SCREENS).forEach((id) => {
         if (id === "home") return;
@@ -247,54 +236,34 @@
     }
 
     function enterHub() {
-        root.classList.add("hub");
         home.hidden = false;
         hero.appendChild(playerWrap);
         about.appendChild(notes);
-        retitle(true);
-        toggle.innerHTML = "Classic<span class=\"vt-more\"> view</span>";
+        about.appendChild(reading);
+        retitle();
         current = null;
         show(screenFor(location.hash));
         window.scrollTo(0, 0);
     }
 
-    function leaveHub() {
-        stopWarp();
-        window.clearTimeout(arriveTimer);
-        root.classList.remove("hub");
-        home.hidden = true;
-        playerSlot.after(playerWrap);
-        notesSlot.after(notes);
-        retitle(false);
-        main.querySelectorAll(":scope > section").forEach((section) => section.classList.remove("is-active"));
-        delete main.dataset.screen;
-        toggle.textContent = "Home screen";
-        document.title = "Nihar Bagkar";
-        const target = current && current !== "home" ? document.getElementById(current) : null;
-        current = null;
-        window.scrollTo(0, target ? target.offsetTop - 70 : 0);
-        window.dispatchEvent(new Event("resize"));
+    // Retro mode swaps the Ultimate Team look for a PS2-era one.
+    function setTheme(theme) {
+        root.dataset.theme = theme;
+        themeToggle.setAttribute("aria-pressed", String(theme === "ps2"));
     }
 
-    function remember(view) {
+    themeToggle.addEventListener("click", () => {
+        const theme = root.dataset.theme === "ps2" ? "fut" : "ps2";
+        setTheme(theme);
         try {
-            localStorage.setItem("nb-view", view);
+            localStorage.setItem("nb-theme", theme);
         } catch (error) {
             /* Private mode: the choice lasts for this visit only. */
         }
-    }
-
-    toggle.addEventListener("click", () => {
-        if (root.classList.contains("hub")) {
-            leaveHub();
-            remember("classic");
-            count("view-classic", "Switched to classic view");
-        } else {
-            enterHub();
-            remember("hub");
-            count("view-hub", "Switched to home screen view");
-        }
+        sound("tab");
+        count(`theme-${theme}`, theme === "ps2" ? "Switched to retro mode" : "Switched to current mode");
     });
+    setTheme(root.dataset.theme === "ps2" ? "ps2" : "fut");
 
     document.addEventListener("click", (event) => {
         if (!root.classList.contains("hub")) return;
@@ -457,7 +426,5 @@
     if (root.classList.contains("hub")) {
         enterHub();
         if (current === "home" && !packSeen()) openIntro();
-    } else {
-        toggle.textContent = "Home screen";
     }
 })();

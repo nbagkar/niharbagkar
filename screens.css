@@ -113,6 +113,7 @@
 /* --fit is set by screens.js when a screen is taller than the window. */
 .hub #about > .about-grid,
 .hub #about > .notes,
+.hub #about > .reading,
 .hub #path > .wrap,
 .hub #index > .wrap,
 .hub #contact > .wrap {
@@ -175,8 +176,35 @@
 .hub #about[data-tab="playstyles"] .notes-body,
 .hub #about[data-tab="bio"] .glance,
 .hub #about[data-tab="bio"] .notes .section-head,
-.hub #about[data-tab="bio"] .useful {
+.hub #about[data-tab="bio"] .useful,
+.hub #about:not([data-tab="reading"]) > .reading,
+.hub #about[data-tab="reading"] > .about-grid,
+.hub #about[data-tab="reading"] > .notes {
     display: none;
+}
+
+/* Reading: the shelf takes the panel the overview uses. */
+.hub #about > .reading {
+    grid-area: a;
+    padding: 1rem 0 0;
+}
+
+.hub #about .reading-grid {
+    display: block;
+    width: auto;
+    margin: 0 0 1rem clamp(1rem, 3vw, 2.4rem);
+}
+
+.hub #about .reading .section-head .label {
+    display: none;
+}
+
+.hub #about .books {
+    margin-top: 1.2rem;
+}
+
+.hub #about .book {
+    width: clamp(9rem, 14vw, 12.5rem);
 }
 
 /* Bio: the intro across the top, the notes in two balanced columns. */

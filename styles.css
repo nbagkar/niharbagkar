@@ -863,6 +863,92 @@ a {
     font-weight: 700;
 }
 
+/* Reading */
+
+.reading {
+    padding: 0 0 clamp(4rem, 9vw, 7rem);
+}
+
+.reading-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: start;
+}
+
+.books {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1.2rem, 3vw, 2.4rem);
+}
+
+.book {
+    width: 10rem;
+}
+
+.book-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 2 / 3;
+    padding: 1rem 0.9rem 0.9rem 1.2rem;
+    color: #fff;
+    background: var(--book);
+    border-radius: 0.15rem 0.35rem 0.35rem 0.15rem;
+    box-shadow: inset 0.35rem 0 0 rgba(0, 0, 0, 0.2), inset 0.45rem 0 0 rgba(255, 255, 255, 0.12), 0 12px 18px -10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.book:hover .book-cover {
+    transform: translateY(-4px) rotate(-1deg);
+}
+
+.book-name {
+    font-size: var(--title);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.book-by {
+    line-height: 1.2;
+    opacity: 0.85;
+}
+
+.book-status {
+    margin-top: 0.8rem;
+    color: var(--ink-soft);
+}
+
+.book-status.is-now {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.book-meta {
+    line-height: 1.35;
+}
+
+.book-meta cite {
+    display: block;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.book-meta span {
+    color: var(--ink-soft);
+}
+
+@media (max-width: 760px) {
+    .reading-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .book {
+        width: calc(50% - 0.6rem);
+    }
+}
+
 /* Path */
 
 .path {

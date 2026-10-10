@@ -1,9 +1,8 @@
-/* Mockup: an early-2000s console FIFA menu (PS2 era). Loaded only with
-   ?theme=ps2, and only the home screen and the top bar are restyled. */
-
-@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&display=swap");
+/* Retro mode: an early-2000s console FIFA menu (PS2 era). Applies when
+   html has data-theme="ps2", set by the Retro switch. */
 
 .hub[data-theme="ps2"] {
+    --font: "Exo 2", Verdana, sans-serif;
     --ps2-navy: #04123a;
     --ps2-blue: #0f4fc4;
     --ps2-sky: #4fa3ff;
@@ -116,14 +115,22 @@
     border-radius: 50%;
 }
 
-.hub[data-theme="ps2"] .view-toggle {
+.hub[data-theme="ps2"] .theme-toggle {
     font-family: "Exo 2", sans-serif;
     font-style: italic;
     font-weight: 800;
     text-transform: uppercase;
     font-size: 0.9rem;
     color: var(--ps2-blue);
-    border-bottom: 0;
+}
+
+.hub[data-theme="ps2"] .theme-switch {
+    background: var(--ps2-navy);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.hub[data-theme="ps2"] .theme-switch::after {
+    background: linear-gradient(180deg, #ffe680, var(--ps2-yellow) 49%, #f0a800 51%, #ffc93a);
 }
 
 /* Tiles: glossy gel buttons */
@@ -292,23 +299,23 @@
     background: radial-gradient(closest-side, rgba(140, 210, 255, 0.55), rgba(15, 79, 196, 0.25) 60%, transparent);
 }
 
-.hub[data-theme="ps2"] .hero .card.player .face {
+.hub[data-theme="ps2"] .card.player .face {
     border: 1.6cqw solid #c4cedb;
     border-radius: 4cqw;
     box-shadow: inset 0 0 0 0.6cqw #fff, 0 0 0 0.6cqw var(--ps2-navy);
 }
 
-.hub[data-theme="ps2"] .hero .card.player .face * {
+.hub[data-theme="ps2"] .card.player .face * {
     font-family: "Exo 2", sans-serif;
 }
 
-.hub[data-theme="ps2"] .hero .card.player .c-head h3 {
+.hub[data-theme="ps2"] .card.player .c-head h3 {
     font-weight: 900;
     font-style: italic;
     text-transform: uppercase;
 }
 
-.hub[data-theme="ps2"] .hero .card.player .c-type {
+.hub[data-theme="ps2"] .card.player .c-type {
     font-style: italic;
     font-weight: 700;
     text-transform: uppercase;
@@ -317,7 +324,7 @@
     border-radius: 0.6cqw;
 }
 
-.hub[data-theme="ps2"] .hero .player-cap {
+.hub[data-theme="ps2"] .player-cap {
     font-family: "Exo 2", sans-serif;
     font-style: italic;
     font-weight: 700;
@@ -327,7 +334,7 @@
     animation: ps2-blink 1.6s steps(2, start) infinite;
 }
 
-.hub[data-theme="ps2"] .hero .player-cap .label {
+.hub[data-theme="ps2"] .player-cap .label {
     display: none;
 }
 
@@ -412,7 +419,296 @@
 @media (prefers-reduced-motion: reduce) {
     .hub[data-theme="ps2"] body::after,
     .hub[data-theme="ps2"] .tile.is-selected,
-    .hub[data-theme="ps2"] .hero .player-cap {
+    .hub[data-theme="ps2"] .player-cap {
         animation: none;
+    }
+}
+
+/* Screens: blue sheets in a chrome frame. The shared tokens flip to
+   light-on-blue here, and every card goes back to its own light tokens. */
+
+.hub[data-theme="ps2"] main > section:not(.home) {
+    --paper: #0d3a9e;
+    --paper-light: #0a2a78;
+    --paper-deep: #072062;
+    --ink: #ffffff;
+    --ink-soft: #c9dcff;
+    --rule: rgba(201, 220, 255, 0.45);
+    --accent: var(--ps2-yellow);
+    color: #fff;
+    background:
+        linear-gradient(115deg, transparent 55%, rgba(255, 255, 255, 0.06) 55% 60%, transparent 60%),
+        linear-gradient(180deg, #1552c4 0%, #0b3592 60%, #082a7a 100%);
+    border: 3px solid #c4cedb;
+    border-radius: 1rem;
+    box-shadow: 0 0 0 3px var(--ps2-navy), inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.hub[data-theme="ps2"] .card {
+    --paper: #f1ead9;
+    --paper-light: #f8f3e6;
+    --paper-deep: #e7dec7;
+    --ink: #1b1812;
+    --ink-soft: #4d4737;
+    --rule: #1b1812;
+    --accent: #c8391f;
+}
+
+/* The pitch keeps a light surface so the game's drawn lines still read. */
+.hub[data-theme="ps2"] .pitch-stage {
+    --paper-light: #d9ecd2;
+    --ink: #1b1812;
+    --accent: #c8391f;
+}
+
+/* Type inside screens: yellow italic labels, chunky shadowed titles. */
+
+.hub[data-theme="ps2"] main > section:not(.home) .label,
+.hub[data-theme="ps2"] .screen-name {
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ps2-yellow);
+    text-shadow: 1px 1px 0 var(--ps2-navy);
+}
+
+.hub[data-theme="ps2"] main > section:not(.home) h2 {
+    font-size: clamp(1.8rem, 3.2vw, 2.7rem);
+}
+
+.hub[data-theme="ps2"] main > section:not(.home) h2,
+.hub[data-theme="ps2"] .tx-club {
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 var(--ps2-navy);
+}
+
+/* Screen chrome */
+
+.hub[data-theme="ps2"] .screen-bar {
+    background: linear-gradient(180deg, rgba(4, 18, 58, 0.75), rgba(4, 18, 58, 0.95));
+    border-bottom: 2px solid var(--ps2-sky);
+}
+
+.hub[data-theme="ps2"] .screen-back,
+.hub[data-theme="ps2"] main > section:not(.home) .btn {
+    font-style: italic;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 48%, #f0a800 52%, #ffc93a 100%);
+    border: 2px solid var(--ps2-navy);
+    border-radius: 0.6rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.hub[data-theme="ps2"] .screen-back:hover,
+.hub[data-theme="ps2"] main > section:not(.home) .btn:hover {
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffd08a 0%, var(--ps2-orange) 48%, #e06a00 52%, #ffa640 100%);
+}
+
+.hub[data-theme="ps2"] .screen-back kbd {
+    border-color: var(--ps2-navy);
+}
+
+/* Tab bars: Profile, Squad, the Kick off level picker */
+
+.hub[data-theme="ps2"] .pf-tabs,
+.hub[data-theme="ps2"] .squad-views {
+    background: linear-gradient(180deg, #020b26, #0a2264);
+    border: 2px solid #c4cedb;
+    border-radius: 0.8rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.hub[data-theme="ps2"] .pf-tabs button,
+.hub[data-theme="ps2"] .squad-views button,
+.hub[data-theme="ps2"] .pitch-seg span {
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    color: #c9dcff;
+    border-radius: 0.5rem;
+}
+
+.hub[data-theme="ps2"] .pitch-seg span {
+    background: linear-gradient(180deg, #3f86f2 0%, #1f5fd6 49%, #1149b8 51%, #1a5ad0 100%);
+    border: 2px solid #cfe0ff;
+    color: #fff;
+}
+
+.hub[data-theme="ps2"] .pf-tabs button[aria-selected="true"],
+.hub[data-theme="ps2"] .squad-views button[aria-selected="true"],
+.hub[data-theme="ps2"] .pitch-seg input:checked + span {
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 49%, #f5a300 51%, var(--ps2-orange) 100%);
+}
+
+/* Panels: blue gel */
+
+.hub[data-theme="ps2"] #about .glance > div {
+    background: linear-gradient(180deg, #3f86f2 0%, #1f5fd6 49%, #1149b8 51%, #1a5ad0 100%);
+    border: 2px solid #cfe0ff;
+    border-radius: 0.8rem;
+    box-shadow: 0 0 0 2px var(--ps2-navy), 0 6px 12px rgba(0, 0, 0, 0.35);
+}
+
+.hub[data-theme="ps2"] #about .glance dd {
+    color: #e3edff;
+}
+
+.hub[data-theme="ps2"] .glance-big {
+    font-weight: 900;
+    font-style: italic;
+    text-shadow: 2px 2px 0 var(--ps2-navy);
+}
+
+.hub[data-theme="ps2"] .tx-card {
+    color: #fff;
+    border: 3px solid #c4cedb;
+    box-shadow: 0 0 0 3px var(--ps2-navy), 0 14px 26px rgba(0, 0, 0, 0.5);
+}
+
+.hub[data-theme="ps2"] .tx-meta {
+    color: var(--ps2-yellow);
+}
+
+.hub[data-theme="ps2"] .tx-stamp {
+    color: var(--ps2-yellow);
+    border-color: var(--ps2-yellow);
+}
+
+.hub[data-theme="ps2"] .tx-meta span + span,
+.hub[data-theme="ps2"] .tx-role,
+.hub[data-theme="ps2"] .tx-text {
+    color: #e3edff;
+}
+
+.hub[data-theme="ps2"] .book-status {
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="ps2"] .book-name {
+    font-size: clamp(1.3rem, 2.1vw, 1.8rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+/* Pack opening: blue rays, a chrome pack, yellow shadowed walkout text. */
+
+.hub[data-theme="ps2"] .pack-intro {
+    background:
+        repeating-conic-gradient(from 0deg at 50% 45%, rgba(255, 255, 255, 0.05) 0deg 8deg, transparent 8deg 20deg),
+        radial-gradient(ellipse 70% 65% at 50% 45%, #1d6bea 0%, #0b3a9e 45%, var(--ps2-navy) 100%);
+}
+
+.hub[data-theme="ps2"] .pack {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%),
+        linear-gradient(160deg, #ffe680 0%, var(--ps2-yellow) 40%, var(--ps2-orange) 100%);
+    border-radius: 1rem;
+    box-shadow: 0 0 0 3px var(--ps2-navy), inset 0 0 0 3px #fff, 0 34px 60px -18px rgba(0, 0, 0, 0.85);
+}
+
+.hub[data-theme="ps2"] .pack-strip {
+    background: repeating-linear-gradient(90deg, rgba(4, 18, 58, 0.25) 0 3px, transparent 3px 7px), #c4cedb;
+    border-bottom-color: var(--ps2-navy);
+    border-radius: 1rem 1rem 0 0;
+}
+
+.hub[data-theme="ps2"] .pack-face {
+    color: var(--ps2-navy);
+    background: rgba(255, 255, 255, 0.35);
+    border-color: var(--ps2-navy);
+}
+
+.hub[data-theme="ps2"] .pack-mark,
+.hub[data-theme="ps2"] .walkout-step {
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="ps2"] .walkout-step {
+    color: var(--ps2-yellow);
+    text-shadow: 3px 3px 0 var(--ps2-navy), 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
+.hub[data-theme="ps2"] .pack-name,
+.hub[data-theme="ps2"] .pack-sub,
+.hub[data-theme="ps2"] .pack-hint,
+.hub[data-theme="ps2"] .pack-skip {
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="ps2"] .pack-hint {
+    color: #fff;
+    text-shadow: 1px 1px 0 var(--ps2-navy);
+    animation: ps2-blink 1.6s steps(2, start) infinite;
+}
+
+.hub[data-theme="ps2"] .pack-skip {
+    color: var(--ps2-navy);
+    background: var(--ps2-chrome);
+    border: 2px solid var(--ps2-navy);
+    border-radius: 0.5rem;
+}
+
+.hub[data-theme="ps2"] .pack-continue {
+    font-style: italic;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 48%, #f0a800 52%, #ffc93a 100%);
+    border: 2px solid var(--ps2-navy);
+    border-radius: 0.6rem;
+}
+
+.hub[data-theme="ps2"] .pack-continue:hover {
+    color: var(--ps2-navy);
+}
+
+.hub[data-theme="ps2"] .walkout-crest {
+    color: var(--ps2-navy);
+    background: var(--ps2-chrome);
+    border-color: var(--ps2-navy);
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hub[data-theme="ps2"] .pack-hint {
+        animation: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .hub[data-theme="ps2"] .wordmark {
+        font-size: 1.1rem;
+    }
+
+    .hub[data-theme="ps2"] .tile-squad .tile-title {
+        font-size: 2rem;
+    }
+
+    .hub[data-theme="ps2"] .tile-squad .tile-kicker,
+    .hub[data-theme="ps2"] .tile-squad .tile-title {
+        position: relative;
+        z-index: 1;
+        max-width: 55%;
+    }
+
+    .hub[data-theme="ps2"] .pf-tabs button {
+        font-size: 0.85rem;
     }
 }

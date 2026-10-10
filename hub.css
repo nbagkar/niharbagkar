@@ -1,10 +1,11 @@
 /* Home-screen view. Everything here applies only with html.hub; without it
-   (Classic view, no JavaScript) the page reads as the long-form portfolio. */
+   (no JavaScript) the page reads as the long-form portfolio. */
 
 .hub-stats,
 .screen-bar,
 .hub-resume,
-.sound-toggle {
+.sound-toggle,
+.theme-toggle {
     display: none;
 }
 
@@ -14,22 +15,44 @@
     text-decoration: none;
 }
 
-.view-toggle {
+/* Retro switch: the PS2-era look on, the Ultimate Team look off. */
+.hub .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     flex: none;
-    padding: 0.1rem 0;
+    padding: 0;
     font: inherit;
-    font-size: var(--text);
-    font-style: italic;
     color: inherit;
     background: none;
     border: 0;
-    border-bottom: 1.5px solid currentColor;
     cursor: pointer;
     white-space: nowrap;
 }
 
-.view-toggle:hover {
-    color: var(--accent);
+.theme-switch {
+    position: relative;
+    width: 2.3rem;
+    height: 1.25rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 99px;
+    transition: background 0.2s ease;
+}
+
+.theme-switch::after {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.theme-toggle[aria-pressed="true"] .theme-switch::after {
+    transform: translateX(1.05rem);
 }
 
 kbd {
@@ -794,7 +817,6 @@ kbd {
 }
 
 @media (max-width: 480px) {
-    .hub .vt-more,
     .hub .hub-resume span {
         display: none;
     }
@@ -1867,5 +1889,19 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
     .tile.is-landing {
         animation: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .hub .theme-label {
+        display: none;
+    }
+
+    .hub .pf-tabs .pf-key {
+        display: none;
+    }
+
+    .hub .pf-tabs button {
+        padding: 0.2rem 0.55rem;
     }
 }

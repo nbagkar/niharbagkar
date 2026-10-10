@@ -103,6 +103,7 @@
         ["overview", "Overview"],
         ["playstyles", "PlayStyles"],
         ["bio", "Bio"],
+        ["reading", "Reading"],
     ];
     const pfTabs = el("div", "pf-tabs");
     pfTabs.setAttribute("role", "tablist");

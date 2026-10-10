@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nihar Bagkar</title>
     <meta name="description" content="Nihar Bagkar builds software for money, music, and the things people collect. Product, venture, and fintech work out of New York.">
-    <meta name="theme-color" content="#f1ead9">
+    <meta name="theme-color" content="#06060d">
     <link rel="canonical" href="https://www.niharbagkar.com/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
@@ -24,27 +24,25 @@
     <meta name="twitter:image" content="https://www.niharbagkar.com/og-image.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="hub.css">
     <link rel="stylesheet" href="screens.css">
+    <link rel="stylesheet" href="theme-fut.css">
+    <link rel="stylesheet" href="theme-ps2.css">
     <script>
-        // Design mockups: ?theme=fut or ?theme=ps2 restyles the home screen.
         (function () {
+            var root = document.documentElement;
+            // Ultimate Team is the default look; Retro (PS2-era) is opt-in.
             var theme = (location.search.match(/[?&]theme=(fut|ps2)\b/) || [])[1];
-            if (!theme) return;
-            document.documentElement.dataset.theme = theme;
-            var link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = "theme-" + theme + ".css";
-            document.head.appendChild(link);
-        })();
-        (function () {
-            var classic = /[?&]view=classic\b/.test(location.search);
-            try { classic = classic || localStorage.getItem("nb-view") === "classic"; } catch (e) {}
-            if (!classic) document.documentElement.classList.add("hub");
+            try {
+                if (theme) localStorage.setItem("nb-theme", theme);
+                else theme = localStorage.getItem("nb-theme");
+            } catch (e) {}
+            root.dataset.theme = theme === "ps2" ? "ps2" : "fut";
+            root.classList.add("hub");
             setTimeout(function () {
-                if (!window.__hubReady) document.documentElement.classList.remove("hub");
+                if (!window.__hubReady) root.classList.remove("hub");
             }, 3000);
         })();
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -65,7 +63,7 @@
             <p class="hub-stats"><span><strong>20</strong> cards</span><span><strong>2</strong> live apps</span><span><strong>Top 5</strong> of 47</span></p>
             <a class="hub-resume" href="https://drive.google.com/file/d/1Bkj33ml5a4a2H1QGZbZiRK5rGO2OJu4C/view?usp=sharing" target="_blank" rel="noopener" data-track="bar-resume">Resume <span aria-hidden="true">&nearr;</span></a>
             <button class="sound-toggle" type="button" aria-pressed="false" aria-label="Sound effects"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="spk" d="M4 9.5 H8 L13 5 V19 L8 14.5 H4 Z"/><path class="spk-on" d="M16.5 8.5 A5 5 0 0 1 16.5 15.5 M19 6 A8.5 8.5 0 0 1 19 18"/><path class="spk-off" d="M16.5 9.5 L21.5 14.5 M21.5 9.5 L16.5 14.5"/></svg></button>
-            <button class="view-toggle" type="button" data-to="classic">Classic view</button>
+            <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Retro mode"><span class="theme-switch" aria-hidden="true"></span><span class="theme-label" aria-hidden="true">Retro</span></button>
             <nav class="masthead-nav" aria-label="Primary">
                 <a href="#binder">Binder</a>
                 <a href="#about">About</a>
@@ -94,7 +92,7 @@
                         <span class="tile-art tile-crest" aria-hidden="true">NB</span>
                         <span class="tile-kicker">Player</span>
                         <span class="tile-title">Profile</span>
-                        <span class="tile-sub">About me and how I work</span>
+                        <span class="tile-sub">About me, how I work, what I&rsquo;m reading</span>
                     </a>
                     <a class="tile tile-career" href="#path">
                         <span class="tile-art tile-crests" aria-hidden="true"><i>BCPS</i><i>BC</i><i>MS</i></span>
@@ -133,6 +131,7 @@
                         <li>Winner, Uber Finance Case Competition</li>
                         <li>Read: Reimagining Trust in the Collectibles Market</li>
                         <li>Book: A Quest For Glory, The Journey To State Cup</li>
+                        <li>Now reading: Foster by Claire Keegan</li>
                     </ul>
                 </div>
                 <p class="hub-keys" aria-hidden="true"><span><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> Move</span><span><kbd>Enter</kbd> Select</span><span><kbd>Esc</kbd> Back</span></p>
@@ -674,8 +673,8 @@
                     <p class="player-cap"><span class="label">Fig. 1</span> Turn it over for the stats.</p>
                 </div>
                 <div class="about-copy">
-                    <p class="label" data-hub="Player profile">&sect; 01 &middot; About</p>
-                    <h2 id="about-title">A product builder in New York.</h2>
+                    <p class="label" data-hub="Player profile">About</p>
+                    <h2 id="about-title">A product builder in New York</h2>
                     <p class="lede">I&rsquo;m Nihar. I study Business, Technology &amp; Entrepreneurship at NYU Stern, and I spent summer 2026 as a product management intern at Microsoft. Most of what I build starts as a messy workflow that someone is tired of doing by hand.</p>
                     <dl class="glance">
                 <div>
@@ -711,8 +710,8 @@
         <section class="notes" id="notes" aria-labelledby="notes-title">
             <div class="wrap notes-grid">
                 <header class="section-head">
-                    <p class="label" data-hub="How I work">&sect; 02 &middot; Notes</p>
-                    <h2 id="notes-title">How I work.</h2>
+                    <p class="label" data-hub="How I work">Notes</p>
+                    <h2 id="notes-title">How I work</h2>
                 </header>
 
                 <div class="notes-body">
@@ -729,6 +728,29 @@
             </div>
         </section>
 
+        <section class="reading" id="reading" aria-labelledby="reading-title">
+            <div class="wrap reading-grid">
+                <header class="section-head">
+                    <p class="label">Reading</p>
+                    <h2 id="reading-title">What I&rsquo;m reading</h2>
+                </header>
+
+                <!-- To add a book, copy one <li>. Use "Now reading" or "Read" for the status. -->
+                <ul class="books">
+                    <li class="book" style="--book: #2f5d50;">
+                        <div class="book-cover" aria-hidden="true"><span class="book-name">Foster</span><span class="book-by">Claire Keegan</span></div>
+                        <p class="book-status is-now">Now reading</p>
+                        <p class="book-meta"><cite>Foster</cite> <span>Claire Keegan, 2010</span></p>
+                    </li>
+                    <li class="book" style="--book: #b8532c;">
+                        <div class="book-cover" aria-hidden="true"><span class="book-name">Autumn</span><span class="book-by">Ali Smith</span></div>
+                        <p class="book-status">Read</p>
+                        <p class="book-meta"><cite>Autumn</cite> <span>Ali Smith, 2016</span></p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
         <div class="chalk chalk-box wrap" aria-hidden="true">
             <svg viewBox="0 0 1000 120" role="presentation">
                 <path pathLength="1" d="M0 56 H1000"/>
@@ -740,8 +762,8 @@
         <section class="path" id="path" aria-labelledby="path-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label" data-hub="Career">&sect; 03 &middot; Path</p>
-                    <h2 id="path-title" data-hub="Transfers.">Where I&rsquo;ve been working.</h2>
+                    <p class="label" data-hub="Career">Path</p>
+                    <h2 id="path-title" data-hub="Transfers">Where I&rsquo;ve been working</h2>
                 </header>
 
                 <ol class="ledger">
@@ -784,8 +806,8 @@
         <section class="index" id="index" aria-labelledby="index-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label" data-hub="Cabinet">&sect; 04 &middot; Index</p>
-                    <h2 id="index-title" data-hub="Trophies.">Writing &amp; recognition.</h2>
+                    <p class="label" data-hub="Cabinet">Index</p>
+                    <h2 id="index-title" data-hub="Trophies">Writing &amp; recognition</h2>
                 </header>
 
                 <div class="index-grid">
@@ -861,8 +883,8 @@
         <section class="contact" id="contact" aria-labelledby="contact-title">
             <div class="wrap contact-grid">
                 <div>
-                    <p class="label" data-hub="Contact">&sect; 05 &middot; Contact</p>
-                    <h2 id="contact-title" data-hub="Transfer request.">Say hello.</h2>
+                    <p class="label" data-hub="Contact">Contact</p>
+                    <h2 id="contact-title" data-hub="Transfer request">Say hello</h2>
                     <p class="lede">If you&rsquo;re working on product strategy, venture workflows, or something that should be automated and isn&rsquo;t yet, I&rsquo;d like to hear about it.</p>
                     <p class="contact-links">
                         <a class="link-arrow" href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a>
@@ -891,8 +913,8 @@
         <section class="kickoff" id="kickoff" aria-labelledby="kickoff-title">
             <div class="wrap">
                 <header class="section-head">
-                    <p class="label" data-hub="Play">&sect; 06 &middot; Extra time</p>
-                    <h2 id="kickoff-title" data-hub="Kick off.">Take a shot.</h2>
+                    <p class="label" data-hub="Play">Extra time</p>
+                    <h2 id="kickoff-title" data-hub="Kick off">Take a shot</h2>
                 </header>
                 <div class="pitch" id="pitch">
                     <div class="pitch-head">
@@ -925,7 +947,7 @@
                 <span class="pack-face" aria-hidden="true">
                     <span class="pack-mark">NB</span>
                     <span class="pack-name">Player pack</span>
-                    <span class="pack-sub">Portfolio &middot; Vol. 01</span>
+                    <span class="pack-sub">Season 2026</span>
                 </span>
             </button>
             <p class="pack-hint">Click the pack to open it.</p>

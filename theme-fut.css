@@ -1,9 +1,8 @@
-/* Mockup: EA FC Ultimate Team menu. Loaded only with ?theme=fut, and only
-   the home screen and the top bar are restyled. */
-
-@import url("https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap");
+/* Current look: an EA FC Ultimate Team menu. Applies when html has
+   data-theme="fut", the default. */
 
 .hub[data-theme="fut"] {
+    --font: "Saira", "Arial Narrow", sans-serif;
     --fut-bg: #06060d;
     --fut-glass: rgba(255, 255, 255, 0.07);
     --fut-line: rgba(255, 255, 255, 0.16);
@@ -104,7 +103,7 @@
     background: var(--fut-glass);
 }
 
-.hub[data-theme="fut"] .view-toggle {
+.hub[data-theme="fut"] .theme-toggle {
     font-family: "Saira", sans-serif;
     font-style: normal;
     font-weight: 600;
@@ -115,7 +114,7 @@
     color: var(--fut-dim);
 }
 
-.hub[data-theme="fut"] .view-toggle:hover {
+.hub[data-theme="fut"] .theme-toggle:hover {
     color: var(--fut-aqua);
 }
 
@@ -297,15 +296,15 @@
     background: radial-gradient(closest-side, rgba(255, 214, 102, 0.42), rgba(255, 45, 135, 0.16) 60%, transparent);
 }
 
-.hub[data-theme="fut"] .hero .card.player {
+.hub[data-theme="fut"] .card.player {
     transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
 }
 
-.hub[data-theme="fut"] .hero .card.player::before {
+.hub[data-theme="fut"] .card.player::before {
     box-shadow: none;
 }
 
-.hub[data-theme="fut"] .hero .card.player .face {
+.hub[data-theme="fut"] .card.player .face {
     --fut-shield: polygon(0 7%, 12% 0, 30% 2.5%, 50% 0, 70% 2.5%, 88% 0, 100% 7%, 100% 88%, 50% 100%, 0 88%);
     font-family: "Saira", sans-serif;
     color: #2a1d05;
@@ -315,17 +314,17 @@
     padding: 9cqw 7cqw 16cqw;
 }
 
-.hub[data-theme="fut"] .hero .card.player .face * {
+.hub[data-theme="fut"] .card.player .face * {
     font-family: "Saira", sans-serif;
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-front {
+.hub[data-theme="fut"] .card.player .face-front {
     background:
         radial-gradient(ellipse 80% 45% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 70%),
         linear-gradient(160deg, var(--fut-gold-1) 0%, var(--fut-gold-2) 42%, #c99a3a 70%, var(--fut-gold-2) 100%);
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-front::after {
+.hub[data-theme="fut"] .card.player .face-front::after {
     content: "";
     position: absolute;
     inset: 2.4cqw;
@@ -335,14 +334,14 @@
     pointer-events: none;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-head {
+.hub[data-theme="fut"] .card.player .c-head {
     flex-direction: row-reverse;
     justify-content: flex-end;
     align-items: center;
     gap: 3cqw;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-head h3 {
+.hub[data-theme="fut"] .card.player .c-head h3 {
     font-weight: 900;
     font-style: italic;
     font-stretch: 70%;
@@ -350,7 +349,7 @@
     letter-spacing: 0.01em;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-no {
+.hub[data-theme="fut"] .card.player .c-no {
     padding: 0.3cqw 2cqw;
     font-weight: 800;
     color: var(--fut-gold-1);
@@ -358,7 +357,7 @@
     opacity: 1;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-art {
+.hub[data-theme="fut"] .card.player .c-art {
     border: 0;
     border-radius: 0;
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
@@ -367,7 +366,7 @@
     background: transparent;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-type {
+.hub[data-theme="fut"] .card.player .c-type {
     align-self: center;
     font-weight: 700;
     text-transform: uppercase;
@@ -377,7 +376,7 @@
     border-radius: 0;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-text {
+.hub[data-theme="fut"] .card.player .c-text {
     padding: 0;
     text-align: center;
     background: none;
@@ -386,7 +385,7 @@
     padding-top: 2.4cqw;
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-foot {
+.hub[data-theme="fut"] .card.player .c-foot {
     justify-content: center;
     gap: 4cqw;
     font-weight: 700;
@@ -394,35 +393,35 @@
     letter-spacing: 0.08em;
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-back {
+.hub[data-theme="fut"] .card.player .face-back {
     background: linear-gradient(160deg, #23233d, #0c0c18);
     color: #fff;
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-back .p-stats {
+.hub[data-theme="fut"] .card.player .face-back .p-stats {
     border-top-color: var(--fut-aqua);
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-back .p-stats dt {
+.hub[data-theme="fut"] .card.player .face-back .p-stats dt {
     font-style: normal;
     color: var(--fut-dim);
 }
 
-.hub[data-theme="fut"] .hero .card.player .face-back .p-stats dd {
+.hub[data-theme="fut"] .card.player .face-back .p-stats dd {
     color: var(--fut-aqua);
 }
 
-.hub[data-theme="fut"] .hero .card.player .c-link {
+.hub[data-theme="fut"] .card.player .c-link {
     color: #000;
     background: var(--fut-aqua);
 }
 
-.hub[data-theme="fut"] .hero .player-cap .label {
+.hub[data-theme="fut"] .player-cap .label {
     display: none;
 }
 
-.hub[data-theme="fut"] .hero .player-cap,
-.hub[data-theme="fut"] .hero .player-cap .label {
+.hub[data-theme="fut"] .player-cap,
+.hub[data-theme="fut"] .player-cap .label {
     font-family: "Saira", sans-serif;
     font-style: normal;
     font-size: 0.9rem;
@@ -501,4 +500,300 @@
     letter-spacing: 0.06em;
     font-size: 0.85rem;
     color: var(--fut-dim);
+}
+
+/* Screens: dark glass sheets. The shared tokens flip to light-on-dark here,
+   and every card goes back to its own light tokens. */
+
+.hub[data-theme="fut"] main > section:not(.home) {
+    --paper: #12121f;
+    --paper-light: #1c1c30;
+    --paper-deep: #0b0b15;
+    --ink: #ffffff;
+    --ink-soft: rgba(255, 255, 255, 0.64);
+    --rule: rgba(255, 255, 255, 0.22);
+    --accent: var(--fut-aqua);
+    color: #fff;
+    background:
+        radial-gradient(ellipse 60% 50% at 100% 0%, rgba(255, 45, 135, 0.14), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 0% 100%, rgba(30, 242, 200, 0.1), transparent 70%),
+        rgba(10, 10, 20, 0.92);
+    border: 1px solid var(--fut-line);
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 2rem) 0, 100% 2rem, 100% 100%, 0 100%);
+    box-shadow: none;
+}
+
+.hub[data-theme="fut"] .card {
+    --paper: #f1ead9;
+    --paper-light: #f8f3e6;
+    --paper-deep: #e7dec7;
+    --ink: #1b1812;
+    --ink-soft: #4d4737;
+    --rule: #1b1812;
+    --accent: #c8391f;
+}
+
+/* The pitch keeps a light surface so the game's drawn lines still read. */
+.hub[data-theme="fut"] .pitch-stage {
+    --paper-light: #d9ecd2;
+    --ink: #1b1812;
+    --accent: #c8391f;
+}
+
+/* Type inside screens: upright copy, uppercase labels, heavy italic titles. */
+
+.hub[data-theme="fut"] main > section:not(.home) * {
+    font-style: normal;
+}
+
+.hub[data-theme="fut"] main > section:not(.home) .label,
+.hub[data-theme="fut"] .screen-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .screen-name {
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] main > section:not(.home) h2 {
+    font-size: clamp(2rem, 3.8vw, 3.1rem);
+}
+
+.hub[data-theme="fut"] main > section:not(.home) h2,
+.hub[data-theme="fut"] .tx-club {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+/* Screen chrome */
+
+.hub[data-theme="fut"] .screen-bar {
+    background: rgba(10, 10, 20, 0.85);
+    border-bottom: 1px solid var(--fut-line);
+}
+
+.hub[data-theme="fut"] .screen-back,
+.hub[data-theme="fut"] main > section:not(.home) .btn {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #000;
+    background: #fff;
+    border-radius: 0;
+    clip-path: polygon(0.5rem 0, 100% 0, calc(100% - 0.5rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .screen-back:hover,
+.hub[data-theme="fut"] main > section:not(.home) .btn:hover {
+    color: #000;
+    background: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .screen-back kbd {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Tab bars: Profile, Squad, the Kick off level picker */
+
+.hub[data-theme="fut"] .pf-tabs,
+.hub[data-theme="fut"] .squad-views {
+    gap: 0.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--fut-line);
+    border-radius: 0;
+}
+
+.hub[data-theme="fut"] .pf-tabs button,
+.hub[data-theme="fut"] .squad-views button,
+.hub[data-theme="fut"] .pitch-seg span {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.95rem;
+    border-radius: 0;
+}
+
+.hub[data-theme="fut"] .pitch-seg span {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--fut-line);
+}
+
+.hub[data-theme="fut"] .pf-tabs button[aria-selected="true"],
+.hub[data-theme="fut"] .squad-views button[aria-selected="true"],
+.hub[data-theme="fut"] .pitch-seg input:checked + span {
+    color: #000;
+    background: #fff;
+    clip-path: polygon(0.4rem 0, 100% 0, calc(100% - 0.4rem) 100%, 0 100%);
+}
+
+/* Panels */
+
+.hub[data-theme="fut"] #about .glance > div {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03) 60%);
+    border: 1px solid var(--fut-line);
+    border-radius: 0;
+    box-shadow: inset 0 -3px 0 var(--fut-aqua);
+    clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 0.9rem, 100% 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .glance-big {
+    font-weight: 900;
+    font-stretch: 75%;
+}
+
+.hub[data-theme="fut"] .tx-card {
+    color: #fff;
+    background:
+        radial-gradient(ellipse 70% 60% at 75% 10%, rgba(255, 255, 255, 0.18), transparent 60%),
+        linear-gradient(135deg, #3b1ed6 0%, #9b1fd1 55%, #ff2d87 100%);
+    border: 0;
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 1.6rem) 0, 100% 1.6rem, 100% 100%, 0 100%);
+    box-shadow: none;
+}
+
+.hub[data-theme="fut"] .tx-meta,
+.hub[data-theme="fut"] .tx-stamp {
+    color: #fff;
+    border-color: #fff;
+}
+
+.hub[data-theme="fut"] .tx-meta span + span,
+.hub[data-theme="fut"] .tx-role {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.hub[data-theme="fut"] .tx-text {
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .book-status.is-now {
+    color: var(--fut-aqua);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+}
+
+.hub[data-theme="fut"] .book-status {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+}
+
+.hub[data-theme="fut"] .book-name {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 70%;
+    text-transform: uppercase;
+}
+
+/* Pack opening: a dark stadium, a gold pack, a walkout in heavy caps. */
+
+.hub[data-theme="fut"] .pack-intro {
+    background:
+        radial-gradient(ellipse 50% 45% at 50% 45%, rgba(255, 214, 102, 0.22), transparent 70%),
+        radial-gradient(ellipse 55% 60% at 90% 5%, rgba(255, 45, 135, 0.3), transparent 60%),
+        radial-gradient(ellipse 50% 55% at 5% 95%, rgba(30, 242, 200, 0.22), transparent 60%),
+        var(--fut-bg);
+}
+
+.hub[data-theme="fut"] .pack {
+    background:
+        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255, 255, 255, 0.6), transparent 70%),
+        linear-gradient(160deg, var(--fut-gold-1) 0%, var(--fut-gold-2) 45%, #c99a3a 70%, var(--fut-gold-2) 100%);
+    border-radius: 0.3rem;
+    box-shadow: 0 0 60px rgba(255, 214, 102, 0.45), 0 34px 60px -18px rgba(0, 0, 0, 0.85);
+}
+
+.hub[data-theme="fut"] .pack-strip {
+    background: repeating-linear-gradient(90deg, rgba(42, 29, 5, 0.25) 0 3px, transparent 3px 7px), var(--fut-gold-2);
+    border-bottom-color: #2a1d05;
+    border-radius: 0.3rem 0.3rem 0 0;
+}
+
+.hub[data-theme="fut"] .pack-face {
+    color: #2a1d05;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: #2a1d05;
+    border-radius: 0;
+}
+
+.hub[data-theme="fut"] .pack-mark,
+.hub[data-theme="fut"] .walkout-step {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="fut"] .pack-name,
+.hub[data-theme="fut"] .pack-sub,
+.hub[data-theme="fut"] .pack-hint,
+.hub[data-theme="fut"] .pack-skip {
+    font-style: normal;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hub[data-theme="fut"] .pack-hint,
+.hub[data-theme="fut"] .pack-skip {
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .pack-skip {
+    border-color: var(--fut-line);
+    border-radius: 0;
+}
+
+.hub[data-theme="fut"] .pack-continue {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #000;
+    background: #fff;
+    clip-path: polygon(0.5rem 0, 100% 0, calc(100% - 0.5rem) 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .pack-continue:hover {
+    color: #000;
+    background: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .walkout-crest {
+    color: #000;
+    background: var(--fut-aqua);
+    border-color: #fff;
+    box-shadow: none;
+}
+
+@media (max-width: 480px) {
+    .hub[data-theme="fut"] .wordmark {
+        font-size: 1.1rem;
+    }
+
+    .hub[data-theme="fut"] .tile-squad .tile-title {
+        font-size: 2rem;
+    }
+
+    .hub[data-theme="fut"] .tile-squad .tile-kicker,
+    .hub[data-theme="fut"] .tile-squad .tile-title {
+        position: relative;
+        z-index: 1;
+        max-width: 55%;
+    }
+
+    .hub[data-theme="fut"] .pf-tabs button {
+        font-size: 0.85rem;
+    }
 }
