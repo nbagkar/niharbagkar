@@ -475,7 +475,7 @@
         return { throttle, steer: throttle < 0 ? -aim.steer : aim.steer, boost };
     }
 
-    function updateCar(car, dt, input) {
+    function updateCar(car, dt, input, effects = true) {
         const top = (input.boost ? 470 : 300) * car.power;
         const accel = (input.boost ? 900 : 560) * car.power;
         const braking = input.throttle * car.speed < 0;
@@ -498,6 +498,8 @@
             car.y = clamp(car.y, FIELD.top + pad, FIELD.bottom - pad);
             car.speed *= -0.35;
         }
+
+        if (!effects) return;
 
         if (Math.abs(car.speed) > 40) {
             const c = Math.cos(car.angle);
@@ -537,9 +539,18 @@
         let nly;
         let overlap;
         if (dist === 0) {
-            nlx = Math.sign(lx) || 1;
-            nly = 0;
-            overlap = CAR.hx - Math.abs(lx) + BALL_R;
+            // The ball's centre is inside the car: push it out the nearest side.
+            const inX = CAR.hx - Math.abs(lx);
+            const inY = CAR.hy - Math.abs(ly);
+            if (inY < inX) {
+                nlx = 0;
+                nly = Math.sign(ly) || 1;
+                overlap = inY + BALL_R;
+            } else {
+                nlx = Math.sign(lx) || 1;
+                nly = 0;
+                overlap = inX + BALL_R;
+            }
         } else {
             nlx = (lx - qx) / dist;
             nly = (ly - qy) / dist;
@@ -839,14 +850,24 @@
         const dt = Math.min(0.033, (now - last) / 1000);
         last = now;
         const input = playerInput();
-        updateCar(player, dt, input);
-        collide(player);
-        if (mode === "match") {
-            updateCar(bot, dt, botInput(now));
-            collide(bot);
-            bumpCars();
+        const botMove = mode === "match" ? botInput(now) : null;
+        // The car is thinner than the ball is wide, so a fast car and a fast
+        // ball can cross the car's middle in one frame and the ball pops out
+        // the far side. Small steps keep each move to a few pixels.
+        const closing = Math.abs(player.speed) + (botMove ? Math.abs(bot.speed) : 0) + Math.hypot(ball.vx, ball.vy);
+        const steps = Math.min(10, Math.max(1, Math.ceil((closing * dt) / 5)));
+        const h = dt / steps;
+        for (let i = 0; i < steps; i++) {
+            const effects = i === steps - 1;
+            updateCar(player, h, input, effects);
+            if (botMove) updateCar(bot, h, botMove, effects);
+            updateBall(h, now);
+            collide(player);
+            if (botMove) {
+                collide(bot);
+                bumpCars();
+            }
         }
-        updateBall(dt, now);
         if (freezeUntil && now > freezeUntil) {
             freezeUntil = 0;
             kickoff();
