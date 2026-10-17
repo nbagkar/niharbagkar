@@ -45,7 +45,7 @@
         // will reach the ball first in its half and mixes up its kickoffs.
         // Bot-vs-bot simulation could not rank strength against people, so
         // the strength slider in recording mode exists to tune it by feel.
-        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 120, keepZone: 0.42, keepOut: 0.45 },
+        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45 },
     };
     const BOSS_FILL = "#1ef2c8";
 
@@ -134,7 +134,7 @@
             power: 1.05 + step * 0.035,
             turn: 1.1 + step * 0.08,
             shot: 1 + step * 0.03,
-            react: 220 - step * 20,
+            react: Math.max(0, 200 - step * 24),
             think: 40 - step * 4,
         });
     }
@@ -584,6 +584,14 @@
         // Beaten (the ball is between the bot and its own goal): get back
         // goal-side, going round the ball rather than through it.
         if (skill.defends && bx > bot.x + 15 && bx > W * 0.45) {
+            // Deep in its own third, get between the ball and the goal rather
+            // than tucking in beside the ball against the end wall.
+            if (bx > W * 0.7) {
+                const gx = FIELD.right + 4;
+                const span = Math.hypot(bx - gx, by - H / 2) || 1;
+                const out = clamp(span * 0.4, 26, 90);
+                return inField(gx + ((bx - gx) / span) * out, H / 2 + ((by - H / 2) / span) * out, false);
+            }
             let y = by + (H / 2 - by) * 0.3;
             if (Math.abs(bot.y - by) < 40) y = bot.y < by ? by - 55 : by + 55;
             return inField(Math.min(FIELD.right - 24, bx + 70), y, false);
@@ -604,6 +612,13 @@
             y += ux * 55 * (bot.y < by ? 1 : -1);
         }
         return inField(x + noise(), y + noise(), false);
+    }
+
+    // Steering flips meaning when the car rolls backwards: then it is the
+    // rear that should swing toward the target.
+    function steerFor(aim, skill) {
+        if (bot.speed >= 0) return aim.steer;
+        return clamp(-wrapAngle(aim.diff - Math.PI) * skill.steer, -1, 1);
     }
 
     function botInput(now) {
@@ -641,21 +656,32 @@
         } else {
             bot.stuckSince = 0;
         }
-        if (now < bot.reverseUntil) return { throttle: -1, steer: -aim.steer, boost: false };
+        if (now < bot.reverseUntil) return { throttle: -1, steer: steerFor(aim, skill), boost: false };
         const turn = Math.abs(aim.diff);
+        const speed = Math.abs(bot.speed);
         let throttle;
-        if (turn > 2.4) throttle = -0.6;
-        else if (bot.target.attack) throttle = 1;
+        // Only back up for a target that is close behind. Reversing barely
+        // changes the car's heading, so for anything further away it would
+        // keep the target behind it and drive backwards across the pitch:
+        // turn round instead, easing off so the turn is tight.
+        if (turn > 2.4 && aim.distance < 45) throttle = -0.6;
+        else if (skill.boss) {
+            // The boss's sharper handling pays off with finer throttle control:
+            // ease into turns, and hold its spot on arrival instead of circling.
+            if (turn > 1.2) throttle = turn > 1.8 && speed > 220 ? -0.3 : 0.45;
+            else if (bot.target.attack) throttle = 1;
+            else if (turn > 0.8) throttle = speed > 230 ? 0 : 0.7;
+            else if (aim.distance < 14) throttle = 0;
+            else throttle = aim.distance < 40 ? 0.5 : 1;
+        } else if (bot.target.attack) throttle = 1;
         else if (turn > 1) throttle = 0.35;
-        // Arrived (on its line in goal, say): hold the spot instead of circling.
-        else if (aim.distance < 14) throttle = 0;
         else throttle = aim.distance < 40 ? 0.5 : 1;
         // Players can hold boost the whole game; the hard bot does the same
         // whenever it is heading roughly where it wants to go.
         const lined = turn < (skill.chaseBoost ? 0.5 : 0.25);
         const wantsBoost = bot.target.attack ? aim.distance > 50 : skill.chaseBoost && aim.distance > 60;
         const boost = throttle > 0 && lined && wantsBoost && Math.random() < skill.boost;
-        return { throttle, steer: throttle < 0 ? -aim.steer : aim.steer, boost };
+        return { throttle, steer: steerFor(aim, skill), boost };
     }
 
     function updateCar(car, dt, input, effects = true) {
