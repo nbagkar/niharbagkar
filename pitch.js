@@ -535,10 +535,12 @@
         bot.nextThink = 0;
         bot.reverseUntil = 0;
         bot.fresh = true;
+        bot.steerOut = 0;
         ball.x = W / 2;
         ball.y = H / 2;
         ball.vx = 0;
         ball.vy = 0;
+        ball.inNet = false;
     }
 
     function clamp(value, min, max) {
@@ -658,7 +660,43 @@
         return path[path.length - 1];
     }
 
+    // Moving somewhere other than the ball (back to defend, into goal): if
+    // the straight line runs through the ball, go round it instead of
+    // knocking it, which used to send it into the bot's own goal.
+    function aroundBall(target) {
+        if (target.attack) return target;
+        const tx = target.x - bot.x;
+        const ty = target.y - bot.y;
+        const length = Math.hypot(tx, ty) || 1;
+        const t = ((ball.x - bot.x) * tx + (ball.y - bot.y) * ty) / (length * length);
+        if (t <= 0 || t >= 1) return target;
+        const cx = bot.x + tx * t;
+        const cy = bot.y + ty * t;
+        let ox = cx - ball.x;
+        let oy = cy - ball.y;
+        let gap = Math.hypot(ox, oy);
+        if (gap > BALL_R + CAR.hy + 10) return target;
+        if (gap < 1) {
+            ox = -ty / length;
+            oy = tx / length;
+            if (ball.y + oy * 48 < FIELD.top + 18 || ball.y + oy * 48 > FIELD.bottom - 18) {
+                ox = -ox;
+                oy = -oy;
+            }
+            gap = 1;
+        }
+        return {
+            x: clamp(ball.x + (ox / gap) * 48, FIELD.left + 18, FIELD.right - 18),
+            y: clamp(ball.y + (oy / gap) * 48, FIELD.top + 18, FIELD.bottom - 18),
+            attack: false,
+        };
+    }
+
     function botTarget(skill) {
+        return aroundBall(chooseTarget(skill));
+    }
+
+    function chooseTarget(skill) {
         const bx = clamp(ball.x + ball.vx * skill.lead, FIELD.left + BALL_R, FIELD.right - BALL_R);
         const by = clamp(ball.y + ball.vy * skill.lead, FIELD.top + BALL_R, FIELD.bottom - BALL_R);
         // The boss reads who will reach the ball first (chasing the predicted
@@ -797,11 +835,26 @@
             if (now - bot.stuckSince > (skill.unpin || 450)) {
                 bot.reverseUntil = now + 350;
                 bot.stuckSince = 0;
+                // Back away from whatever is pinning it: reverse if it is in
+                // front, drive forward if it is behind (reversing into the
+                // other car just jams them both).
+                let block = { x: player.x, y: player.y };
+                if (Math.hypot(bot.x - player.x, bot.y - player.y) >= CAR.hx + CAR.hy + 2) {
+                    const walls = [
+                        { x: FIELD.left, y: bot.y, gap: bot.x - FIELD.left },
+                        { x: FIELD.right, y: bot.y, gap: FIELD.right - bot.x },
+                        { x: bot.x, y: FIELD.top, gap: bot.y - FIELD.top },
+                        { x: bot.x, y: FIELD.bottom, gap: FIELD.bottom - bot.y },
+                    ];
+                    block = walls.reduce((nearest, wall) => (wall.gap < nearest.gap ? wall : nearest));
+                }
+                const ahead = (block.x - bot.x) * Math.cos(bot.angle) + (block.y - bot.y) * Math.sin(bot.angle);
+                bot.escapeThrottle = ahead > 0 ? -1 : 1;
             }
         } else {
             bot.stuckSince = 0;
         }
-        if (now < bot.reverseUntil) return { throttle: -1, steer: steerFor(aim, skill), boost: false };
+        if (now < bot.reverseUntil) return { throttle: bot.escapeThrottle || -1, steer: smoothSteer(steerFor(aim, skill), aim), boost: false };
         const turn = Math.abs(aim.diff);
         const speed = Math.abs(bot.speed);
         let throttle;
@@ -826,7 +879,15 @@
         const lined = turn < (skill.chaseBoost ? 0.5 : 0.25);
         const wantsBoost = bot.target.attack ? aim.distance > 50 : skill.chaseBoost && aim.distance > 60;
         const boost = throttle > 0 && lined && wantsBoost && Math.random() < skill.boost;
-        return { throttle, steer: steerFor(aim, skill), boost };
+        return { throttle, steer: smoothSteer(steerFor(aim, skill), aim), boost };
+    }
+
+    // Ease the wheel toward the wanted angle and leave it straight right next
+    // to the target, so the bot does not flick left-right-left on the spot.
+    function smoothSteer(wanted, aim) {
+        const goal = aim.distance < 18 ? 0 : wanted;
+        bot.steerOut = (bot.steerOut || 0) + (goal - (bot.steerOut || 0)) * 0.4;
+        return bot.steerOut;
     }
 
     function updateCar(car, dt, input, effects = true) {
@@ -843,14 +904,21 @@
         car.x += Math.cos(car.angle) * car.speed * dt;
         car.y += Math.sin(car.angle) * car.speed * dt;
 
+        // Walls: a head-on hit bounces the car back; a glancing one lets it
+        // slide along the wall (the clamp removes the push into the wall)
+        // with a little scrub, instead of stopping it dead.
         const pad = 13;
+        const wall = (headOn) => {
+            if (headOn > 0.92) car.speed *= -0.35;
+            else car.speed *= 1 - headOn * 3 * dt;
+        };
         if (car.x < FIELD.left + pad || car.x > FIELD.right - pad) {
             car.x = clamp(car.x, FIELD.left + pad, FIELD.right - pad);
-            car.speed *= -0.35;
+            wall(Math.abs(Math.cos(car.angle)));
         }
         if (car.y < FIELD.top + pad || car.y > FIELD.bottom - pad) {
             car.y = clamp(car.y, FIELD.top + pad, FIELD.bottom - pad);
-            car.speed *= -0.35;
+            wall(Math.abs(Math.sin(car.angle)));
         }
 
         if (!effects) return;
@@ -969,9 +1037,24 @@
         }
 
         const inMouth = ball.y > MOUTH.top && ball.y < MOUTH.bottom;
-        const inNet = ball.x < FIELD.left || ball.x > FIELD.right;
+        const pastLine = ball.x < FIELD.left || ball.x > FIELD.right;
+        // The ball is only in the net if it crossed the line between the
+        // posts. Shoved past the end line in a corner (a car pinning it
+        // there), it bounces back instead of snapping into the goal.
+        if (!pastLine) ball.inNet = false;
+        else if (!ball.inNet) {
+            if (inMouth) {
+                ball.inNet = true;
+            } else if (ball.x < FIELD.left) {
+                ball.x = FIELD.left + BALL_R;
+                ball.vx = Math.abs(ball.vx) * 0.8;
+            } else {
+                ball.x = FIELD.right - BALL_R;
+                ball.vx = -Math.abs(ball.vx) * 0.8;
+            }
+        }
 
-        if (inNet) {
+        if (ball.inNet) {
             if (ball.y - BALL_R < MOUTH.top) {
                 ball.y = MOUTH.top + BALL_R;
                 ball.vy = Math.abs(ball.vy) * 0.4;
@@ -1033,7 +1116,7 @@
         renderScore();
         if (forUs && motionOn()) celebrate();
         sound(forUs ? "goal" : "stamp");
-        stamp.textContent = forUs ? "Goal!" : mode === "match" ? "Bot scores" : "Own goal";
+        stamp.textContent = forUs ? "Goal!" : mode !== "match" ? "Own goal" : boss() ? "Nihar scored" : "Bot scores";
         stamp.classList.remove("is-on");
         void stamp.offsetWidth;
         stamp.classList.add("is-on");
