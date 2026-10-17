@@ -45,7 +45,7 @@
         // will reach the ball first in its half and mixes up its kickoffs.
         // Tuned on Nihar's recorded matches; pace, handling, shot and
         // reaction values below are overwritten by applyStrength().
-        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45, shadowKick: 0.9, unpin: 120 },
+        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45, unpin: 120 },
     };
     const BOSS_FILL = "#1ef2c8";
 
@@ -1105,12 +1105,13 @@
             attack,
         });
 
-        // Kickoff, until the ball is first touched. Rushing straight at the
-        // ball meets a boosting player head-on and both cars stall while the
-        // ball squirts loose (9 of Nihar's 11 goals in testing came that way),
-        // so the boss usually holds goal-side and lets the player hit the
-        // ball into it, and only sometimes rushes, so it cannot be read.
-        if (skill.boss && bot.kickPlan === "shadow" && bot.kickUntil > last && Math.hypot(ball.vx, ball.vy) < 20) {
+        // Kickoff, until the ball is first touched. Any charge at the ball
+        // can be met head-on: a rushing player stalls both cars (9 of Nihar's
+        // 11 goals in one test), and a waiting player lets the boss hit the
+        // ball into them and fires the rebound past it (the 14-0 games). So
+        // the boss holds goal-side for as long as the ball sits on the spot,
+        // and whatever the player sends comes straight at it.
+        if (skill.boss && Math.hypot(ball.vx, ball.vy) < 20 && Math.hypot(ball.x - W / 2, ball.y - H / 2) < 4) {
             return inField(W / 2 + 95, H / 2, false);
         }
 
@@ -1118,6 +1119,29 @@
         // the goal, so the touch sends it goalward. The better the bot, the
         // straighter it has to be lined up before it commits.
         if (lined > skill.lineUp && dist < 200) {
+            // The boss will not hit the ball at full speed into a player who
+            // is right in front of it on its line: the ball would rebound
+            // straight past. If they are about to hit it, it drops goal-side;
+            // otherwise it comes in gently and pushes the ball round them.
+            if (skill.boss) {
+                const px = player.x - bx;
+                const py = player.y - by;
+                const ahead = px * ux + py * uy;
+                const across = -px * uy + py * ux;
+                if (ahead > 0 && ahead < 130 && Math.abs(across) < 34) {
+                    const toBall = (bx - player.x) * Math.cos(player.angle) + (by - player.y) * Math.sin(player.angle);
+                    if (toBall > 0 && player.speed > 120) {
+                        const gx = FIELD.right + 4 - bx;
+                        const gy = H / 2 - by;
+                        const span = Math.hypot(gx, gy) || 1;
+                        return inField(bx + (gx / span) * 70, by + (gy / span) * 70, false);
+                    }
+                    const side = across >= 0 ? -1 : 1;
+                    const target = inField(bx - ux * BALL_R - uy * side * 9, by - uy * BALL_R + ux * side * 9, true);
+                    target.soft = true;
+                    return target;
+                }
+            }
             return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3, true);
         }
 
@@ -1196,9 +1220,6 @@
         if (bot.fresh) {
             bot.fresh = false;
             bot.holdUntil = now + skill.react;
-            // The boss mixes its kickoff plans so there is no one counter.
-            bot.kickPlan = skill.boss && Math.random() < skill.shadowKick ? "shadow" : "rush";
-            bot.kickUntil = now + skill.react + 1300;
         }
         if (now < bot.holdUntil) return { throttle: 0, steer: 0, boost: false };
         if (now >= bot.nextThink || !bot.target) {
@@ -1250,7 +1271,7 @@
             // The boss's sharper handling pays off with finer throttle control:
             // ease into turns, and hold its spot on arrival instead of circling.
             if (turn > 1.2) throttle = turn > 1.8 && speed > 220 ? -0.3 : 0.45;
-            else if (bot.target.attack) throttle = 1;
+            else if (bot.target.attack) throttle = bot.target.soft ? 0.55 : 1;
             else if (turn > 0.8) throttle = speed > 230 ? 0 : 0.7;
             else if (aim.distance < 14) throttle = 0;
             else throttle = aim.distance < 40 ? 0.5 : 1;
@@ -1261,7 +1282,7 @@
         // whenever it is heading roughly where it wants to go.
         const lined = turn < (skill.chaseBoost ? 0.5 : 0.25);
         const wantsBoost = bot.target.attack ? aim.distance > 50 : skill.chaseBoost && aim.distance > 60;
-        const boost = throttle > 0 && lined && wantsBoost && Math.random() < skill.boost;
+        const boost = throttle > 0 && lined && wantsBoost && !bot.target.soft && Math.random() < skill.boost;
         return { throttle, steer: smoothSteer(steerFor(aim, skill), aim), boost };
     }
 
