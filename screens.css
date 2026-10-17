@@ -1691,6 +1691,69 @@
     background: var(--accent);
 }
 
+/* Friend rooms, inside the overlay */
+.po-room {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+    width: min(100%, 24rem);
+}
+
+.po-room[hidden],
+.po-room [hidden] {
+    display: none;
+}
+
+.po-room-code {
+    font-size: var(--title);
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: #1ef2c8;
+}
+
+.po-room-link,
+.po-join {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.po-room-link input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.2rem 0.5rem;
+    font: inherit;
+    font-size: 0.85em;
+    color: var(--ink);
+    background: var(--paper-light);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0.3rem;
+}
+
+.po-join label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-style: italic;
+}
+
+.po-join input {
+    width: 5rem;
+    padding: 0.15rem 0.4rem;
+    font: inherit;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--paper-light);
+    border: 2px solid #1ef2c8;
+    border-radius: 0.3rem;
+}
+
 /* Beat Nihar leaderboard, inside the overlay */
 .po-board {
     width: min(100%, 22rem);

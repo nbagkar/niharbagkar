@@ -55,6 +55,14 @@
     const recordings = [];
     let recording = null;
 
+    // Friend rooms (online.js): the host runs the match; the guest sends its
+    // controls and draws the host's snapshots a moment behind, smoothed.
+    const net = { link: null, role: null, peer: false, joined: 0, peerColor: "blue", remote: null, snaps: [], lastSnap: 0, lastInput: "", lastInputAt: 0, friendPanel: false };
+    const IDLE_INPUT = { throttle: 0, steer: 0, boost: false };
+    net.remote = IDLE_INPUT;
+    const SNAP_MS = 66;
+    const INTERP_MS = 110;
+
     const player = { x: 0, y: 0, angle: 0, speed: 0, power: 1 };
     const bot = { x: 0, y: 0, angle: Math.PI, speed: 0, power: 1, target: null, nextThink: 0, stuckSince: 0, reverseUntil: 0 };
     const ball = { x: 0, y: 0, vx: 0, vy: 0, spin: 0 };
@@ -170,6 +178,7 @@
     setup.querySelector(".pitch-colors").addEventListener("change", (event) => {
         carColor = event.target.value;
         store("nb-car", carColor);
+        if (net.link) net.link.send({ t: "hello", color: carColor });
         sound("tab");
         draw(performance.now());
         track(`pitch-car-${carColor}`, `Car colour: ${COLORS[carColor].name}`);
@@ -181,10 +190,18 @@
         <div class="po-board" hidden><p class="po-board-title">Beat Nihar: top 10</p><ol></ol></div>
         <form class="po-entry" hidden><label>Your initials <input name="initials" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" required></label><button class="btn" type="submit">Submit score</button></form>
         <p class="po-note" aria-live="polite" hidden></p>
-        <p class="po-actions"><button class="btn po-start" type="button"></button><button class="po-free" type="button">Free play</button></p>`;
+        <div class="po-room" hidden>
+            <p class="po-room-code"></p>
+            <p class="po-room-link"><input readonly aria-label="Room link"><button class="po-free po-copy" type="button">Copy link</button></p>
+            <form class="po-join"><label>Have a code? <input name="code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code"></label><button class="po-free" type="submit">Join</button></form>
+        </div>
+        <p class="po-actions"><button class="btn po-start" type="button"></button><button class="po-free po-free-play" type="button">Free play</button><button class="po-free po-friend" type="button">Play a friend</button><button class="po-free po-leave" type="button" hidden>Leave room</button></p>`;
     stage.appendChild(overlay);
     const startButton = overlay.querySelector(".po-start");
-    const freeButton = overlay.querySelector(".po-free");
+    const freeButton = overlay.querySelector(".po-free-play");
+    const friendButton = overlay.querySelector(".po-friend");
+    const leaveButton = overlay.querySelector(".po-leave");
+    const roomBox = overlay.querySelector(".po-room");
 
     // Recording mode: a button to save this session's matches as a file.
     const downloadButton = document.createElement("button");
@@ -339,19 +356,27 @@
     }
 
     function boss() {
-        return Boolean(LEVELS[level].boss);
+        return !net.link && Boolean(LEVELS[level].boss);
     }
 
     function rival() {
-        return boss() ? "Nihar" : "Bot";
+        return net.link ? "Friend" : boss() ? "Nihar" : "Bot";
     }
 
     function rivalPhrase() {
-        return boss() ? "Nihar" : `the ${LEVELS[level].name.toLowerCase()} bot`;
+        return net.link ? "your friend" : boss() ? "Nihar" : `the ${LEVELS[level].name.toLowerCase()} bot`;
+    }
+
+    // Goals from this screen's point of view: the guest drives the right car.
+    function myGoals() {
+        return net.role === "guest" ? { you: score.them, them: score.you } : { you: score.you, them: score.them };
     }
 
     function renderScore() {
-        if (versusBot()) {
+        if (net.link) {
+            const { you, them } = myGoals();
+            scoreLine.textContent = `You ${you} – ${them} Friend · room ${net.link.code}`;
+        } else if (versusBot()) {
             const best = bestFor(level);
             scoreLine.textContent = `You ${score.you} – ${score.them} ${rival()}${best ? ` · best ${best} vs ${boss() ? "Nihar" : LEVELS[level].name}` : ""}`;
         } else {
@@ -359,16 +384,250 @@
         }
     }
 
+    // Friend rooms
+
+    function roomLink(code) {
+        return `${location.origin}${location.pathname}?room=${code}#kickoff`;
+    }
+
+    function showRoomCode() {
+        roomBox.hidden = false;
+        roomBox.querySelector(".po-room-code").hidden = false;
+        roomBox.querySelector(".po-room-link").hidden = false;
+        roomBox.querySelector(".po-join").hidden = true;
+        roomBox.querySelector(".po-room-code").textContent = net.link.code;
+        roomBox.querySelector(".po-room-link input").value = roomLink(net.link.code);
+    }
+
+    function friendPanel() {
+        setOverlay("Play a friend", "Make a room and send your friend the link, or join theirs with its code.", "Create a room");
+        net.friendPanel = true;
+        friendButton.hidden = true;
+        freeButton.hidden = true;
+        leaveButton.hidden = false;
+        leaveButton.textContent = "Back";
+        roomBox.hidden = false;
+        roomBox.querySelector(".po-room-code").hidden = true;
+        roomBox.querySelector(".po-room-link").hidden = true;
+        roomBox.querySelector(".po-join").hidden = false;
+    }
+
+    function lobby() {
+        mode = "idle";
+        levelSet.disabled = true;
+        renderScore();
+        if (net.role === "host") {
+            if (net.peer) setOverlay("Your friend is here", "Press Start when you're both ready. You drive the left car.", "Start match");
+            else setOverlay(`Room ${net.link.code}`, "Send your friend this link. Start the match once they join.", "");
+            showRoomCode();
+        } else {
+            setOverlay(`Room ${net.link.code}`, net.peer ? "You're in. Your friend starts the match. You drive the right car." : "Waiting for your friend to open the room…", "");
+        }
+    }
+
+    async function openRoom(code, role) {
+        setOverlay(role === "host" ? "Making a room…" : `Joining room ${code}…`, "", "");
+        try {
+            net.role = role;
+            net.peer = false;
+            net.full = false;
+            net.joined = Date.now();
+            net.link = await window.KickoffNet.open(code, role, { message: onNetMessage, peers: onPeers });
+            if (net.full) {
+                leaveRoom();
+                setNote("That room is full.");
+                return;
+            }
+            if (net.peer) net.link.send({ t: "hello", color: carColor });
+            setGeometry(640, 360);
+            resize();
+            kickoff();
+            draw(performance.now());
+            lobby();
+            track(`pitch-room-${role}`, role === "host" ? "Opened a friend room" : "Joined a friend room");
+        } catch (error) {
+            net.link = null;
+            net.role = null;
+            idle();
+            setNote(error.message);
+        }
+    }
+
+    function leaveRoom() {
+        countTimers.forEach(window.clearTimeout);
+        if (net.link) net.link.close();
+        net.link = null;
+        net.role = null;
+        net.peer = false;
+        net.remote = IDLE_INPUT;
+        net.snaps = [];
+        score.you = 0;
+        score.them = 0;
+        clock.hidden = true;
+        if (location.search.includes("room=")) history.replaceState(null, "", location.pathname + location.hash);
+        resize();
+        kickoff();
+        idle();
+    }
+
+    function onPeers(list) {
+        // A third person in the room: the latest arrival leaves.
+        const earlier = list.filter((peer) => (peer.joined || 0) < net.joined);
+        if (earlier.length >= 2) {
+            if (!net.link) {
+                net.full = true;
+                return;
+            }
+            leaveRoom();
+            setNote("That room is full.");
+            return;
+        }
+        const had = net.peer;
+        net.peer = list.some((peer) => peer.role === (net.role === "host" ? "guest" : "host"));
+        // Presence can arrive while the room is still opening; openRoom says
+        // hello and shows the lobby once the link is ready.
+        if (!net.link) return;
+        if (net.peer && !had) {
+            net.link.send({ t: "hello", color: carColor });
+            sound("unlock");
+            if (mode === "idle" || mode === "over") lobby();
+        } else if (!net.peer && had) {
+            countTimers.forEach(window.clearTimeout);
+            net.remote = IDLE_INPUT;
+            mode = "idle";
+            setOverlay("Your friend left", net.role === "host" ? "The room stays open if they want to come back." : "The room's host left.", "");
+            if (net.role === "host") showRoomCode();
+        }
+    }
+
+    function onNetMessage(message) {
+        if (!message || typeof message !== "object") return;
+        if (message.t === "hello") {
+            if (COLORS[message.color]) net.peerColor = message.color;
+            draw(performance.now());
+            return;
+        }
+        if (net.role === "host") {
+            if (message.t === "in" && Array.isArray(message.i) && mode === "match") {
+                net.remote = {
+                    throttle: clamp(Number(message.i[0]) || 0, -1, 1),
+                    steer: clamp(Number(message.i[1]) || 0, -1, 1),
+                    boost: Boolean(message.i[2]),
+                };
+            }
+            return;
+        }
+        if (message.t === "start") {
+            if (COLORS[message.color]) net.peerColor = message.color;
+            startMatch(true);
+        } else if (message.t === "s" && Array.isArray(message.p)) {
+            net.snaps.push({ at: performance.now(), p: message.p, b: message.b, ball: message.ball, left: message.left });
+            if (net.snaps.length > 12) net.snaps.shift();
+            if (score.you !== message.sc[0] || score.them !== message.sc[1]) {
+                score.you = message.sc[0];
+                score.them = message.sc[1];
+                renderScore();
+            }
+        } else if (message.t === "goal") {
+            const mine = !message.host;
+            sound(mine ? "goal" : "stamp");
+            stamp.textContent = mine ? "Goal!" : "Friend scored";
+            stamp.classList.remove("is-on");
+            void stamp.offsetWidth;
+            stamp.classList.add("is-on");
+        } else if (message.t === "end") {
+            score.you = Number(message.you) || 0;
+            score.them = Number(message.them) || 0;
+            endOnline();
+        }
+    }
+
+    function r1(value) {
+        return Math.round(value * 10) / 10;
+    }
+
+    function snapshot(left) {
+        const car = (c) => [r1(c.x), r1(c.y), Math.round(c.angle * 1000) / 1000, r1(c.speed)];
+        return { t: "s", p: car(player), b: car(bot), ball: [r1(ball.x), r1(ball.y), r1(ball.spin)], sc: [score.you, score.them], left: Math.max(0, Math.round(left)) };
+    }
+
+    // The guest drives the right car: send its controls when they change (and
+    // a few times a second anyway), and draw the host's state a moment behind,
+    // blended between the two snapshots around that moment.
+    function guestFrame(now) {
+        if (mode === "match") {
+            const input = playerInput(bot);
+            const key = `${input.throttle.toFixed(2)},${input.steer.toFixed(2)},${input.boost ? 1 : 0}`;
+            if (key !== net.lastInput || now - net.lastInputAt > 200) {
+                net.lastInput = key;
+                net.lastInputAt = now;
+                net.link.send({ t: "in", i: [input.throttle, input.steer, input.boost ? 1 : 0] });
+            }
+        }
+        const at = now - INTERP_MS;
+        const snaps = net.snaps;
+        while (snaps.length > 2 && snaps[1].at <= at) snaps.shift();
+        if (snaps.length) {
+            const a = snaps[0];
+            const b = snaps[1] || a;
+            const k = b.at > a.at ? clamp((at - a.at) / (b.at - a.at), 0, 1) : 1;
+            const mix = (u, v) => u + (v - u) * k;
+            [[player, a.p, b.p], [bot, a.b, b.b]].forEach(([car, from, to]) => {
+                car.x = mix(from[0], to[0]);
+                car.y = mix(from[1], to[1]);
+                car.angle = from[2] + wrapAngle(to[2] - from[2]) * k;
+                car.speed = to[3];
+            });
+            ball.x = mix(a.ball[0], b.ball[0]);
+            ball.y = mix(a.ball[1], b.ball[1]);
+            ball.spin = b.ball[2];
+            if (mode === "match") {
+                const seconds = Math.ceil(b.left / 1000);
+                if (seconds !== shownSeconds) {
+                    shownSeconds = seconds;
+                    root.querySelector('[data-score="clock"]').textContent = formatClock(b.left);
+                    clock.classList.toggle("is-low", seconds <= 10);
+                }
+            }
+        }
+        draw(now);
+        if (visible && (mode === "match" || mode === "count")) requestAnimationFrame(frame);
+        else running = false;
+    }
+
+    function endOnline() {
+        mode = "over";
+        keys.clear();
+        pointer.active = false;
+        sound("whistle");
+        if (net.role === "host") net.link.send({ t: "end", you: score.you, them: score.them });
+        net.remote = IDLE_INPUT;
+        const { you, them } = myGoals();
+        const big = you > them ? "You win!" : you < them ? "Friend wins" : "Draw";
+        const next = net.role === "host" ? "Rematch when you're both ready." : "Your friend can start a rematch.";
+        setOverlay(big, `${you}–${them} against your friend. ${next}`, net.role === "host" ? "Rematch" : "");
+        renderScore();
+        window.setTimeout(() => (net.role === "host" ? startButton : leaveButton).focus({ preventScroll: true }), 50);
+        track("pitch-online-full-time", `Friend match: ${you}-${them}`);
+    }
+
     function setOverlay(big, sub, startLabel) {
         overlay.hidden = false;
         entry.hidden = true;
+        roomBox.hidden = true;
+        friendButton.hidden = Boolean(net.link);
+        freeButton.hidden = Boolean(net.link);
+        leaveButton.hidden = !net.link;
         setNote("");
         showBoard(false);
         overlay.classList.remove("is-counting");
         overlay.querySelector(".po-big").textContent = big;
         overlay.querySelector(".po-sub").textContent = sub;
-        overlay.querySelector(".po-actions").hidden = !startLabel;
+        overlay.querySelector(".po-actions").hidden = !startLabel && !net.link;
+        startButton.hidden = !startLabel;
         if (startLabel) startButton.textContent = startLabel;
+        leaveButton.textContent = "Leave room";
+        net.friendPanel = false;
         startButton.toggleAttribute("data-autofocus", Boolean(startLabel));
         canvas.removeAttribute("data-autofocus");
     }
@@ -390,7 +649,10 @@
         } else setOverlay("Kick off", `60 seconds against ${rivalPhrase()}. Score in the red goal and keep the ball out of yours.`, "Start match");
     }
 
-    function startMatch() {
+    function startMatch(fromHost) {
+        if (net.link && net.role === "guest" && !fromHost) return;
+        if (net.link && !net.peer) return;
+        if (net.link && net.role === "host") net.link.send({ t: "start", color: carColor });
         countTimers.forEach(window.clearTimeout);
         countTimers = [];
         mode = "count";
@@ -434,10 +696,21 @@
         started = true;
         if (RECORD) recording = { level, strength: level === "nihar" ? strength : null, W, H, frames: [] };
         if (boss()) requestToken();
+        net.snaps = [];
+        if (net.link) {
+            bot.power = 1;
+            bot.turn = 1;
+            net.remote = IDLE_INPUT;
+            renderScore();
+        }
         track(`pitch-match-${level}`, `Started a match against ${rivalPhrase()}`);
     }
 
     function endMatch() {
+        if (net.link) {
+            endOnline();
+            return;
+        }
         mode = "over";
         levelSet.disabled = false;
         keys.clear();
@@ -488,7 +761,41 @@
         return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     }
 
-    startButton.addEventListener("click", startMatch);
+    startButton.addEventListener("click", () => {
+        if (net.friendPanel) openRoom(window.KickoffNet.newCode(), "host");
+        else startMatch(false);
+    });
+    friendButton.addEventListener("click", () => {
+        friendPanel();
+        track("pitch-friend-panel", "Opened Play a friend");
+    });
+    leaveButton.addEventListener("click", () => {
+        if (net.link) leaveRoom();
+        else idle();
+    });
+    roomBox.querySelector(".po-copy").addEventListener("click", async (event) => {
+        const input = roomBox.querySelector(".po-room-link input");
+        try {
+            await navigator.clipboard.writeText(input.value);
+            event.target.textContent = "Copied!";
+        } catch (error) {
+            input.select();
+            event.target.textContent = "Press Ctrl+C";
+        }
+        window.setTimeout(() => (event.target.textContent = "Copy link"), 2000);
+    });
+    roomBox.querySelector(".po-join").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const code = window.KickoffNet.cleanCode(event.target.code.value);
+        if (code.length !== 4) {
+            setNote("Room codes are four letters.");
+            return;
+        }
+        openRoom(code, "guest");
+    });
+    roomBox.querySelector(".po-join input").addEventListener("input", (event) => {
+        event.target.value = window.KickoffNet.cleanCode(event.target.value);
+    });
     freeButton.addEventListener("click", () => {
         countTimers.forEach(window.clearTimeout);
         mode = "free";
@@ -554,7 +861,8 @@
     function resize() {
         const dpr = window.devicePixelRatio || 1;
         const cssWidth = canvas.clientWidth || W;
-        const compact = cssWidth < 520;
+        // Online, both screens use the full pitch so positions line up.
+        const compact = cssWidth < 520 && !net.link;
         if (compact !== (W === 440)) {
             setGeometry(compact ? 440 : 640, compact ? 300 : 360);
             trail.length = 0;
@@ -574,12 +882,12 @@
         return { diff, distance: Math.hypot(dx, dy), steer: clamp(diff * gain, -1, 1) };
     }
 
-    function playerInput() {
+    function playerInput(car = player) {
         let throttle = 0;
         let steer = 0;
         if (mode !== "match" && mode !== "free") return { throttle, steer, boost: false };
         if (pointer.active) {
-            const aim = steerTo(player, pointer.x, pointer.y, 2.5);
+            const aim = steerTo(car, pointer.x, pointer.y, 2.5);
             steer = aim.steer;
             throttle = aim.distance > 18 ? (Math.abs(aim.diff) > 1.9 ? 0.4 : 1) : 0;
         } else {
@@ -988,7 +1296,7 @@
         const rel = (ball.vx - cvx) * nx + (ball.vy - cvy) * ny;
         if (rel < 0) {
             // The boss hits the ball harder than anyone else.
-            const punch = car === bot ? LEVELS[level].shot || 1 : 1;
+            const punch = car === bot && !net.link ? LEVELS[level].shot || 1 : 1;
             const impulse = (-1.6 * rel + 40) * punch;
             ball.vx += nx * impulse;
             ball.vy += ny * impulse;
@@ -1116,7 +1424,8 @@
         renderScore();
         if (forUs && motionOn()) celebrate();
         sound(forUs ? "goal" : "stamp");
-        stamp.textContent = forUs ? "Goal!" : mode !== "match" ? "Own goal" : boss() ? "Nihar scored" : "Bot scores";
+        if (net.link) net.link.send({ t: "goal", host: forUs });
+        stamp.textContent = net.link ? (forUs ? "Goal!" : "Friend scored") : forUs ? "Goal!" : mode !== "match" ? "Own goal" : boss() ? "Nihar scored" : "Bot scores";
         stamp.classList.remove("is-on");
         void stamp.offsetWidth;
         stamp.classList.add("is-on");
@@ -1276,6 +1585,15 @@
         drawTrail(now);
         drawSparks(dt);
         drawBall();
+        if (net.link) {
+            const mine = COLORS[carColor].fill;
+            const theirs = (COLORS[net.peerColor] || COLORS.blue).fill;
+            const guest = net.role === "guest";
+            drawCar(bot, guest ? mine : theirs);
+            drawCar(player, guest ? theirs : mine);
+            drawNameplate(guest ? player : bot, "FRIEND");
+            return;
+        }
         if (versusBot()) {
             drawCar(bot, boss() ? BOSS_FILL : BOT_FILL);
             if (boss()) drawNameplate(bot, "NIHAR");
@@ -1293,21 +1611,25 @@
         ctx.fillStyle = "rgba(27, 24, 18, 0.82)";
         roundRect(car.x - width / 2, y - 12, width, 13, 3);
         ctx.fill();
-        ctx.fillStyle = BOSS_FILL;
+        ctx.fillStyle = net.link ? "#ffffff" : BOSS_FILL;
         ctx.fillText(text, car.x, y);
         ctx.restore();
     }
 
     function busy(input) {
-        return mode === "match" || pointer.active || input.throttle !== 0 || Math.abs(player.speed) > 2 ||
+        return mode === "match" || (net.link && mode === "count") || pointer.active || input.throttle !== 0 || Math.abs(player.speed) > 2 ||
             Math.hypot(ball.vx, ball.vy) > 2 || sparks.length > 0 || trail.length > 0 || freezeUntil > 0;
     }
 
     function frame(now) {
         const dt = Math.min(0.033, (now - last) / 1000);
         last = now;
+        if (net.link && net.role === "guest") {
+            guestFrame(now);
+            return;
+        }
         const input = playerInput();
-        const botMove = mode === "match" ? botInput(now) : null;
+        const botMove = mode !== "match" ? null : net.link ? (freezeUntil ? IDLE_INPUT : net.remote) : botInput(now);
         // The car is thinner than the ball is wide, so a fast car and a fast
         // ball can cross the car's middle in one frame and the ball pops out
         // the far side. Small steps keep each move to a few pixels.
@@ -1343,6 +1665,10 @@
         if (freezeUntil && now > freezeUntil) {
             freezeUntil = 0;
             kickoff();
+        }
+        if (net.link && mode === "match" && now - net.lastSnap > SNAP_MS) {
+            net.lastSnap = now;
+            net.link.send(snapshot(matchEnd - now));
         }
         if (mode === "match") {
             const left = matchEnd - now;
@@ -1436,6 +1762,13 @@
     kickoff();
     resize();
     idle();
+
+    // Opened from a friend's room link.
+    const roomParam = new URLSearchParams(location.search).get("room");
+    if (roomParam && window.KickoffNet) {
+        const code = window.KickoffNet.cleanCode(roomParam);
+        if (code.length === 4) openRoom(code, "guest");
+    }
 
     if ("ResizeObserver" in window) {
         new ResizeObserver(resize).observe(canvas);
