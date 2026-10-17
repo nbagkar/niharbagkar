@@ -202,7 +202,7 @@
 /* A grid that adds rows as the shelf grows; the screen zooms to fit. */
 .hub #about .books {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(clamp(6.5rem, 9vw, 9rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(clamp(5.75rem, 7.5vw, 8rem), 1fr));
     gap: 1.2rem clamp(0.9rem, 1.8vw, 1.4rem);
     margin-top: 1.2rem;
 }
