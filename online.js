@@ -29,11 +29,18 @@
         return loading;
     }
 
+    // Random letters can spell things; skip codes containing any of these.
+    const AVOID = ["FCK", "FUK", "FUC", "SHT", "CNT", "CUM", "KKK", "NGR", "NIG", "FAG", "DCK", "DIK", "ASS", "SEX",
+        "TIT", "XXX", "KYS", "WTF", "POO", "GAY", "NAZ", "JEW", "RAP", "PUS", "VAG", "HOE", "SLT", "TWT", "BCH", "DMN",
+        "PNS", "PSS", "STD", "FKN", "FCKN"];
+
     function newCode() {
-        let code = "";
-        const values = crypto.getRandomValues(new Uint8Array(4));
-        values.forEach((value) => (code += LETTERS[value % LETTERS.length]));
-        return code;
+        for (;;) {
+            let code = "";
+            const values = crypto.getRandomValues(new Uint8Array(4));
+            values.forEach((value) => (code += LETTERS[value % LETTERS.length]));
+            if (!AVOID.some((word) => code.includes(word))) return code;
+        }
     }
 
     function cleanCode(text) {

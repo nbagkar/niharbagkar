@@ -57,11 +57,14 @@
 
     // Friend rooms (online.js): the host runs the match; the guest sends its
     // controls and draws the host's snapshots a moment behind, smoothed.
-    const net = { link: null, role: null, peer: false, joined: 0, peerColor: "blue", remote: null, snaps: [], lastSnap: 0, lastInput: "", lastInputAt: 0, friendPanel: false };
-    const IDLE_INPUT = { throttle: 0, steer: 0, boost: false };
-    net.remote = IDLE_INPUT;
-    const SNAP_MS = 66;
-    const INTERP_MS = 110;
+    const net = {
+        link: null, role: null, peer: false, joined: 0, peerColor: "blue", snaps: [], lastSnap: 0, friendPanel: false,
+        // Prediction: the guest drives its own car locally and reports where it
+        // is; rtt is the measured round trip, used to project things to "now".
+        rtt: 120, peerRtt: 120, remoteCar: null, kickNo: 0, lastCarSent: 0, lastPing: 0, touchedAt: -Infinity,
+    };
+    const SNAP_MS = 50;
+    const CAR_MS = 40;
 
     const player = { x: 0, y: 0, angle: 0, speed: 0, power: 1 };
     const bot = { x: 0, y: 0, angle: Math.PI, speed: 0, power: 1, target: null, nextThink: 0, stuckSince: 0, reverseUntil: 0 };
@@ -459,7 +462,6 @@
         net.link = null;
         net.role = null;
         net.peer = false;
-        net.remote = IDLE_INPUT;
         net.snaps = [];
         score.you = 0;
         score.them = 0;
@@ -493,7 +495,6 @@
             if (mode === "idle" || mode === "over") lobby();
         } else if (!net.peer && had) {
             countTimers.forEach(window.clearTimeout);
-            net.remote = IDLE_INPUT;
             mode = "idle";
             setOverlay("Your friend left", net.role === "host" ? "The room stays open if they want to come back." : "The room's host left.", "");
             if (net.role === "host") showRoomCode();
@@ -508,21 +509,31 @@
             return;
         }
         if (net.role === "host") {
-            if (message.t === "in" && Array.isArray(message.i) && mode === "match") {
-                net.remote = {
-                    throttle: clamp(Number(message.i[0]) || 0, -1, 1),
-                    steer: clamp(Number(message.i[1]) || 0, -1, 1),
-                    boost: Boolean(message.i[2]),
-                };
+            if (message.t === "car" && Array.isArray(message.s) && message.k === net.kickNo) {
+                net.remoteCar = { s: message.s.map((v) => Number(v) || 0), at: performance.now() };
+                if (Number(message.rtt) > 0) net.peerRtt = clamp(Number(message.rtt), 20, 600);
+            } else if (message.t === "ping") {
+                net.link.send({ t: "pong", c: message.c });
             }
+            return;
+        }
+        if (message.t === "pong") {
+            const rtt = performance.now() - Number(message.c);
+            if (rtt > 0 && rtt < 2000) net.rtt = net.rtt * 0.7 + rtt * 0.3;
+            return;
+        }
+        if (message.t === "kick") {
+            net.kickNo = Number(message.k) || 0;
+            kickoff();
+            net.snaps = [];
             return;
         }
         if (message.t === "start") {
             if (COLORS[message.color]) net.peerColor = message.color;
             startMatch(true);
         } else if (message.t === "s" && Array.isArray(message.p)) {
-            net.snaps.push({ at: performance.now(), p: message.p, b: message.b, ball: message.ball, left: message.left });
-            if (net.snaps.length > 12) net.snaps.shift();
+            net.snaps.push({ at: performance.now(), p: message.p, ball: message.ball, left: message.left });
+            if (net.snaps.length > 4) net.snaps.shift();
             if (score.you !== message.sc[0] || score.them !== message.sc[1]) {
                 score.you = message.sc[0];
                 score.them = message.sc[1];
@@ -548,49 +559,113 @@
 
     function snapshot(left) {
         const car = (c) => [r1(c.x), r1(c.y), Math.round(c.angle * 1000) / 1000, r1(c.speed)];
-        return { t: "s", p: car(player), b: car(bot), ball: [r1(ball.x), r1(ball.y), r1(ball.spin)], sc: [score.you, score.them], left: Math.max(0, Math.round(left)) };
+        return { t: "s", p: car(player), ball: [r1(ball.x), r1(ball.y), r1(ball.spin), r1(ball.vx), r1(ball.vy)], sc: [score.you, score.them], left: Math.max(0, Math.round(left)) };
     }
 
-    // The guest drives the right car: send its controls when they change (and
-    // a few times a second anyway), and draw the host's state a moment behind,
-    // blended between the two snapshots around that moment.
-    function guestFrame(now) {
-        if (mode === "match") {
-            const input = playerInput(bot);
-            const key = `${input.throttle.toFixed(2)},${input.steer.toFixed(2)},${input.boost ? 1 : 0}`;
-            if (key !== net.lastInput || now - net.lastInputAt > 200) {
-                net.lastInput = key;
-                net.lastInputAt = now;
-                net.link.send({ t: "in", i: [input.throttle, input.steer, input.boost ? 1 : 0] });
+    // Host side: the guest's car is wherever the guest last said it was,
+    // projected forward by half the round trip, so touches line up with
+    // what the guest saw.
+    const REMOTE_CAR = { remote: true };
+
+    function placeRemoteCar(now) {
+        const remote = net.remoteCar;
+        if (!remote) return;
+        const lead = Math.min(220, now - remote.at + net.peerRtt / 2) / 1000;
+        const [x, y, angle, speed] = remote.s;
+        bot.angle = angle;
+        bot.speed = speed;
+        bot.x = clamp(x + Math.cos(angle) * speed * lead, FIELD.left + 13, FIELD.right - 13);
+        bot.y = clamp(y + Math.sin(angle) * speed * lead, FIELD.top + 13, FIELD.bottom - 13);
+    }
+
+    // Where a snapshot's ball would be `seconds` later (drag and walls only).
+    function advanceBall(state, seconds) {
+        let [x, y, , vx, vy] = state;
+        const step = 1 / 60;
+        const drag = Math.exp(-0.75 * step);
+        for (let t = 0; t < seconds; t += step) {
+            x += vx * step;
+            y += vy * step;
+            vx *= drag;
+            vy *= drag;
+            if (y < FIELD.top + BALL_R || y > FIELD.bottom - BALL_R) {
+                y = clamp(y, FIELD.top + BALL_R, FIELD.bottom - BALL_R);
+                vy *= -0.8;
+            }
+            if ((y < MOUTH.top || y > MOUTH.bottom) && (x < FIELD.left + BALL_R || x > FIELD.right - BALL_R)) {
+                x = clamp(x, FIELD.left + BALL_R, FIELD.right - BALL_R);
+                vx *= -0.8;
             }
         }
-        const at = now - INTERP_MS;
-        const snaps = net.snaps;
-        while (snaps.length > 2 && snaps[1].at <= at) snaps.shift();
-        if (snaps.length) {
-            const a = snaps[0];
-            const b = snaps[1] || a;
-            const k = b.at > a.at ? clamp((at - a.at) / (b.at - a.at), 0, 1) : 1;
-            const mix = (u, v) => u + (v - u) * k;
-            [[player, a.p, b.p], [bot, a.b, b.b]].forEach(([car, from, to]) => {
-                car.x = mix(from[0], to[0]);
-                car.y = mix(from[1], to[1]);
-                car.angle = from[2] + wrapAngle(to[2] - from[2]) * k;
-                car.speed = to[3];
-            });
-            ball.x = mix(a.ball[0], b.ball[0]);
-            ball.y = mix(a.ball[1], b.ball[1]);
-            ball.spin = b.ball[2];
-            if (mode === "match") {
-                const seconds = Math.ceil(b.left / 1000);
+        return { x, y, vx, vy };
+    }
+
+    // Guest side: drive our own car (the right one) locally so it answers at
+    // once, run the ball here too so our touches move it at once, and ease
+    // the ball and the host's car toward the host's state brought up to the
+    // present. Right after our own touch the host has not seen it yet, so the
+    // ball is left alone for a moment instead of being pulled back.
+    function guestFrame(now, dt) {
+        const playing = mode === "match";
+        if (playing) {
+            const input = playerInput(bot);
+            const steps = Math.min(8, Math.max(1, Math.ceil(((Math.abs(bot.speed) + Math.hypot(ball.vx, ball.vy)) * dt) / 5)));
+            const h = dt / steps;
+            for (let i = 0; i < steps; i++) {
+                updateCar(bot, h, input, i === steps - 1);
+                updateBall(h, now);
+                const before = ball.vx + ball.vy;
+                collide(bot);
+                if (ball.vx + ball.vy !== before) net.touchedAt = now;
+                collide(player);
+                bumpCars();
+            }
+            if (now - net.lastCarSent > CAR_MS) {
+                net.lastCarSent = now;
+                net.link.send({ t: "car", k: net.kickNo, rtt: Math.round(net.rtt), s: [r1(bot.x), r1(bot.y), Math.round(bot.angle * 1000) / 1000, r1(bot.speed)] });
+            }
+            if (now - net.lastPing > 1000) {
+                net.lastPing = now;
+                net.link.send({ t: "ping", c: now });
+            }
+        }
+        const snap = net.snaps[net.snaps.length - 1];
+        if (snap) {
+            const lead = Math.min(250, now - snap.at + net.rtt / 2) / 1000;
+            const [px, py, pa, ps] = snap.p;
+            const tx = px + Math.cos(pa) * ps * lead;
+            const ty = py + Math.sin(pa) * ps * lead;
+            const ease = playing ? 0.5 : 1;
+            player.x += (tx - player.x) * ease;
+            player.y += (ty - player.y) * ease;
+            player.angle += wrapAngle(pa - player.angle) * ease;
+            player.speed = ps;
+            const target = advanceBall(snap.ball, lead);
+            const off = Math.hypot(target.x - ball.x, target.y - ball.y);
+            const ours = now - net.touchedAt < net.rtt + 150;
+            if (!playing || off > 90) {
+                ball.x = target.x;
+                ball.y = target.y;
+                ball.vx = target.vx;
+                ball.vy = target.vy;
+            } else if (!ours) {
+                ball.x += (target.x - ball.x) * 0.15;
+                ball.y += (target.y - ball.y) * 0.15;
+                ball.vx += (target.vx - ball.vx) * 0.15;
+                ball.vy += (target.vy - ball.vy) * 0.15;
+            }
+            ball.spin = snap.ball[2];
+            if (playing) {
+                const left = snap.left - (now - snap.at);
+                const seconds = Math.ceil(left / 1000);
                 if (seconds !== shownSeconds) {
                     shownSeconds = seconds;
-                    root.querySelector('[data-score="clock"]').textContent = formatClock(b.left);
+                    root.querySelector('[data-score="clock"]').textContent = formatClock(Math.max(0, left));
                     clock.classList.toggle("is-low", seconds <= 10);
                 }
             }
         }
-        draw(now);
+        draw(now, dt);
         if (visible && (mode === "match" || mode === "count")) requestAnimationFrame(frame);
         else running = false;
     }
@@ -601,7 +676,6 @@
         pointer.active = false;
         sound("whistle");
         if (net.role === "host") net.link.send({ t: "end", you: score.you, them: score.them });
-        net.remote = IDLE_INPUT;
         const { you, them } = myGoals();
         const big = you > them ? "You win!" : you < them ? "Friend wins" : "Draw";
         const next = net.role === "host" ? "Rematch when you're both ready." : "Your friend can start a rematch.";
@@ -700,7 +774,8 @@
         if (net.link) {
             bot.power = 1;
             bot.turn = 1;
-            net.remote = IDLE_INPUT;
+            net.remoteCar = null;
+            net.kickNo = 0;
             renderScore();
         }
         track(`pitch-match-${level}`, `Started a match against ${rivalPhrase()}`);
@@ -1417,6 +1492,8 @@
     }
 
     function scored(forUs, now) {
+        // Online, only the host decides goals; the guest's ball is a forecast.
+        if (net.role === "guest") return;
         freezeUntil = now + 1500;
         if (mode === "over" || mode === "count" || mode === "idle") return;
         if (forUs) score.you += 1;
@@ -1625,11 +1702,12 @@
         const dt = Math.min(0.033, (now - last) / 1000);
         last = now;
         if (net.link && net.role === "guest") {
-            guestFrame(now);
+            guestFrame(now, dt);
             return;
         }
         const input = playerInput();
-        const botMove = mode !== "match" ? null : net.link ? (freezeUntil ? IDLE_INPUT : net.remote) : botInput(now);
+        const botMove = mode !== "match" ? null : net.link ? REMOTE_CAR : botInput(now);
+        if (botMove === REMOTE_CAR) placeRemoteCar(now);
         // The car is thinner than the ball is wide, so a fast car and a fast
         // ball can cross the car's middle in one frame and the ball pops out
         // the far side. Small steps keep each move to a few pixels.
@@ -1639,7 +1717,7 @@
         for (let i = 0; i < steps; i++) {
             const effects = i === steps - 1;
             updateCar(player, h, input, effects);
-            if (botMove) updateCar(bot, h, botMove, effects);
+            if (botMove && botMove !== REMOTE_CAR) updateCar(bot, h, botMove, effects);
             updateBall(h, now);
             // Toss a coin for who touches first so neither car always wins a 50-50.
             if (botMove && Math.random() < 0.5) {
@@ -1665,6 +1743,13 @@
         if (freezeUntil && now > freezeUntil) {
             freezeUntil = 0;
             kickoff();
+            if (net.link) {
+                // Restart both screens together; positions sent before this
+                // kickoff are ignored by their number.
+                net.kickNo += 1;
+                net.remoteCar = null;
+                net.link.send({ t: "kick", k: net.kickNo });
+            }
         }
         if (net.link && mode === "match" && now - net.lastSnap > SNAP_MS) {
             net.lastSnap = now;
