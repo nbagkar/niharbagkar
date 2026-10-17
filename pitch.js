@@ -45,7 +45,7 @@
         // will reach the ball first in its half and mixes up its kickoffs.
         // Tuned on Nihar's recorded matches; pace, handling, shot and
         // reaction values below are overwritten by applyStrength().
-        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45 },
+        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45, shadowKick: 0.9, unpin: 120 },
     };
     const BOSS_FILL = "#1ef2c8";
 
@@ -549,13 +549,20 @@
             attack,
         });
 
+        // Kickoff, until the ball is first touched. Rushing straight at the
+        // ball meets a boosting player head-on and both cars stall while the
+        // ball squirts loose (9 of Nihar's 11 goals in testing came that way),
+        // so the boss usually holds goal-side and lets the player hit the
+        // ball into it, and only sometimes rushes, so it cannot be read.
+        if (skill.boss && bot.kickPlan === "shadow" && bot.kickUntil > last && Math.hypot(ball.vx, ball.vy) < 20) {
+            return inField(W / 2 + 95, H / 2, false);
+        }
+
         // Roughly behind the ball: drive at the side of it facing away from
         // the goal, so the touch sends it goalward. The better the bot, the
         // straighter it has to be lined up before it commits.
         if (lined > skill.lineUp && dist < 200) {
-            // The boss varies its first touch at kickoff so it is hard to read.
-            const kick = skill.boss && bot.kickUntil > last ? bot.kickOffset : 0;
-            return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3 + kick, true);
+            return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3, true);
         }
 
         // The boss keeps goal whenever the player will reach the ball first in
@@ -633,9 +640,9 @@
         if (bot.fresh) {
             bot.fresh = false;
             bot.holdUntil = now + skill.react;
-            // Mix up the kickoff: straight through, or clipped toward a post.
-            bot.kickOffset = skill.boss ? [0, -8, 8][Math.floor(Math.random() * 3)] : 0;
-            bot.kickUntil = now + skill.react + 900;
+            // The boss mixes its kickoff plans so there is no one counter.
+            bot.kickPlan = skill.boss && Math.random() < skill.shadowKick ? "shadow" : "rush";
+            bot.kickUntil = now + skill.react + 1300;
         }
         if (now < bot.holdUntil) return { throttle: 0, steer: 0, boost: false };
         if (now >= bot.nextThink || !bot.target) {
@@ -651,7 +658,8 @@
         const pinned = atWall || Math.hypot(bot.x - player.x, bot.y - player.y) < CAR.hx + CAR.hy + 2;
         if (Math.abs(bot.speed) < 15 && aim.distance > 30 && pinned) {
             if (!bot.stuckSince) bot.stuckSince = now;
-            if (now - bot.stuckSince > 450) {
+            // The boss backs out of a pin almost at once.
+            if (now - bot.stuckSince > (skill.unpin || 450)) {
                 bot.reverseUntil = now + 350;
                 bot.stuckSince = 0;
             }
