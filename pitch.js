@@ -43,8 +43,8 @@
         // The boss: Hard's brain with sharper handling (turn), a little more
         // pace, harder shots and quicker kickoffs. It keeps goal whenever you
         // will reach the ball first in its half and mixes up its kickoffs.
-        // Bot-vs-bot simulation could not rank strength against people, so
-        // the strength slider in recording mode exists to tune it by feel.
+        // Tuned on Nihar's recorded matches; pace, handling, shot and
+        // reaction values below are overwritten by applyStrength().
         nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 80, keepZone: 0.42, keepOut: 0.45 },
     };
     const BOSS_FILL = "#1ef2c8";
@@ -120,14 +120,14 @@
     function renderLock() {
         bossInput.disabled = !bossUnlocked;
         bossInput.closest("label").classList.toggle("is-locked", !bossUnlocked);
-        bossInput.closest("label").title = bossUnlocked ? "Boss level" : "Beat Hard to unlock";
+        bossInput.closest("label").title = bossUnlocked ? "Boss level, tuned on Nihar's play data" : "Beat Hard to unlock";
         bossInput.setAttribute("aria-label", bossUnlocked ? "Nihar, boss level" : "Nihar, boss level, locked until you beat Hard");
     }
     renderLock();
 
-    // Recording mode only: one dial for the boss's strength, 1-10, where 6
-    // is the shipped setting. Each step moves pace, handling, shot power and
-    // reaction time together.
+    // One dial for the boss's strength, 1-10. Nihar beat it at 6, so 8 ships;
+    // recording mode shows the dial. Each step moves pace, handling, shot
+    // power and reaction time together.
     function applyStrength(value) {
         const step = value - 1;
         Object.assign(LEVELS.nihar, {
@@ -139,9 +139,11 @@
         });
     }
 
-    let strength = 6;
+    const SHIPPED_STRENGTH = 8;
+    let strength = SHIPPED_STRENGTH;
+    applyStrength(strength);
     if (RECORD) {
-        strength = Number(stored("nb-boss-tune", "6")) || 6;
+        strength = Number(stored("nb-boss-tune", String(SHIPPED_STRENGTH))) || SHIPPED_STRENGTH;
         applyStrength(strength);
         const tune = document.createElement("label");
         tune.className = "pitch-tune";
@@ -263,7 +265,7 @@
         mode = "idle";
         levelSet.disabled = false;
         renderScore();
-        if (boss()) setOverlay("Boss match: Nihar", "The final boss. 60 seconds to score in the red goal and keep Nihar out of yours. Good luck.", "Start match");
+        if (boss()) setOverlay("Boss match: Nihar", "The final boss, tuned on Nihar's play data. 60 seconds to score in the red goal and keep Nihar out of yours. Good luck.", "Start match");
         else setOverlay("Kick off", `60 seconds against ${rivalPhrase()}. Score in the red goal and keep the ball out of yours.`, "Start match");
     }
 
