@@ -40,7 +40,20 @@
         easy: { name: "Easy", think: 500, lead: 0, noise: 110, steer: 1.6, power: 0.62, boost: 0, chaseBoost: false, defends: false, keeps: false, lineUp: 0.2, aims: false, react: 400 },
         medium: { name: "Medium", think: 110, lead: 0.15, noise: 28, steer: 2.6, power: 0.92, boost: 0.5, chaseBoost: false, defends: true, keeps: false, lineUp: 0.25, aims: true, react: 250 },
         hard: { name: "Hard", think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.18, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 150 },
+        // The boss: Hard's brain with sharper handling (turn), a little more
+        // pace, harder shots and quicker kickoffs. It keeps goal whenever you
+        // will reach the ball first in its half and mixes up its kickoffs.
+        // Bot-vs-bot simulation could not rank strength against people, so
+        // the strength slider in recording mode exists to tune it by feel.
+        nihar: { name: "Nihar", boss: true, think: 20, lead: 0.35, noise: 2, steer: 4, power: 1.22, turn: 1.5, shot: 1.15, boost: 1, chaseBoost: true, defends: true, keeps: true, lineUp: 0.2, aims: true, react: 120, keepZone: 0.42, keepOut: 0.45 },
     };
+    const BOSS_FILL = "#1ef2c8";
+
+    // Recording mode (?record): Nihar's own matches are logged so the boss
+    // can later be fitted to how he plays. Visitors never see it.
+    const RECORD = /[?&]record\b/.test(location.search);
+    const recordings = [];
+    let recording = null;
 
     const player = { x: 0, y: 0, angle: 0, speed: 0, power: 1 };
     const bot = { x: 0, y: 0, angle: Math.PI, speed: 0, power: 1, target: null, nextThink: 0, stuckSince: 0, reverseUntil: 0 };
@@ -81,7 +94,9 @@
         }
     }
 
+    let bossUnlocked = RECORD || stored("nb-beat-hard", "") === "1";
     let level = LEVELS[stored("nb-bot", "")] ? stored("nb-bot", "") : "medium";
+    if (level === "nihar" && !bossUnlocked) level = "medium";
     let carColor = COLORS[stored("nb-car", "")] ? stored("nb-car", "") : "red";
 
     function bestFor(name) {
@@ -94,12 +109,51 @@
     setup.className = "pitch-setup";
     setup.innerHTML = `
         <fieldset class="pitch-levels"><legend>Bot</legend>${Object.entries(LEVELS).map(([id, info]) =>
-            `<label class="pitch-seg"><input type="radio" name="pitch-level" value="${id}"><span>${info.name}</span></label>`).join("")}</fieldset>
+            `<label class="pitch-seg${info.boss ? " is-boss" : ""}"><input type="radio" name="pitch-level" value="${id}"><span>${info.name}</span></label>`).join("")}</fieldset>
         <fieldset class="pitch-colors"><legend>Your car</legend>${Object.entries(COLORS).map(([id, info]) =>
             `<label class="pitch-swatch" title="${info.name}"><input type="radio" name="pitch-color" value="${id}" aria-label="${info.name}"><span style="--swatch:${info.fill}"></span></label>`).join("")}</fieldset>`;
     root.insertBefore(setup, root.firstElementChild);
     const levelSet = setup.querySelector(".pitch-levels");
     setup.querySelector(`[name="pitch-level"][value="${level}"]`).checked = true;
+    const bossInput = setup.querySelector('[name="pitch-level"][value="nihar"]');
+
+    function renderLock() {
+        bossInput.disabled = !bossUnlocked;
+        bossInput.closest("label").classList.toggle("is-locked", !bossUnlocked);
+        bossInput.closest("label").title = bossUnlocked ? "Boss level" : "Beat Hard to unlock";
+        bossInput.setAttribute("aria-label", bossUnlocked ? "Nihar, boss level" : "Nihar, boss level, locked until you beat Hard");
+    }
+    renderLock();
+
+    // Recording mode only: one dial for the boss's strength, 1-10, where 6
+    // is the shipped setting. Each step moves pace, handling, shot power and
+    // reaction time together.
+    function applyStrength(value) {
+        const step = value - 1;
+        Object.assign(LEVELS.nihar, {
+            power: 1.05 + step * 0.035,
+            turn: 1.1 + step * 0.08,
+            shot: 1 + step * 0.03,
+            react: 220 - step * 20,
+            think: 40 - step * 4,
+        });
+    }
+
+    let strength = 6;
+    if (RECORD) {
+        strength = Number(stored("nb-boss-tune", "6")) || 6;
+        applyStrength(strength);
+        const tune = document.createElement("label");
+        tune.className = "pitch-tune";
+        tune.innerHTML = `Boss strength <input type="range" min="1" max="10" step="1" value="${strength}"><output>${strength}</output>`;
+        setup.appendChild(tune);
+        tune.querySelector("input").addEventListener("input", (event) => {
+            strength = Number(event.target.value);
+            tune.querySelector("output").textContent = strength;
+            applyStrength(strength);
+            store("nb-boss-tune", String(strength));
+        });
+    }
     setup.querySelector(`[name="pitch-color"][value="${carColor}"]`).checked = true;
 
     levelSet.addEventListener("change", (event) => {
@@ -127,6 +181,29 @@
     const startButton = overlay.querySelector(".po-start");
     const freeButton = overlay.querySelector(".po-free");
 
+    // Recording mode: a button to save this session's matches as a file.
+    const downloadButton = document.createElement("button");
+    downloadButton.type = "button";
+    downloadButton.className = "po-free po-download";
+    downloadButton.hidden = true;
+    overlay.querySelector(".po-actions").appendChild(downloadButton);
+
+    function showDownload() {
+        downloadButton.hidden = false;
+        downloadButton.textContent = `Download play data (${recordings.length} ${recordings.length === 1 ? "match" : "matches"})`;
+    }
+
+    downloadButton.addEventListener("click", () => {
+        const file = new Blob([JSON.stringify({ version: 1, recorded: new Date().toISOString(), matches: recordings })], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(file);
+        link.download = `kickoff-play-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    });
+
     function sound(name) {
         if (window.sfx) window.sfx(name);
     }
@@ -144,10 +221,22 @@
         return mode !== "free";
     }
 
+    function boss() {
+        return Boolean(LEVELS[level].boss);
+    }
+
+    function rival() {
+        return boss() ? "Nihar" : "Bot";
+    }
+
+    function rivalPhrase() {
+        return boss() ? "Nihar" : `the ${LEVELS[level].name.toLowerCase()} bot`;
+    }
+
     function renderScore() {
         if (versusBot()) {
             const best = bestFor(level);
-            scoreLine.textContent = `You ${score.you} – ${score.them} Bot${best ? ` · best ${best} on ${LEVELS[level].name}` : ""}`;
+            scoreLine.textContent = `You ${score.you} – ${score.them} ${rival()}${best ? ` · best ${best} vs ${boss() ? "Nihar" : LEVELS[level].name}` : ""}`;
         } else {
             scoreLine.textContent = `${plural(score.you, "goal")} · ${score.them} own ${score.them === 1 ? "goal" : "goals"}`;
         }
@@ -174,7 +263,8 @@
         mode = "idle";
         levelSet.disabled = false;
         renderScore();
-        setOverlay("Kick off", `60 seconds against the ${LEVELS[level].name.toLowerCase()} bot. Score in the red goal and keep the ball out of yours.`, "Start match");
+        if (boss()) setOverlay("Boss match: Nihar", "The final boss. 60 seconds to score in the red goal and keep Nihar out of yours. Good luck.", "Start match");
+        else setOverlay("Kick off", `60 seconds against ${rivalPhrase()}. Score in the red goal and keep the ball out of yours.`, "Start match");
     }
 
     function startMatch() {
@@ -219,7 +309,8 @@
             wake();
         }, beats.length * step - (step ? 250 : 0)));
         started = true;
-        track(`pitch-match-${level}`, `Started a match against the ${LEVELS[level].name} bot`);
+        if (RECORD) recording = { level, strength: level === "nihar" ? strength : null, W, H, frames: [] };
+        track(`pitch-match-${level}`, `Started a match against ${rivalPhrase()}`);
     }
 
     function endMatch() {
@@ -233,10 +324,25 @@
         if (record) store(`nb-best-${level}`, String(you));
         renderScore();
         const line = `${you}–${them}`;
-        const big = you > them ? "You win!" : you < them ? "Bot wins" : "Draw";
-        const result = you > them ? `You beat the ${LEVELS[level].name.toLowerCase()} bot ${line}.` :
-            you < them ? `The ${LEVELS[level].name.toLowerCase()} bot won ${line}.` : `Level at ${line}.`;
-        setOverlay(big, record && you > 0 ? `${result} New best!` : result, "Play again");
+        const big = you > them ? (boss() ? "You beat Nihar!" : "You win!") : you < them ? `${rival()} wins` : "Draw";
+        let result = you > them ? `You beat ${rivalPhrase()} ${line}.` :
+            you < them ? `${boss() ? "Nihar" : `The ${LEVELS[level].name.toLowerCase()} bot`} won ${line}.` : `Level at ${line}.`;
+        if (record && you > 0) result += " New best!";
+        if (level === "hard" && you > them && !bossUnlocked) {
+            bossUnlocked = true;
+            store("nb-beat-hard", "1");
+            renderLock();
+            result += " Boss unlocked: Nihar.";
+            sound("unlock");
+            track("pitch-boss-unlocked", "Unlocked the Nihar boss");
+        }
+        setOverlay(big, result, "Play again");
+        if (recording) {
+            recording.score = { you, them };
+            recordings.push(recording);
+            recording = null;
+            showDownload();
+        }
         window.setTimeout(() => startButton.focus({ preventScroll: true }), 50);
         track(`pitch-full-time-${level}`, `Full time on ${LEVELS[level].name}: ${line}`);
     }
@@ -370,9 +476,61 @@
         return best;
     }
 
+    // Where the ball will be over the next moments, bounces included (cars
+    // ignored), in steps of 1/30 s.
+    function ballPath(seconds) {
+        const step = 1 / 30;
+        const drag = Math.exp(-0.75 * step);
+        const path = [];
+        let { x, y, vx, vy } = ball;
+        for (let t = step; t <= seconds; t += step) {
+            x += vx * step;
+            y += vy * step;
+            vx *= drag;
+            vy *= drag;
+            if (y < FIELD.top + BALL_R) {
+                y = FIELD.top + BALL_R;
+                vy = Math.abs(vy) * 0.8;
+            } else if (y > FIELD.bottom - BALL_R) {
+                y = FIELD.bottom - BALL_R;
+                vy = -Math.abs(vy) * 0.8;
+            }
+            if (y < MOUTH.top || y > MOUTH.bottom) {
+                if (x < FIELD.left + BALL_R) {
+                    x = FIELD.left + BALL_R;
+                    vx = Math.abs(vx) * 0.8;
+                } else if (x > FIELD.right - BALL_R) {
+                    x = FIELD.right - BALL_R;
+                    vx = -Math.abs(vx) * 0.8;
+                }
+            }
+            path.push({ t, x, y });
+        }
+        return path;
+    }
+
+    // The first point on the ball's path that this car can reach in time.
+    function intercept(car, power, path) {
+        const vmax = 470 * power * 0.85;
+        for (const point of path) {
+            const dx = point.x - car.x;
+            const dy = point.y - car.y;
+            const turn = Math.abs(wrapAngle(Math.atan2(dy, dx) - car.angle));
+            if (Math.hypot(dx, dy) / vmax + turn * 0.18 <= point.t) return point;
+        }
+        return path[path.length - 1];
+    }
+
     function botTarget(skill) {
         const bx = clamp(ball.x + ball.vx * skill.lead, FIELD.left + BALL_R, FIELD.right - BALL_R);
         const by = clamp(ball.y + ball.vy * skill.lead, FIELD.top + BALL_R, FIELD.bottom - BALL_R);
+        // The boss reads who will reach the ball first (chasing the predicted
+        // point itself played worse in testing, so it only informs keeping).
+        let playerFirst = false;
+        if (skill.boss) {
+            const path = ballPath(1.6);
+            playerFirst = intercept(player, 1, path).t + 0.08 < intercept(bot, skill.power, path).t;
+        }
         const goal = openShot(bx, by, skill);
         const toGoal = Math.hypot(goal.x - bx, goal.y - by) || 1;
         const ux = (goal.x - bx) / toGoal;
@@ -393,7 +551,21 @@
         // the goal, so the touch sends it goalward. The better the bot, the
         // straighter it has to be lined up before it commits.
         if (lined > skill.lineUp && dist < 200) {
-            return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3, true);
+            // The boss varies its first touch at kickoff so it is hard to read.
+            const kick = skill.boss && bot.kickUntil > last ? bot.kickOffset : 0;
+            return inField(bx - ux * BALL_R + noise() * 0.3, by - uy * BALL_R + noise() * 0.3 + kick, true);
+        }
+
+        // The boss keeps goal whenever the player will reach the ball first in
+        // its half. Like a keeper coming off the line, it stands on the line
+        // from the ball to the middle of its goal, part of the way out, which
+        // narrows the angle far more than parking on the goal line.
+        if (skill.boss && playerFirst && bx > W * skill.keepZone) {
+            const gx = FIELD.right + 4;
+            const gy = H / 2;
+            const span = Math.hypot(bx - gx, by - gy) || 1;
+            const out = clamp(span * skill.keepOut, 26, 150);
+            return inField(gx + ((bx - gx) / span) * out, gy + ((by - gy) / span) * out, false);
         }
 
         // Goalkeeping: the ball is near the bot's goal and the player will
@@ -438,34 +610,45 @@
         if (mode !== "match" || freezeUntil) return { throttle: 0, steer: 0, boost: false };
         const skill = LEVELS[level];
         bot.power = skill.power;
+        bot.turn = skill.turn || 1;
         // A beat to react at each kickoff, like a person would, so a faster
         // bot cannot simply win every restart.
         if (bot.fresh) {
             bot.fresh = false;
             bot.holdUntil = now + skill.react;
+            // Mix up the kickoff: straight through, or clipped toward a post.
+            bot.kickOffset = skill.boss ? [0, -8, 8][Math.floor(Math.random() * 3)] : 0;
+            bot.kickUntil = now + skill.react + 900;
         }
         if (now < bot.holdUntil) return { throttle: 0, steer: 0, boost: false };
         if (now >= bot.nextThink || !bot.target) {
             bot.target = botTarget(skill);
             bot.nextThink = now + skill.think;
         }
-        // Pinned against a wall: back off for a moment, then try again.
-        if (Math.abs(bot.speed) < 15) {
+        const aim = steerTo(bot, bot.target.x, bot.target.y, skill.steer);
+        // Pinned against a wall or the other car while still trying to get
+        // somewhere: back off for a moment, then try again. Standing still on
+        // purpose (in goal, say) is not being stuck.
+        const pad = 16;
+        const atWall = bot.x < FIELD.left + pad || bot.x > FIELD.right - pad || bot.y < FIELD.top + pad || bot.y > FIELD.bottom - pad;
+        const pinned = atWall || Math.hypot(bot.x - player.x, bot.y - player.y) < CAR.hx + CAR.hy + 2;
+        if (Math.abs(bot.speed) < 15 && aim.distance > 30 && pinned) {
             if (!bot.stuckSince) bot.stuckSince = now;
-            if (now - bot.stuckSince > 700) {
-                bot.reverseUntil = now + 450;
+            if (now - bot.stuckSince > 450) {
+                bot.reverseUntil = now + 350;
                 bot.stuckSince = 0;
             }
         } else {
             bot.stuckSince = 0;
         }
-        const aim = steerTo(bot, bot.target.x, bot.target.y, skill.steer);
         if (now < bot.reverseUntil) return { throttle: -1, steer: -aim.steer, boost: false };
         const turn = Math.abs(aim.diff);
         let throttle;
         if (turn > 2.4) throttle = -0.6;
         else if (bot.target.attack) throttle = 1;
         else if (turn > 1) throttle = 0.35;
+        // Arrived (on its line in goal, say): hold the spot instead of circling.
+        else if (aim.distance < 14) throttle = 0;
         else throttle = aim.distance < 40 ? 0.5 : 1;
         // Players can hold boost the whole game; the hard bot does the same
         // whenever it is heading roughly where it wants to go.
@@ -485,7 +668,7 @@
         car.speed = clamp(car.speed, -170, 520);
 
         const grip = clamp(Math.abs(car.speed) / 90, 0, 1);
-        car.angle += input.steer * 3.4 * grip * Math.sign(car.speed) * dt;
+        car.angle += input.steer * 3.4 * (car.turn || 1) * grip * Math.sign(car.speed) * dt;
         car.x += Math.cos(car.angle) * car.speed * dt;
         car.y += Math.sin(car.angle) * car.speed * dt;
 
@@ -565,7 +748,9 @@
         const cvy = s * car.speed;
         const rel = (ball.vx - cvx) * nx + (ball.vy - cvy) * ny;
         if (rel < 0) {
-            const impulse = -1.6 * rel + 40;
+            // The boss hits the ball harder than anyone else.
+            const punch = car === bot ? LEVELS[level].shot || 1 : 1;
+            const impulse = (-1.6 * rel + 40) * punch;
             ball.vx += nx * impulse;
             ball.vy += ny * impulse;
             car.speed *= 0.9;
@@ -837,8 +1022,26 @@
         drawTrail(now);
         drawSparks(dt);
         drawBall();
-        if (versusBot()) drawCar(bot, BOT_FILL);
+        if (versusBot()) {
+            drawCar(bot, boss() ? BOSS_FILL : BOT_FILL);
+            if (boss()) drawNameplate(bot, "NIHAR");
+        }
         drawCar(player, COLORS[carColor].fill);
+    }
+
+    function drawNameplate(car, text) {
+        ctx.save();
+        ctx.font = `700 10px ${getComputedStyle(canvas).fontFamily}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        const width = ctx.measureText(text).width + 8;
+        const y = Math.max(FIELD.top + 12, car.y - 18);
+        ctx.fillStyle = "rgba(27, 24, 18, 0.82)";
+        roundRect(car.x - width / 2, y - 12, width, 13, 3);
+        ctx.fill();
+        ctx.fillStyle = BOSS_FILL;
+        ctx.fillText(text, car.x, y);
+        ctx.restore();
     }
 
     function busy(input) {
@@ -862,11 +1065,26 @@
             updateCar(player, h, input, effects);
             if (botMove) updateCar(bot, h, botMove, effects);
             updateBall(h, now);
-            collide(player);
-            if (botMove) {
+            // Toss a coin for who touches first so neither car always wins a 50-50.
+            if (botMove && Math.random() < 0.5) {
                 collide(bot);
-                bumpCars();
+                collide(player);
+            } else {
+                collide(player);
+                if (botMove) collide(bot);
             }
+            if (botMove) bumpCars();
+        }
+        if (recording && mode === "match" && (recording.tick = (recording.tick || 0) + 1) % 2 === 0) {
+            const r = (value) => Math.round(value * 10) / 10;
+            recording.frames.push([
+                Math.round(now - (matchEnd - MATCH_MS)),
+                r(player.x), r(player.y), Math.round(player.angle * 1000) / 1000, r(player.speed),
+                r(bot.x), r(bot.y), Math.round(bot.angle * 1000) / 1000, r(bot.speed),
+                r(ball.x), r(ball.y), r(ball.vx), r(ball.vy),
+                Math.round(input.throttle * 100) / 100, Math.round(input.steer * 100) / 100, input.boost ? 1 : 0,
+                freezeUntil ? 1 : 0,
+            ]);
         }
         if (freezeUntil && now > freezeUntil) {
             freezeUntil = 0;

@@ -1574,6 +1574,61 @@
     transform: scale(1.12);
 }
 
+/* The Nihar boss: its own colour, and a padlock until Hard is beaten. */
+.hub[data-theme] .pitch-seg.is-boss span {
+    color: #062a23;
+    background: #1ef2c8;
+    border-color: #1ef2c8;
+    box-shadow: 0 0 12px rgba(30, 242, 200, 0.55);
+}
+
+.hub[data-theme] .pitch-seg.is-boss input:checked + span {
+    color: #1ef2c8;
+    background: #062a23;
+    border-color: #1ef2c8;
+}
+
+.hub[data-theme] .pitch-seg.is-locked span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.pitch-seg.is-locked span::before {
+    content: "";
+    width: 0.7em;
+    height: 0.8em;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'><path d='M3 7V5a4 4 0 0 1 8 0v2h1v9H2V7h1zm2 0h4V5a2 2 0 0 0-4 0v2z'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'><path d='M3 7V5a4 4 0 0 1 8 0v2h1v9H2V7h1zm2 0h4V5a2 2 0 0 0-4 0v2z'/></svg>") center / contain no-repeat;
+}
+
+/* Recording mode only */
+.pitch-tune {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.pitch-tune input {
+    width: 7rem;
+    accent-color: #1ef2c8;
+}
+
+.pitch-tune output {
+    min-width: 1.2em;
+    font-style: normal;
+    font-weight: 700;
+    color: var(--ink);
+}
+
 .pitch-seg input:focus-visible + span,
 .pitch-swatch input:focus-visible + span {
     outline: 2px solid var(--accent);
