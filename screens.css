@@ -1691,6 +1691,124 @@
     background: var(--accent);
 }
 
+/* Beat Nihar leaderboard, inside the overlay */
+.po-board {
+    width: min(100%, 22rem);
+    text-align: left;
+}
+
+.po-board[hidden],
+.po-entry[hidden],
+.po-note[hidden] {
+    display: none;
+}
+
+.po-board-title {
+    margin-bottom: 0.3rem;
+    font-style: italic;
+    text-align: center;
+    color: #e7e1cf;
+}
+
+.po-board ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(5, auto);
+    grid-auto-flow: column;
+    gap: 0.1rem 1rem;
+    list-style: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.po-board li {
+    display: grid;
+    grid-template-columns: 1.4rem 1fr auto;
+    gap: 0.4rem;
+    padding: 0.05rem 0.4rem;
+    line-height: 1.35;
+    border-radius: 0.25rem;
+}
+
+.po-board li.is-win .pb-score {
+    color: #1ef2c8;
+}
+
+.po-board li.is-mine {
+    color: #062a23;
+    background: #1ef2c8;
+}
+
+.po-board li.is-mine .pb-score {
+    color: inherit;
+}
+
+.po-board .pb-rank {
+    opacity: 0.7;
+}
+
+.po-board .pb-name {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.po-board .po-board-empty {
+    grid-column: 1 / -1;
+    display: block;
+    font-style: italic;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.po-entry {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.8rem;
+}
+
+.po-entry label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-style: italic;
+}
+
+.po-entry input {
+    width: 4.2rem;
+    padding: 0.15rem 0.4rem;
+    font: inherit;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--paper-light);
+    border: 2px solid #1ef2c8;
+    border-radius: 0.3rem;
+}
+
+.po-entry .btn {
+    margin-top: 0;
+    color: var(--ink);
+    background: #1ef2c8;
+}
+
+.po-note {
+    font-style: italic;
+    color: #e7e1cf;
+}
+
+.pitch-overlay {
+    overflow-y: auto;
+}
+
+.pitch-overlay.has-board {
+    gap: 0.35rem;
+    padding: 0.6rem 1rem;
+    background: rgba(27, 24, 18, 0.88);
+}
+
 .po-free {
     padding: 0;
     font: inherit;

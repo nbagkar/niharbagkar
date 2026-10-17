@@ -178,6 +178,9 @@
     const overlay = document.createElement("div");
     overlay.className = "pitch-overlay";
     overlay.innerHTML = `<p class="po-big"></p><p class="po-sub"></p>
+        <div class="po-board" hidden><p class="po-board-title">Beat Nihar: top 10</p><ol></ol></div>
+        <form class="po-entry" hidden><label>Your initials <input name="initials" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" required></label><button class="btn" type="submit">Submit score</button></form>
+        <p class="po-note" aria-live="polite" hidden></p>
         <p class="po-actions"><button class="btn po-start" type="button"></button><button class="po-free" type="button">Free play</button></p>`;
     stage.appendChild(overlay);
     const startButton = overlay.querySelector(".po-start");
@@ -209,6 +212,118 @@
     function sound(name) {
         if (window.sfx) window.sfx(name);
     }
+
+    // "Beat Nihar" leaderboard: every boss match, best goal difference first.
+    // The server issues a token at kickoff and checks each submission.
+    const BOARD_URL = "https://cnqxfazzvpmcvtttkjed.supabase.co/functions/v1/kickoff";
+    const boardBox = overlay.querySelector(".po-board");
+    const entry = overlay.querySelector(".po-entry");
+    const entryInput = entry.querySelector("input");
+    const note = overlay.querySelector(".po-note");
+    let boardRows = null;
+    let boardFetched = 0;
+    let matchToken = null;
+    let lastMatch = null;
+    let mine = null;
+
+    function setNote(text) {
+        note.textContent = text;
+        note.hidden = !text;
+    }
+
+    function renderBoard() {
+        const list = boardBox.querySelector("ol");
+        list.replaceChildren();
+        if (!boardRows || !boardRows.length) {
+            const empty = document.createElement("li");
+            empty.className = "po-board-empty";
+            empty.textContent = boardRows ? "No scores yet. Be the first." : "Loading…";
+            list.appendChild(empty);
+            return;
+        }
+        boardRows.forEach((row, i) => {
+            const item = document.createElement("li");
+            item.classList.toggle("is-win", row.goal_diff > 0);
+            item.classList.toggle("is-mine", mine !== null && i === mine);
+            item.innerHTML = `<span class="pb-rank"></span><span class="pb-name"></span><span class="pb-score"></span>`;
+            item.querySelector(".pb-rank").textContent = String(i + 1);
+            item.querySelector(".pb-name").textContent = row.initials;
+            item.querySelector(".pb-score").textContent = `${row.goals_for}–${row.goals_against}`;
+            list.appendChild(item);
+        });
+    }
+
+    function showBoard(visible) {
+        boardBox.hidden = !visible;
+        overlay.classList.toggle("has-board", visible);
+        if (!visible) return;
+        renderBoard();
+        if (Date.now() - boardFetched > 30000) loadBoard();
+    }
+
+    async function loadBoard() {
+        boardFetched = Date.now();
+        try {
+            const response = await fetch(BOARD_URL);
+            const data = await response.json();
+            if (data.board) boardRows = data.board;
+        } catch (error) {
+            if (!boardRows) boardRows = [];
+        }
+        renderBoard();
+    }
+
+    async function requestToken() {
+        matchToken = null;
+        try {
+            const response = await fetch(BOARD_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "start" }) });
+            const data = await response.json();
+            matchToken = data.token || null;
+        } catch (error) {
+            matchToken = null;
+        }
+    }
+
+    entryInput.value = stored("nb-initials", "");
+    entryInput.addEventListener("input", () => {
+        entryInput.value = entryInput.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+    });
+
+    entry.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const initials = entryInput.value;
+        if (!/^[A-Z]{3}$/.test(initials)) {
+            setNote("Three letters, please.");
+            entryInput.focus();
+            return;
+        }
+        const button = entry.querySelector("button");
+        button.disabled = true;
+        setNote("Sending…");
+        try {
+            const response = await fetch(BOARD_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "submit", token: lastMatch.token, initials, you: lastMatch.you, them: lastMatch.them }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Could not submit.");
+            store("nb-initials", initials);
+            boardRows = data.board;
+            boardFetched = Date.now();
+            mine = data.rank <= 10 ? data.rank - 1 : null;
+            entry.hidden = true;
+            lastMatch = null;
+            setNote(data.rank <= 10 ? `You're #${data.rank} on the board.` : `You're #${data.rank}. Top 10 needs a better goal difference.`);
+            renderBoard();
+            sound("unlock");
+            track("pitch-board-submit", "Submitted a Beat Nihar score");
+        } catch (error) {
+            setNote(error.message);
+        } finally {
+            button.disabled = false;
+        }
+    });
 
     function formatClock(ms) {
         const seconds = Math.max(0, Math.ceil(ms / 1000));
@@ -246,6 +361,9 @@
 
     function setOverlay(big, sub, startLabel) {
         overlay.hidden = false;
+        entry.hidden = true;
+        setNote("");
+        showBoard(false);
         overlay.classList.remove("is-counting");
         overlay.querySelector(".po-big").textContent = big;
         overlay.querySelector(".po-sub").textContent = sub;
@@ -265,8 +383,11 @@
         mode = "idle";
         levelSet.disabled = false;
         renderScore();
-        if (boss()) setOverlay("Boss match: Nihar", "The final boss, tuned on Nihar's play data. 60 seconds to score in the red goal and keep Nihar out of yours. Good luck.", "Start match");
-        else setOverlay("Kick off", `60 seconds against ${rivalPhrase()}. Score in the red goal and keep the ball out of yours.`, "Start match");
+        if (boss()) {
+            setOverlay("Boss match: Nihar", "The final boss, tuned on Nihar's play data. 60 seconds to score in the red goal and keep Nihar out of yours.", "Start match");
+            mine = null;
+            showBoard(true);
+        } else setOverlay("Kick off", `60 seconds against ${rivalPhrase()}. Score in the red goal and keep the ball out of yours.`, "Start match");
     }
 
     function startMatch() {
@@ -312,6 +433,7 @@
         }, beats.length * step - (step ? 250 : 0)));
         started = true;
         if (RECORD) recording = { level, strength: level === "nihar" ? strength : null, W, H, frames: [] };
+        if (boss()) requestToken();
         track(`pitch-match-${level}`, `Started a match against ${rivalPhrase()}`);
     }
 
@@ -339,13 +461,26 @@
             track("pitch-boss-unlocked", "Unlocked the Nihar boss");
         }
         setOverlay(big, result, "Play again");
+        // Boss matches can go on the leaderboard (recording mode's tuned
+        // strengths do not count).
+        let entering = false;
+        if (boss()) {
+            mine = null;
+            showBoard(true);
+            if (matchToken && !(RECORD && strength !== SHIPPED_STRENGTH)) {
+                lastMatch = { token: matchToken, you, them };
+                matchToken = null;
+                entry.hidden = false;
+                entering = true;
+            }
+        }
         if (recording) {
             recording.score = { you, them };
             recordings.push(recording);
             recording = null;
             showDownload();
         }
-        window.setTimeout(() => startButton.focus({ preventScroll: true }), 50);
+        window.setTimeout(() => (entering ? entryInput : startButton).focus({ preventScroll: true }), 50);
         track(`pitch-full-time-${level}`, `Full time on ${LEVELS[level].name}: ${line}`);
     }
 
