@@ -1851,6 +1851,12 @@
     border-radius: 0.3rem;
 }
 
+.po-entry input::placeholder {
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+}
+
 .po-entry .btn {
     margin-top: 0;
     color: var(--ink);

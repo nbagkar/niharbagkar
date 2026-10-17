@@ -191,7 +191,7 @@
     overlay.className = "pitch-overlay";
     overlay.innerHTML = `<p class="po-big"></p><p class="po-sub"></p>
         <div class="po-board" hidden><p class="po-board-title">Beat Nihar: top 10</p><ol></ol></div>
-        <form class="po-entry" hidden><label>Your initials <input name="initials" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" required></label><button class="btn" type="submit">Submit score</button></form>
+        <form class="po-entry" hidden><label>Your initials <input name="initials" maxlength="3" placeholder="2–3" autocomplete="off" autocapitalize="characters" spellcheck="false" required></label><button class="btn" type="submit">Submit score</button></form>
         <p class="po-note" aria-live="polite" hidden></p>
         <div class="po-room" hidden>
             <p class="po-room-code"></p>
@@ -312,8 +312,8 @@
     entry.addEventListener("submit", async (event) => {
         event.preventDefault();
         const initials = entryInput.value;
-        if (!/^[A-Z]{3}$/.test(initials)) {
-            setNote("Three letters, please.");
+        if (!/^[A-Z]{2,3}$/.test(initials)) {
+            setNote("Two or three letters, please.");
             entryInput.focus();
             return;
         }
