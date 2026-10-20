@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" class="case-page">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found | Nihar Bagkar</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#06060d">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400..900;1,400..900&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/theme-fut.css">
+    <link rel="stylesheet" href="/theme-ps2.css">
+    <style>
+        /* One short section: keep the footer at the bottom of the window. */
+        body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        main { flex: 1; }
+    </style>
+    <script>
+        (function () {
+            var theme;
+            try { theme = localStorage.getItem("nb-theme"); } catch (e) {}
+            document.documentElement.dataset.theme = theme === "ps2" ? "ps2" : "fut";
+        })();
+        // Count misses as "404/<path>" so broken links show up in GoatCounter.
+        window.goatcounter = { path: function (path) { return "404" + path; } };
+    </script>
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="masthead">
+        <div class="wrap masthead-row">
+            <a class="wordmark" href="/">Nihar Bagkar</a>
+            <p class="masthead-meta">Page not found</p>
+            <nav class="masthead-nav" aria-label="Primary">
+                <a href="/#binder">All work</a>
+                <a href="/#path">Path</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+            <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Retro mode"><span class="theme-switch" aria-hidden="true"></span><span class="theme-label" aria-hidden="true">Retro</span></button>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="case-hero">
+            <div class="wrap">
+                <p class="label">404 &middot; Offside</p>
+                <h1>Flag's up</h1>
+                <p class="lede">There's nothing at this address. The link may be old, or the page may have moved.</p>
+                <p class="hero-links">
+                    <a class="link-arrow" href="/">Back to the menu</a>
+                    <a class="link-arrow" href="/#binder">See the work</a>
+                    <a class="link-arrow" href="/resume.pdf">Resume (PDF)</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="colophon">
+        <div class="wrap colophon-row">
+            <p>&copy; 2026 Nihar Bagkar</p>
+            <p>Hand-built, no framework.</p>
+            <a href="/">Home</a>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var toggle = document.querySelector(".theme-toggle");
+            function set(theme) {
+                root.dataset.theme = theme;
+                toggle.setAttribute("aria-pressed", String(theme === "ps2"));
+            }
+            set(root.dataset.theme);
+            toggle.addEventListener("click", function () {
+                var theme = root.dataset.theme === "ps2" ? "fut" : "ps2";
+                set(theme);
+                try { localStorage.setItem("nb-theme", theme); } catch (e) {}
+            });
+        })();
+    </script>
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

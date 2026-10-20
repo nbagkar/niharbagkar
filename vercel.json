@@ -1,0 +1,11 @@
+{
+    "headers": [
+        {
+            "source": "/resume.pdf",
+            "headers": [
+                { "key": "X-Robots-Tag", "value": "noindex" },
+                { "key": "Content-Disposition", "value": "inline; filename=\"Nihar_Bagkar_Resume.pdf\"" }
+            ]
+        }
+    ]
+}
