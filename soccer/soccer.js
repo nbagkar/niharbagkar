@@ -43,9 +43,18 @@
             button.type = "button";
             button.textContent = text;
             button.addEventListener("click", () => answer(i, true));
-            options.appendChild(button);
             return button;
         });
+        // Shuffle the answers by date so the right one isn't always in the
+        // same spot, while everyone still sees the same order today.
+        let seed = dayNumber;
+        const order = buttons.map((_, i) => i);
+        for (let i = order.length - 1; i > 0; i--) {
+            seed = (seed * 1103515245 + 12345) % 2147483648;
+            const j = seed % (i + 1);
+            [order[i], order[j]] = [order[j], order[i]];
+        }
+        order.forEach((i) => options.appendChild(buttons[i]));
 
         function showStreak() {
             const alive = streak.last === today || streak.last === yesterday;
@@ -71,9 +80,10 @@
             next.hidden = false;
 
             if (fresh) {
-                store.set("nbs-trivia", { day: today, pick });
+                store.set("nbs-trivia", { day: today, q: item.q, pick });
                 if (right) {
-                    streak.count = streak.last === yesterday ? streak.count + 1 : 1;
+                    if (streak.last === yesterday) streak.count += 1;
+                    else if (streak.last !== today) streak.count = 1;
                     streak.last = today;
                 } else {
                     streak.count = 0;
@@ -84,7 +94,9 @@
             showStreak();
         }
 
-        if (saved && saved.day === today && typeof saved.pick === "number") answer(saved.pick, false);
+        // Matching on the question too means growing the bank mid-day can't
+        // pin yesterday's pick onto a different question.
+        if (saved && saved.day === today && saved.q === item.q && typeof saved.pick === "number") answer(saved.pick, false);
         else showStreak();
     }
 
