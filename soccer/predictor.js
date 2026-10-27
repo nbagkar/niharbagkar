@@ -3,7 +3,10 @@
     const { LEAGUES, scoreboard } = window.SoccerESPN;
 
     const BACK = 3; // days of finished games still shown
-    const AHEAD = 8; // days of fixtures open for picks
+    const AHEAD = 10; // days of fixtures open for picks, enough for a midweek and a weekend
+    // Picks are open for these leagues only; older picks from other leagues
+    // still get fetched and scored.
+    const PLAY = LEAGUES.filter((l) => l.id === "uefa.champions" || l.id === "eng.1");
     const KEY = "nbs-predictor";
 
     // picks: { [espn event id]: { h, a, league, kickoff, home, away } }
@@ -56,7 +59,7 @@
         const month = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
 
         const wanted = new Map(); // "league|YYYYMM"
-        LEAGUES.forEach((league) => {
+        PLAY.forEach((league) => {
             wanted.set(`${league.id}|${month(from)}`, league);
             wanted.set(`${league.id}|${month(to)}`, league);
         });
@@ -77,7 +80,7 @@
         });
         save();
 
-        const inWindow = [...matches.values()].filter((m) => m.kickoff >= from && m.kickoff < to);
+        const inWindow = [...matches.values()].filter((m) => PLAY.includes(m.league) && m.kickoff >= from && m.kickoff < to);
         const days = [...new Set(inWindow.map((m) => dayKey(m.kickoff)))].sort();
         // Open on the first day with a game still open for picks.
         currentDay = days.find((d) => inWindow.some((m) => dayKey(m.kickoff) === d && isOpen(m))) || days.find((d) => d >= today) || "mine";
@@ -133,8 +136,8 @@
         leagueTabs.innerHTML = "";
         if (currentDay === "mine") return drawMine();
 
-        const games = [...matches.values()].filter((m) => dayKey(m.kickoff) === currentDay);
-        const leagues = LEAGUES.filter((l) => games.some((m) => m.league === l));
+        const games = [...matches.values()].filter((m) => PLAY.includes(m.league) && dayKey(m.kickoff) === currentDay);
+        const leagues = PLAY.filter((l) => games.some((m) => m.league === l));
         if (leagues.length > 1) {
             tab(leagueTabs, "All", currentLeague === "all", () => { currentLeague = "all"; draw(); });
             leagues.forEach((l) => tab(leagueTabs, l.short, currentLeague === l.id, () => { currentLeague = l.id; draw(); }));
