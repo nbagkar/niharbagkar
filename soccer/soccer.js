@@ -1,31 +1,19 @@
 (function () {
-    const store = {
-        get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
-        set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode */ } }
-    };
-
+    const { store, today, dayKey, dayNumber, pick, streak: makeStreak } = window.SoccerDaily;
     const now = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    const today = dayKey(now);
-    const yesterday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
 
     const todayLabel = document.querySelector("[data-today]");
     if (todayLabel) todayLabel.textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
-    /* Trivia of the day. Everyone gets the same question on the same local
-       date; the step is coprime with the bank size so every question comes
-       round before any repeats. */
+    /* Trivia of the day: the same question for everyone on the same local
+       date (see SoccerDaily.pick in daily.js). */
 
     function setupTrivia() {
         const bank = window.SOCCER_TRIVIA || [];
         const box = document.querySelector("#trivia");
         if (!box || !bank.length) return;
 
-        const dayNumber = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
-        let step = 7;
-        while (gcd(step, bank.length) !== 1) step += 1;
-        const item = bank[(dayNumber * step) % bank.length];
+        const item = bank[pick(bank.length)];
 
         const question = box.querySelector("[data-q]");
         const options = box.querySelector("[data-options]");
@@ -33,9 +21,9 @@
         const next = box.querySelector("[data-next]");
         const streakLabel = box.querySelector("[data-streak]");
 
-        // { day, pick } for today's answer; { last, count } for the streak.
+        // { day, q, pick } for today's answer.
         const saved = store.get("nbs-trivia");
-        const streak = store.get("nbs-streak") || { last: null, count: 0 };
+        const streak = makeStreak("nbs-streak");
 
         question.textContent = item.q;
         const buttons = item.options.map((text, i) => {
@@ -57,19 +45,18 @@
         order.forEach((i) => options.appendChild(buttons[i]));
 
         function showStreak() {
-            const alive = streak.last === today || streak.last === yesterday;
-            if (alive && streak.count > 0) {
+            if (streak.count > 0) {
                 streakLabel.textContent = `${streak.count}-day streak`;
                 streakLabel.hidden = false;
             }
         }
 
-        function answer(pick, fresh) {
-            const right = pick === item.answer;
+        function answer(choice, fresh) {
+            const right = choice === item.answer;
             buttons.forEach((button, i) => {
                 button.disabled = true;
                 if (i === item.answer) button.classList.add("is-right");
-                else if (i === pick) button.classList.add("is-wrong");
+                else if (i === choice) button.classList.add("is-wrong");
             });
             fact.innerHTML = "";
             const lead = document.createElement("b");
@@ -80,16 +67,9 @@
             next.hidden = false;
 
             if (fresh) {
-                store.set("nbs-trivia", { day: today, q: item.q, pick });
-                if (right) {
-                    if (streak.last === yesterday) streak.count += 1;
-                    else if (streak.last !== today) streak.count = 1;
-                    streak.last = today;
-                } else {
-                    streak.count = 0;
-                    streak.last = null;
-                }
-                store.set("nbs-streak", streak);
+                store.set("nbs-trivia", { day: today, q: item.q, pick: choice });
+                if (right) streak.win();
+                else streak.lose();
             }
             showStreak();
         }
@@ -99,8 +79,6 @@
         if (saved && saved.day === today && saved.q === item.q && typeof saved.pick === "number") answer(saved.pick, false);
         else showStreak();
     }
-
-    function gcd(a, b) { return b ? gcd(b, a % b) : a; }
 
     /* Today's matches from ESPN's public scoreboard feed (no key, allows
        cross-origin requests). Live games sort first, then by kickoff. */

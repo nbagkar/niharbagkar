@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guess the player · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="A new mystery footballer every day. Work it out from their career path in six guesses.">
+    <link rel="canonical" href="https://soccer.niharbagkar.com/guess.html">
+    <meta property="og:title" content="Guess the player">
+    <meta property="og:description" content="A new mystery footballer every day. Six guesses.">
+    <meta property="og:url" content="https://soccer.niharbagkar.com/guess.html">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="soccer.css">
+    <link rel="stylesheet" href="guess.css">
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="./">Matchday</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main class="wrap guess">
+        <section class="intro">
+            <p class="kicker" data-number></p>
+            <h1>Guess the player</h1>
+            <p class="lede">Name the player from their career path. Each miss reveals another clue. Six guesses.</p>
+        </section>
+
+        <div class="guess-grid">
+            <section class="panel" aria-labelledby="career-title">
+                <header class="panel-head">
+                    <h2 id="career-title">Career path</h2>
+                    <p class="streak" data-streak hidden></p>
+                </header>
+                <ol class="career" data-career></ol>
+                <dl class="extras" data-extras></dl>
+            </section>
+
+            <section class="panel guess-side" aria-labelledby="guess-title">
+                <header class="panel-head">
+                    <h2 id="guess-title">Your guesses</h2>
+                    <p class="guess-count" data-count></p>
+                </header>
+
+                <form class="guess-form" data-form autocomplete="off">
+                    <label class="sr-only" for="guess-input">Search for a player</label>
+                    <div class="combo">
+                        <input id="guess-input" type="text" placeholder="Search for a player…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="guess-list" spellcheck="false">
+                        <ul id="guess-list" class="suggest" role="listbox" hidden></ul>
+                    </div>
+                    <button type="button" class="skip" data-skip>Skip</button>
+                </form>
+
+                <ol class="tries" data-tries aria-live="polite"></ol>
+
+                <div class="result" data-result hidden>
+                    <p class="result-head" data-result-head></p>
+                    <p class="result-name" data-result-name></p>
+                    <div class="result-actions">
+                        <button type="button" class="share" data-share>Share result</button>
+                        <a href="./">More on Matchday</a>
+                    </div>
+                    <p class="result-next">New player at midnight.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="foot wrap">
+        <p>&copy; 2026 Nihar Bagkar</p>
+        <a href="https://www.niharbagkar.com/">niharbagkar.com</a>
+    </footer>
+
+    <script src="daily.js"></script>
+    <script src="players.js"></script>
+    <script src="guess.js"></script>
+</body>
+</html>
