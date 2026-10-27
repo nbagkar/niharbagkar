@@ -1,0 +1,12 @@
+/* Kick off on the soccer site: the portfolio's pitch styles, minus the hub
+   screen around it. */
+
+.soccer-kickoff body { font-family: var(--font); }
+
+.soccer-kickoff .bar { position: relative; z-index: 2; }
+
+.soccer-kickoff .kickoff { padding: 1.5rem 0 2.5rem; }
+
+.soccer-kickoff .kickoff .wrap { width: min(60rem, 100% - 2rem); }
+
+.soccer-kickoff .kickoff h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 1rem; }

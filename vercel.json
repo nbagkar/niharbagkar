@@ -1,11 +1,29 @@
 {
-    "headers": [
+    "routes": [
         {
-            "source": "/resume.pdf",
-            "headers": [
-                { "key": "X-Robots-Tag", "value": "noindex" },
-                { "key": "Content-Disposition", "value": "inline; filename=\"Nihar_Bagkar_Resume.pdf\"" }
-            ]
+            "src": "/resume.pdf",
+            "headers": {
+                "X-Robots-Tag": "noindex",
+                "Content-Disposition": "inline; filename=\"Nihar_Bagkar_Resume.pdf\""
+            },
+            "continue": true
+        },
+        {
+            "src": "/soccer(?:/(.*))?",
+            "has": [{ "type": "host", "value": "www.niharbagkar.com" }],
+            "status": 308,
+            "headers": { "Location": "https://soccer.niharbagkar.com/$1" }
+        },
+        {
+            "src": "/",
+            "has": [{ "type": "host", "value": "soccer.niharbagkar.com" }],
+            "dest": "/soccer/index.html"
+        },
+        { "handle": "filesystem" },
+        {
+            "src": "/(.*)",
+            "has": [{ "type": "host", "value": "soccer.niharbagkar.com" }],
+            "dest": "/soccer/$1"
         }
     ]
 }

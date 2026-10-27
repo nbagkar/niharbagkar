@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Daily soccer trivia, today's big matches, and Kick off, a car-soccer mini game. A side project by Nihar Bagkar.">
+    <link rel="canonical" href="https://soccer.niharbagkar.com/">
+    <meta property="og:title" content="Soccer · Nihar Bagkar">
+    <meta property="og:description" content="Daily trivia, today's matches, and Kick off.">
+    <meta property="og:url" content="https://soccer.niharbagkar.com/">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="soccer.css">
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="#trivia">Trivia</a>
+            <a href="#matches">Matches</a>
+            <a href="#games">Games</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main class="wrap">
+        <section class="intro">
+            <p class="kicker" data-today></p>
+            <h1>Matchday</h1>
+            <p class="lede">One trivia question a day, the matches worth watching, and a few games.</p>
+        </section>
+
+        <div class="grid">
+            <section class="panel trivia" id="trivia" aria-labelledby="trivia-title">
+                <header class="panel-head">
+                    <h2 id="trivia-title">Trivia of the day</h2>
+                    <p class="streak" data-streak hidden></p>
+                </header>
+                <p class="trivia-q" data-q></p>
+                <div class="trivia-options" data-options role="group" aria-label="Answers"></div>
+                <p class="trivia-fact" data-fact aria-live="polite" hidden></p>
+                <p class="trivia-next" data-next hidden>New question at midnight.</p>
+            </section>
+
+            <section class="panel matches" id="matches" aria-labelledby="matches-title">
+                <header class="panel-head">
+                    <h2 id="matches-title">Today's matches</h2>
+                    <div class="league-filter" data-filter role="tablist" aria-label="League"></div>
+                </header>
+                <div class="match-list" data-matches aria-live="polite">
+                    <p class="muted">Loading fixtures…</p>
+                </div>
+                <p class="source">Times in your time zone. Scores from ESPN.</p>
+            </section>
+        </div>
+
+        <section class="games" id="games" aria-labelledby="games-title">
+            <h2 id="games-title">Games</h2>
+            <div class="game-tiles">
+                <a class="tile tile-live" href="kickoff.html">
+                    <span class="tile-tag">Play</span>
+                    <span class="tile-title">Kick off</span>
+                    <span class="tile-sub">Car soccer vs the bot, a friend, or Nihar.</span>
+                </a>
+                <div class="tile tile-soon" aria-disabled="true">
+                    <span class="tile-tag">Soon</span>
+                    <span class="tile-title">Guess the player</span>
+                    <span class="tile-sub">Career path clues, one a day.</span>
+                </div>
+                <div class="tile tile-soon" aria-disabled="true">
+                    <span class="tile-tag">Soon</span>
+                    <span class="tile-title">Predictor</span>
+                    <span class="tile-sub">Call the scores before kickoff.</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="foot wrap">
+        <p>&copy; 2026 Nihar Bagkar</p>
+        <a href="https://www.niharbagkar.com/">niharbagkar.com</a>
+    </footer>
+
+    <script src="trivia.js"></script>
+    <script src="soccer.js"></script>
+</body>
+</html>

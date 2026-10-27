@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" class="hub soccer-kickoff" data-theme="fut">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kick off · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Kick off: car soccer in your browser. Play the bot, a friend, or Nihar himself.">
+    <link rel="canonical" href="https://soccer.niharbagkar.com/kickoff.html">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <!-- Kick off's styles live with the portfolio; this page borrows them. -->
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/screens.css">
+    <link rel="stylesheet" href="/theme-fut.css">
+    <link rel="stylesheet" href="soccer.css">
+    <link rel="stylesheet" href="kickoff.css">
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="./">Matchday</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="kickoff" id="kickoff" aria-labelledby="kickoff-title">
+            <div class="wrap">
+                <header class="section-head">
+                    <h1 id="kickoff-title">Kick off</h1>
+                </header>
+                <div class="pitch" id="pitch">
+                    <div class="pitch-head">
+                        <p class="label">Scoreboard</p>
+                        <p class="pitch-clock" hidden><span data-score="clock">1:00</span></p>
+                        <p class="pitch-score" aria-live="polite">0 goals &middot; 0 own goals</p>
+                    </div>
+                    <div class="pitch-stage">
+                        <canvas class="pitch-canvas" width="640" height="360" tabindex="0" aria-label="Mini game: drive the car into the ball and score in the right-hand goal. Arrow keys or WASD to drive, Space to boost, R to reset."></canvas>
+                        <p class="pitch-stamp" aria-hidden="true"></p>
+                    </div>
+                    <p class="pitch-hint"><span class="hint-hover">Click the pitch, then drive with the arrow keys. Space boosts.</span><span class="hint-tap">Hold your finger where you want the car to go.</span></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/online.js"></script>
+    <script src="/pitch.js"></script>
+    <script src="/sound.js"></script>
+</body>
+</html>
