@@ -80,19 +80,9 @@
         else showStreak();
     }
 
-    /* Today's matches from ESPN's public scoreboard feed (no key, allows
-       cross-origin requests). Live games sort first, then by kickoff. */
+    /* Today's matches. Live games sort first, then by kickoff. */
 
-    const LEAGUES = [
-        { id: "uefa.champions", name: "Champions League", short: "UCL" },
-        { id: "eng.1", name: "Premier League", short: "EPL" },
-        { id: "esp.1", name: "LaLiga", short: "Liga" },
-        { id: "ita.1", name: "Serie A", short: "Serie A" },
-        { id: "ger.1", name: "Bundesliga", short: "Buli" },
-        { id: "fra.1", name: "Ligue 1", short: "L1" },
-        { id: "uefa.europa", name: "Europa League", short: "UEL" },
-        { id: "usa.1", name: "MLS", short: "MLS" }
-    ];
+    const { LEAGUES, scoreboard } = window.SoccerESPN;
 
     async function setupMatches() {
         const list = document.querySelector("[data-matches]");
@@ -100,16 +90,7 @@
         if (!list) return;
 
         const date = today.replaceAll("-", "");
-        const results = await Promise.all(LEAGUES.map(async (league) => {
-            try {
-                const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/scoreboard?dates=${date}`);
-                if (!response.ok) return [];
-                const data = await response.json();
-                return (data.events || []).map((event) => toMatch(event, league)).filter(Boolean);
-            } catch {
-                return [];
-            }
-        }));
+        const results = await Promise.all(LEAGUES.map((league) => scoreboard(league, date)));
 
         const matches = results.flat();
         // ESPN's dates are US Eastern, so drop games that fall on another
@@ -156,24 +137,6 @@
         }
 
         draw();
-    }
-
-    function toMatch(event, league) {
-        const comp = event.competitions && event.competitions[0];
-        if (!comp) return null;
-        const side = (where) => comp.competitors.find((c) => c.homeAway === where);
-        const home = side("home");
-        const away = side("away");
-        if (!home || !away) return null;
-        const status = (comp.status || event.status || {}).type || {};
-        return {
-            league,
-            kickoff: new Date(event.date),
-            state: status.state, // pre | in | post
-            detail: status.shortDetail || "",
-            home: { name: home.team.shortDisplayName || home.team.displayName, logo: home.team.logo, score: home.score },
-            away: { name: away.team.shortDisplayName || away.team.displayName, logo: away.team.logo, score: away.score }
-        };
     }
 
     function matchRow(m) {

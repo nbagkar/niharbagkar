@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Predictor · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Call the scores before kickoff. Three points for an exact score, one for the right result.">
+    <link rel="canonical" href="https://soccer.niharbagkar.com/predictor.html">
+    <meta property="og:title" content="Predictor">
+    <meta property="og:description" content="Call the scores before kickoff.">
+    <meta property="og:url" content="https://soccer.niharbagkar.com/predictor.html">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="soccer.css">
+    <link rel="stylesheet" href="predictor.css">
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="./">Matchday</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main class="wrap predictor">
+        <section class="intro">
+            <p class="kicker">Call it before kickoff</p>
+            <h1>Predictor</h1>
+            <p class="lede">Pick the score of any match below. <b>3 points</b> for the exact score, <b>1 point</b> for the right result. Picks lock at kickoff.</p>
+        </section>
+
+        <dl class="tally" data-tally>
+            <div><dt>Points</dt><dd data-stat="points">0</dd></div>
+            <div><dt>Exact scores</dt><dd data-stat="exact">0</dd></div>
+            <div><dt>Right results</dt><dd data-stat="result">0</dd></div>
+            <div><dt>Picks scored</dt><dd data-stat="scored">0</dd></div>
+        </dl>
+
+        <section class="panel" aria-label="Fixtures">
+            <div class="day-tabs" data-days role="tablist" aria-label="Day"></div>
+            <div class="league-filter" data-leagues role="tablist" aria-label="League"></div>
+            <div class="fixtures" data-fixtures aria-live="polite">
+                <p class="muted">Loading fixtures…</p>
+            </div>
+            <p class="source">Picks are saved in this browser only. Times in your time zone. Fixtures and scores from ESPN.</p>
+        </section>
+    </main>
+
+    <footer class="foot wrap">
+        <p>&copy; 2026 Nihar Bagkar</p>
+        <a href="https://www.niharbagkar.com/">niharbagkar.com</a>
+    </footer>
+
+    <script src="daily.js"></script>
+    <script src="espn.js"></script>
+    <script src="predictor.js"></script>
+</body>
+</html>

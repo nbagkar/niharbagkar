@@ -1,0 +1,167 @@
+/* Predictor. Builds on soccer.css (panels, .league-filter, .team, .league-name). */
+
+.lede b { color: var(--aqua); }
+
+/* Running totals */
+
+.tally {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1.25rem;
+}
+
+.tally div {
+    padding: 0.75rem 1rem;
+    background: var(--glass);
+    border: 1px solid var(--line);
+}
+
+.tally dt {
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    color: var(--dim);
+}
+
+.tally dd {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.1;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 75%;
+}
+
+.tally div:first-child dd { color: var(--aqua); }
+
+/* Day and league tabs */
+
+.day-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
+    scrollbar-width: thin;
+}
+
+.day-tabs button {
+    flex: none;
+    font: inherit;
+    font-weight: 700;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.day-tabs button:last-child { margin-left: auto; }
+
+.day-tabs button[aria-selected="true"] {
+    color: #000;
+    background: var(--aqua);
+    border-color: var(--aqua);
+}
+
+.predictor .league-filter { margin-bottom: 0.9rem; }
+.predictor .league-filter:empty { display: none; }
+
+/* Fixtures */
+
+.fixtures { display: grid; gap: 0.5rem; }
+
+.fixture {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.2rem 0.75rem;
+    padding: 0.6rem 0.75rem 0.45rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--line);
+}
+
+.pick {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 800;
+}
+
+.pick input {
+    width: 2.6rem;
+    font: inherit;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--ink);
+    padding: 0.3rem 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
+    -moz-appearance: textfield;
+}
+
+.pick input::-webkit-outer-spin-button,
+.pick input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.pick input:focus { outline: none; border-color: var(--aqua); }
+.pick input:disabled { color: var(--dim); border-style: dashed; }
+
+.status {
+    grid-column: 1 / -1;
+    margin: 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--dim);
+}
+
+.status.is-saved { color: var(--aqua); }
+.status.is-warn { color: var(--pink); }
+
+.pts {
+    display: inline-block;
+    padding: 0 0.4rem;
+    font-weight: 800;
+    color: #000;
+}
+
+.pts-3 { background: var(--aqua); }
+.pts-1 { background: var(--gold); }
+.pts-0 { background: rgba(255, 255, 255, 0.25); color: var(--ink); }
+
+/* My picks */
+
+.mine {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.mine li {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr) auto auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.55rem 0.75rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--line);
+}
+
+.mine-when { color: var(--dim); font-size: 0.85rem; }
+.mine-teams { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mine-pick { color: var(--dim); }
+.mine-result { text-align: right; }
+
+@media (max-width: 760px) {
+    .tally { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fixture { padding-inline: 0.5rem; gap: 0.2rem 0.5rem; }
+    .pick input { width: 2.3rem; }
+    .mine li { grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.75rem; }
+    .mine-when { grid-column: 1 / -1; }
+}
