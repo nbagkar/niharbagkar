@@ -325,7 +325,7 @@
                 me.queued = null;
             }
         }
-        if (pressed("tackle")) tackle(s, me, 0.55);
+        if (pressed("tackle")) tackle(s, me, 0.6, false, true);
         // Running into the dribbler: a small chance to nick it, no penalty for missing.
         const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
         if (owner && owner.team !== me.team && me.tackleCd <= 0 && hyp(b.x - me.x, b.y - me.y) < 1.0) tackle(s, me, 0.3, true);
@@ -540,22 +540,35 @@
         return Math.max(Math.cos(p.face) * ad, dir.x * ad);
     }
 
-    function tackle(s, p, chance, soft) {
+    // soft: the free nick when running into the dribbler (no stun if it fails).
+    // lunge: your E/Z tackle, which reaches further and bursts towards the ball.
+    function tackle(s, p, chance, soft, lunge) {
         const b = s.ball;
         if (p.tackleCd > 0 || p.stun > 0) return;
         p.tackleCd = 0.9;
+        const type = soft ? "nick" : "tackle";
         const d = hyp(b.x - p.x, b.y - p.y);
-        if (d > 1.6 || b.z > 1) {
+        if (lunge && d < 3) {
+            const n = norm(b.x - p.x, b.y - p.y);
+            p.vx += n.x * 4;
+            p.vy += n.y * 4;
+        }
+        if (d > (lunge ? 2.2 : 1.6) || b.z > 1) {
             if (!soft) p.stun = 0.35;
-            s.events.push({ type: "tackle", id: p.id, won: false });
+            s.events.push({ type, id: p.id, won: false });
             return;
         }
         const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
         if (owner && owner.team === p.team) return;
+        // From behind the dribbler it is much harder to get the ball cleanly.
+        if (owner) {
+            const ov = hyp(owner.vx, owner.vy);
+            if (ov > 1 && ((p.x - owner.x) * owner.vx + (p.y - owner.y) * owner.vy) / ov < -0.3) chance *= 0.6;
+        }
         if (s.rand() < chance) {
             const a = p.face + (s.rand() - 0.5) * 0.8;
-            b.vx = Math.cos(a) * 7 + p.vx * 0.3;
-            b.vy = Math.sin(a) * 7 + p.vy * 0.3;
+            b.vx = Math.cos(a) * 5 + p.vx * 0.3;
+            b.vy = Math.sin(a) * 5 + p.vy * 0.3;
             b.vz = 0;
             b.last = p.id;
             b.lastAt = s.t;
@@ -566,10 +579,10 @@
             }
             s.carrier = -1;
             s.pass = null;
-            s.events.push({ type: "tackle", id: p.id, won: true });
+            s.events.push({ type, id: p.id, won: true });
         } else {
             if (!soft) p.stun = 0.55;
-            s.events.push({ type: "tackle", id: p.id, won: false });
+            s.events.push({ type, id: p.id, won: false });
         }
     }
 
@@ -914,7 +927,18 @@
             // A header from a cross comes down and late, so it is harder to hold.
             const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0), 0.15, 0.95);
             if (s.rand() > save) {
-                // Fingertips: not enough.
+                // Fingertips: half the time that turns it round the post, half
+                // the time it still goes in.
+                if (s.rand() < 0.5) {
+                    const side = b.y < p.y ? -1 : 1;
+                    b.vx *= 0.75;
+                    b.vy = side * (Math.abs(b.vy) + 7);
+                    b.vz = 1 + s.rand() * 2;
+                    b.last = p.id;
+                    b.lastAt = s.t;
+                    s.events.push({ type: "save", id: p.id, won: true, tip: true });
+                    continue;
+                }
                 b.vx *= 0.85;
                 b.vy *= 0.85;
                 s.events.push({ type: "save", id: p.id, won: false });
