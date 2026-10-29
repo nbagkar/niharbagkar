@@ -44,8 +44,10 @@
         { team: 0, role: "RM", num: 11, hx: 0.46, hy: 0.8 },
         { team: 0, role: "FW", num: 9, hx: 0.62, hy: 0.5 },
         { team: 1, role: "GK", num: 1, hx: 0.97, hy: 0.5 },
-        { team: 1, role: "DF", num: 5, hx: 0.8, hy: 0.38 },
-        { team: 1, role: "DF", num: 6, hx: 0.8, hy: 0.62 },
+        { team: 1, role: "DF", num: 5, hx: 0.74, hy: 0.5 },
+        { team: 1, role: "LM", num: 8, hx: 0.54, hy: 0.8 },
+        { team: 1, role: "RM", num: 10, hx: 0.54, hy: 0.2 },
+        { team: 1, role: "FW", num: 9, hx: 0.38, hy: 0.5 },
     ];
 
     function rng(seed) {
@@ -126,16 +128,17 @@
         for (const p of s.players) {
             p.x = p.hx * L;
             p.y = p.hy * W;
-            // Everyone back in their own half for the restart.
-            if (p.team === 0) p.x = Math.min(p.x, L / 2 - 1.5);
-            else p.x = Math.max(p.x, L / 2 + 7);
+            // Everyone back in their own half, and the side not kicking off
+            // outside the centre circle.
+            p.x = p.team === 0 ? Math.min(p.x, L / 2 - 1.5) : Math.max(p.x, L / 2 + 1.5);
+            if (p.team !== team && hyp(p.x - L / 2, p.y - W / 2) < 7) p.x = L / 2 - attackDir(p.team) * 7;
             Object.assign(p, { vx: 0, vy: 0, dvx: 0, dvy: 0, stun: 0, run: null, queued: null, charge: 0, chargeKind: null });
             p.face = p.team ? Math.PI : 0;
         }
         const fw = s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
         fw.x = L / 2 - attackDir(team) * 0.7;
         fw.y = W / 2;
-        if (team === 0) s.user = fw.id;
+        s.user = s.players.find((p) => p.team === 0 && p.role === "FW").id;
         s.carrier = -1;
         s.pass = null;
         s.held = null;
@@ -322,7 +325,10 @@
                 me.queued = null;
             }
         }
-        if (pressed("tackle")) tackle(s, me, 0.7);
+        if (pressed("tackle")) tackle(s, me, 0.55);
+        // Running into the dribbler: a small chance to nick it, no penalty for missing.
+        const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
+        if (owner && owner.team !== me.team && me.tackleCd <= 0 && hyp(b.x - me.x, b.y - me.y) < 1.0) tackle(s, me, 0.3, true);
     }
 
     function swap(s) {
@@ -400,7 +406,7 @@
 
         if (piece === "Throw-in") {
             // Thrown from the hands: short and looping, whichever button.
-            const q = p.team === 0 ? pickTarget(s, p, dir, 1.0) : null;
+            const q = pickTarget(s, p, dir, 1.0);
             let tx = b.x + dir.x * (8 + 8 * power);
             let ty = b.y + dir.y * (8 + 8 * power);
             if (q) {
@@ -534,13 +540,13 @@
         return Math.max(Math.cos(p.face) * ad, dir.x * ad);
     }
 
-    function tackle(s, p, chance) {
+    function tackle(s, p, chance, soft) {
         const b = s.ball;
         if (p.tackleCd > 0 || p.stun > 0) return;
         p.tackleCd = 0.9;
         const d = hyp(b.x - p.x, b.y - p.y);
         if (d > 1.6 || b.z > 1) {
-            p.stun = 0.35;
+            if (!soft) p.stun = 0.35;
             s.events.push({ type: "tackle", id: p.id, won: false });
             return;
         }
@@ -562,7 +568,7 @@
             s.pass = null;
             s.events.push({ type: "tackle", id: p.id, won: true });
         } else {
-            p.stun = 0.55;
+            if (!soft) p.stun = 0.55;
             s.events.push({ type: "tackle", id: p.id, won: false });
         }
     }
@@ -596,101 +602,205 @@
                 p.dvx = p.dvy = 0;
                 return;
             }
-            if (p.team === 1) {
-                // Our keeper has it: spread wide outside the box to take the throw.
-                const side = p.id % 2 ? -1 : 1;
-                return seek(p, goalX(p.team) + attackDir(p.team) * (BOX_D + 3), W / 2 + side * 9, AI_RUN);
-            }
+            // Our keeper has it: get into shape outside the box to take the throw.
+            return shape(s, p, true);
         }
         const sp = s.setPiece;
         if (sp && sp.taker === p.id) {
-            // The defenders take theirs quickly, long and away from goal.
+            // The AI takes its set pieces quickly: a throw to a teammate, a corner into the box.
             p.dvx = p.dvy = 0;
-            if (s.t - sp.at > 0.9) kick(s, p, "lob", 0.6, norm(attackDir(p.team) * 0.7, sp.inward.y || sp.inward.x));
+            if (s.t - sp.at > 0.9) kick(s, p, sp.kind === "Throw-in" ? "pass" : "lob", 0.6, norm(attackDir(p.team) * 0.7, sp.inward.y || sp.inward.x));
             return;
         }
         if (sp && p.spot) return seek(p, p.spot.x, p.spot.y, AI_RUN);
-        if (p.team === 0) return mateThink(s, p);
-        return defenderThink(s, p);
-    }
-
-    function mateThink(s, p) {
-        const b = s.ball;
+        if (block(s, p)) return;
         if (s.pass && s.pass.to === p.id && s.carrier !== p.id) {
             const at = intercept(b, p, JOG);
             return seek(p, at.x, at.y, JOG);
         }
-        if (p.run && s.t < p.run.until && s.carrier < 0) {
-            return seek(p, p.run.x, p.run.y, 7.6);
-        }
+        if (p.run && s.t < p.run.until && s.carrier < 0) return seek(p, p.run.x, p.run.y, 7.6);
         p.run = null;
-        // Loose ball close by and nearer than the player you control: go get it.
-        const me = s.players[s.user];
-        const dBall = hyp(b.x - p.x, b.y - p.y);
-        if (s.carrier < 0 && !s.held && dBall < 5 && dBall < hyp(b.x - me.x, b.y - me.y) - 1) {
-            const at = intercept(b, p, AI_RUN);
-            return seek(p, at.x, at.y, AI_RUN);
-        }
-        // Hold shape, sliding with the ball.
+        if (s.carrier === p.id) return carrierThink(s, p);
+        const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
+        if (owner && owner.team === p.team) return shape(s, p, false);
+        if (owner) return defend(s, p, owner);
+        return loose(s, p);
+    }
+
+    // A hard shot through a player: sometimes blocked, never cleanly.
+    function block(s, p) {
+        const b = s.ball;
+        const shooter = s.players[b.last];
+        if (!shooter || shooter.team === p.team || hyp(b.vx, b.vy) < 15 || !canKick(s, p) || p.blockTried === b.kickAt) return false;
+        p.blockTried = b.kickAt;
+        if (s.rand() >= 0.3) return false;
+        b.vx = -b.vx * 0.25 + (s.rand() - 0.5) * 4;
+        b.vy = b.vy * 0.3 + (s.rand() - 0.5) * 9;
+        b.vz = s.rand() * 3;
+        b.last = p.id;
+        b.lastAt = s.t;
+        s.pass = null;
+        s.events.push({ type: "block", id: p.id });
+        return true;
+    }
+
+    // Formation spot, sliding with the ball; forwards stay ahead of it.
+    function shape(s, p, outOfBox) {
+        const b = s.ball;
+        const ad = attackDir(p.team);
         let x = p.hx * L + (b.x - L / 2) * 0.5;
         let y = p.hy * W + (b.y - W / 2) * 0.3;
-        if (p.role === "FW") x = Math.max(x, b.x + 6);
-        x = clamp(x, 4, L - 6);
+        if (p.role === "FW") x = ad > 0 ? Math.max(x, b.x + 6) : Math.min(x, b.x - 6);
+        if (outOfBox) x = ad > 0 ? Math.max(x, BOX_D + 2) : Math.min(x, L - BOX_D - 2);
+        x = clamp(x, 4, L - 4);
         y = clamp(y, 3, W - 3);
-        // Give the player on the ball some room.
-        const dm = hyp(x - me.x, y - me.y);
-        if (dm < 7 && dm > 0.01) {
-            x += ((x - me.x) / dm) * (7 - dm);
-            y += ((y - me.y) / dm) * (7 - dm);
+        // Give a teammate on the ball some room.
+        const c = s.carrier >= 0 ? s.players[s.carrier] : null;
+        if (c && c.team === p.team && c !== p) {
+            const dm = hyp(x - c.x, y - c.y);
+            if (dm < 7 && dm > 0.01) {
+                x += ((x - c.x) / dm) * (7 - dm);
+                y += ((y - c.y) / dm) * (7 - dm);
+            }
         }
         seek(p, clamp(x, 2, L - 2), clamp(y, 2, W - 2), AI_RUN * 0.8);
     }
 
-    function defenderThink(s, p) {
+    // Nobody has it: the nearest player on each side goes for it. On your side
+    // that is only when they are clearly nearer than the player you control.
+    function loose(s, p) {
         const b = s.ball;
-        const gx = goalX(p.team);
-        const bsp = hyp(b.vx, b.vy);
-        if (bsp > 15 && canKick(s, p) && p.blockTried !== b.kickAt) {
-            // A hard shot through a defender: sometimes blocked, never cleanly.
-            p.blockTried = b.kickAt;
-            if (s.rand() < 0.3) {
-                b.vx = -b.vx * 0.25 + (s.rand() - 0.5) * 4;
-                b.vy = b.vy * 0.3 + (s.rand() - 0.5) * 9;
-                b.vz = s.rand() * 3;
-                b.last = p.id;
-                b.lastAt = s.t;
-                s.pass = null;
-                s.events.push({ type: "block", id: p.id });
-                return;
-            }
-        }
-        if (s.carrier < 0 && canKick(s, p) && bsp <= 15) {
-            // Clear it long, away from goal.
-            const tx = clamp(b.x - 26 - s.rand() * 10, 4, L - 4);
-            const ty = clamp(W / 2 + (s.rand() - 0.5) * 30, 3, W - 3);
-            kick(s, p, "lob", 0.6, norm(tx - b.x, ty - b.y));
-            return;
-        }
-        const defs = s.players.filter((q) => q.team === p.team && q.role !== "GK");
-        const presser = defs.reduce((a, q) => (hyp(q.x - b.x, q.y - b.y) < hyp(a.x - b.x, a.y - b.y) ? q : a));
-        if (p === presser) {
-            const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
-            if (owner && owner.team !== p.team) {
-                // Jockey goal-side, then try a tackle when close.
-                const gdx = gx - b.x;
-                const gdy = W / 2 - b.y;
-                const gd = hyp(gdx, gdy) || 1;
-                seek(p, b.x + (gdx / gd) * 0.9, b.y + (gdy / gd) * 0.9, AI_RUN);
-                if (hyp(b.x - p.x, b.y - p.y) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.3);
-                return;
-            }
+        const d = (q) => hyp(b.x - q.x, b.y - q.y);
+        const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0);
+        const nearest = mates.reduce((a, q) => (d(q) < d(a) ? q : a));
+        const me = s.players[s.user];
+        const go = p.team === 0 ? nearest === p && d(p) < d(me) - 1 : nearest === p;
+        if (go && !s.held) {
             const at = intercept(b, p, AI_RUN);
             return seek(p, at.x, at.y, AI_RUN);
         }
-        // Cover: sit between the ball and goal, deeper than the presser.
-        const x = clamp(gx - (gx - b.x) * 0.45, L * 0.45, L - 3);
-        const y = W / 2 + (b.y - W / 2) * 0.5;
-        seek(p, x, y, AI_RUN * 0.9);
+        shape(s, p, false);
+    }
+
+    // The other side has it: one presser jockeys goal-side and tackles, the
+    // rest mark a man goal-side. On your side the player you control is the
+    // presser unless they are far from the ball.
+    function defend(s, p, owner) {
+        const b = s.ball;
+        const gx = goalX(p.team);
+        const d = (q) => hyp(b.x - q.x, b.y - q.y);
+        const me = s.players[s.user];
+        const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0 && !(q.team === 0 && q === me));
+        const nearest = mates.reduce((a, q) => (d(q) < d(a) ? q : a), mates[0]);
+        // You count as the presser only when close and goal-side, not chasing from behind.
+        const userPresses = p.team === 0 && (d(me) < 2.5 || (d(me) < 7 && (b.x - me.x) * attackDir(owner.team) < 0.5));
+        if (nearest === p && !userPresses) {
+            const g = norm(gx - b.x, W / 2 - b.y);
+            seek(p, b.x + g.x * 0.9, b.y + g.y * 0.9, AI_RUN);
+            if (d(p) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.33);
+            return;
+        }
+        // Mark: share out the other side's outfield players (not the one on the
+        // ball) by who is nearest to whose formation spot.
+        const markers = mates.filter((q) => userPresses || q !== nearest);
+        const targets = s.players.filter((q) => q.team !== p.team && q.role !== "GK" && q !== owner);
+        const taken = new Set();
+        let mine = null;
+        for (const m of markers.sort((a, c) => a.id - c.id)) {
+            let best = null;
+            let bestD = Infinity;
+            for (const t of targets) {
+                if (taken.has(t)) continue;
+                const dd = hyp(t.x - m.hx * L, t.y - m.hy * W);
+                if (dd < bestD) {
+                    bestD = dd;
+                    best = t;
+                }
+            }
+            if (best) taken.add(best);
+            if (m === p) mine = best;
+        }
+        if (!mine) return shape(s, p, false);
+        const g = norm(gx - mine.x, W / 2 - mine.y);
+        seek(p, mine.x + g.x * 1.8, mine.y + g.y * 1.8, AI_RUN);
+    }
+
+    // AI on the ball (the Rivals; your own AI players hand the ball to you).
+    function carrierThink(s, p) {
+        const b = s.ball;
+        const ad = attackDir(p.team);
+        const gx = goalX(1 - p.team);
+        const dG = hyp(gx - b.x, W / 2 - b.y);
+        const opps = s.players.filter((q) => q.team !== p.team && q.role !== "GK");
+        const dist = (q) => hyp(q.x - p.x, q.y - p.y);
+        const press = Math.min(...opps.map(dist));
+        if (canKick(s, p) && s.t >= (p.decideAt || 0)) {
+            p.decideAt = s.t + 0.25;
+            const settled = s.t - (p.gotAt || 0) > 0.3;
+            // Shoot: close in, or with a defender closing, or now and then from range.
+            if (dG < 16 && Math.abs(b.y - W / 2) < 10 && (dG < 9.5 || (press < 2 && dG < 13) || s.rand() < 0.015)) {
+                const aim = norm(ad, (s.rand() < 0.5 ? -1 : 1) * (0.45 + s.rand() * 0.4));
+                return kick(s, p, "shoot", 0.45 + s.rand() * 0.32, aim);
+            }
+            // Pinned in our own box: clear it.
+            if (inBox(p.team, b.x, b.y) && press < 3) {
+                return kick(s, p, "lob", 0.7, norm(ad, b.y < W / 2 ? -0.6 : 0.6));
+            }
+            // Under pressure, or a teammate clearly better placed: pass.
+            if (settled && (press < 2.8 || s.rand() < 0.08)) {
+                const q = passOption(s, p, opps);
+                if (q) return kick(s, p, "pass", 0.3, norm(q.x - p.x, q.y - p.y));
+            }
+        }
+        // Dribble at goal, steering round anyone close.
+        const to = norm(gx - p.x, W / 2 - p.y);
+        let dx = to.x;
+        let dy = to.y;
+        for (const o of opps) {
+            const d = dist(o);
+            const ahead = (o.x - p.x) * to.x + (o.y - p.y) * to.y;
+            if (d < 5 && ahead > -0.5) {
+                // Sidestep: across the line to goal, away from the defender.
+                const side = (o.x - p.x) * -to.y + (o.y - p.y) * to.x > 0 ? -1 : 1;
+                dx += -to.y * side * (5 - d) * 0.25;
+                dy += to.x * side * (5 - d) * 0.25;
+            }
+        }
+        const n = norm(dx, dy);
+        // Space ahead: run with it. Closed down: slow to keep it close.
+        p.sprinting = press > 5;
+        const top = p.sprinting ? 7 : press < 3 ? 4.8 : AI_RUN;
+        p.dvx = n.x * top;
+        p.dvy = n.y * top;
+        p.top = top;
+    }
+
+    // An open teammate not behind the ball, with a clear lane.
+    function passOption(s, p, opps) {
+        const ad = attackDir(p.team);
+        let best = null;
+        let bestScore = -Infinity;
+        for (const q of s.players) {
+            if (q.team !== p.team || q === p || q.role === "GK") continue;
+            const dx = q.x - p.x;
+            const dy = q.y - p.y;
+            const d = hyp(dx, dy);
+            if (d < 4 || d > 30 || dx * ad < -4) continue;
+            const open = Math.min(...opps.map((o) => hyp(o.x - q.x, o.y - q.y)));
+            if (open < 2.5) continue;
+            // Anyone standing in the lane?
+            const lane = opps.some((o) => {
+                const t = clamp(((o.x - p.x) * dx + (o.y - p.y) * dy) / (d * d), 0, 1);
+                return hyp(p.x + dx * t - o.x, p.y + dy * t - o.y) < 1.4 && t > 0.1;
+            });
+            if (lane) continue;
+            const score = dx * ad * 0.6 + open * 0.8 - d * 0.1;
+            if (score > bestScore) {
+                bestScore = score;
+                best = q;
+            }
+        }
+        return best;
     }
 
     function norm(x, y) {
@@ -716,9 +826,11 @@
             // Release once the opponents have cleared the box (or after 3 s regardless).
             const clear = !s.players.some((q) => q.team !== p.team && inBox(p.team, q.x, q.y));
             if (s.t > s.held.until && (clear || s.t > s.held.until + 3)) {
-                const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK");
-                const q = mates.reduce((a, c) => (Math.abs(c.y - p.y) + Math.abs(c.x - p.x) * 0.3 < Math.abs(a.y - p.y) + Math.abs(a.x - p.x) * 0.3 ? c : a));
-                kick(s, p, "pass", 0.4, norm(q.x - p.x, q.y - p.y));
+                // Roll it to an open teammate with a clear lane; if nobody is free, punt it long.
+                const opps = s.players.filter((q) => q.team !== p.team && q.role !== "GK");
+                const q = passOption(s, p, opps);
+                if (q) kick(s, p, "pass", 0.4, norm(q.x - p.x, q.y - p.y));
+                else kick(s, p, "lob", 0.85, norm(ad, (s.rand() - 0.5) * 0.8));
             }
             return;
         }
@@ -748,6 +860,10 @@
             }
         }
 
+        // A dribbler bearing down in the box: come out and smother it.
+        const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
+        if (owner && owner.team !== p.team && inBox(p.team, b.x, b.y) && hyp(b.x - p.x, b.y - p.y) < 5) return seek(p, b.x, b.y, 6);
+
         // Loose ball in the box and nobody nearer: come and claim it.
         if (s.carrier < 0 && inBox(p.team, b.x, b.y) && hyp(b.vx, b.vy) < 9) {
             const mine = hyp(b.x - p.x, b.y - p.y);
@@ -775,6 +891,15 @@
             const reach = p.diving ? 1.45 : 1.0;
             if (hyp(b.x - p.x, b.y - p.y) > reach || b.z > 2.5) continue;
             const sp = hyp(b.vx, b.vy);
+            const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
+            if (owner && owner.team !== p.team && sp < 10) {
+                // Diving at a dribbler's feet: a try every half second.
+                if ((p.smotherAt || 0) < s.t) {
+                    p.smotherAt = s.t + 0.5;
+                    if (s.rand() < 0.55) hold(s, p);
+                }
+                continue;
+            }
             if (sp < 6) {
                 hold(s, p);
                 continue;
@@ -889,7 +1014,7 @@
             if (d > (mine ? 1.6 : REACH)) continue;
             // Defenders win the ball by tackling, not by walking into it.
             const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
-            if (owner && owner.team !== p.team && p.team === 1) continue;
+            if (owner && owner.team !== p.team) continue;
             if (d < bestD) {
                 bestD = d;
                 best = p;
@@ -897,8 +1022,6 @@
         }
         if (!best) return;
         const p = best;
-        // The defending AI kicks rather than dribbles (handled in its think).
-        if (p.team === 1) return;
 
         const sp = hyp(p.vx, p.vy);
         const want = hyp(p.dvx, p.dvy);
@@ -928,7 +1051,20 @@
             b.vz = 0;
             p.touchCd = p.sprinting ? 0.28 : 0.2;
         }
-        if (b.last !== p.id) s.events.push({ type: "control", id: p.id });
+        if (b.last !== p.id) {
+            s.events.push({ type: "control", id: p.id });
+            p.gotAt = s.t;
+            const before = s.players[b.last];
+            // The Rivals win it and the player you control is far away: switch
+            // to whoever on your side is nearest the ball.
+            if (p.team === 1 && (!before || before.team === 0)) {
+                const me = s.players[s.user];
+                if (hyp(b.x - me.x, b.y - me.y) > 8) {
+                    const q = s.players.filter((o) => o.team === 0 && o.role !== "GK").reduce((a, o) => (hyp(b.x - o.x, b.y - o.y) < hyp(b.x - a.x, b.y - a.y) ? o : a));
+                    setUser(s, q);
+                }
+            }
+        }
         b.last = p.id;
         b.lastAt = s.t;
         s.carrier = p.id;
@@ -1121,6 +1257,8 @@
         const mark = [
             { x: gx - ad * 4.5, y: W / 2 + side * 1 },
             { x: gx - ad * 6, y: W / 2 - side * 1.5 },
+            { x: gx - ad * 8.5, y: W / 2 + side * 0.5 },
+            { x: gx - ad * 13, y: W / 2 - side * 4 },
         ];
         const put = (p, at) => {
             p.x = at.x;
