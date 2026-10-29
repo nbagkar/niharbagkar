@@ -427,7 +427,7 @@
             // Aimed with the stick, or else away from the side the keeper covers.
             const keeper = s.players.find((q) => q.team !== p.team && q.role === "GK");
             const open = keeper && Math.abs(keeper.y - W / 2) > 0.3 ? -Math.sign(keeper.y - W / 2) : b.y < W / 2 ? 1 : -1;
-            const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : open * (0.55 + s.rand() * 0.3);
+            const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : open * (0.35 + s.rand() * 0.4);
             const dist = hyp(gx - b.x, W / 2 - b.y);
             // Side-on to goal the strike gets wilder.
             const twist = Math.max(0, 0.3 - towardGoal(p, dir, b)) * 1.5;
@@ -762,12 +762,13 @@
             }
             if (p.saveTried === b.kickAt) continue;
             p.saveTried = b.kickAt;
-            const edge = clamp(Math.abs(b.y - W / 2) / (GOAL_W / 2), 0, 1);
-            // Slow shots stick; hard ones into the corners beat them. From range the
-            // keeper has longer to set, so distance helps him.
+            // How far the ball's path passes from his body, as a share of his reach:
+            // at him he usually keeps it out, at full stretch it often beats him.
+            const stretch = clamp(Math.abs((p.x - b.x) * b.vy - (p.y - b.y) * b.vx) / sp / reach, 0, 1);
+            // From range the keeper has longer to set, so distance helps him.
             const range = clamp((hyp(b.fromX - p.x, b.fromY - p.y) - 12) * 0.022, 0, 0.32);
             // A header from a cross comes down and late, so it is harder to hold.
-            const save = clamp(1.5 - sp / 22 - edge * 0.2 + range + (p.diving ? 0 : 0.25) - (b.header ? 0.12 : 0), 0.2, 0.97);
+            const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0), 0.15, 0.95);
             if (s.rand() > save) {
                 // Fingertips: not enough.
                 b.vx *= 0.85;
