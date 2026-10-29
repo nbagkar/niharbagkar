@@ -104,6 +104,8 @@
             flash: null,
             prev: {},
             events: [],
+            // Match log for tuning from real play: kicks, goals, saves, tackles.
+            log: [],
         };
         kickoff(s, 0);
         return s;
@@ -187,6 +189,18 @@
     /* ---------- Step ---------- */
 
     function step(s, inp) {
+        stepInner(s, inp);
+        for (const e of s.events) {
+            if (e.type === "switch" || e.type === "control" || s.log.length > 4000) continue;
+            const b = s.ball;
+            const k = s.players.find((p) => p.team === 1 && p.role === "GK");
+            const by = s.players[e.id];
+            s.log.push(Object.assign({ t: +s.t.toFixed(2), bx: +b.x.toFixed(1), by: +b.y.toFixed(1), bz: +b.z.toFixed(1), v: +hyp(b.vx, b.vy).toFixed(1), kx: +k.x.toFixed(1), ky: +k.y.toFixed(1), team: by ? by.team : undefined }, e));
+        }
+        return s;
+    }
+
+    function stepInner(s, inp) {
         inp = inp || {};
         s.t += DT;
         s.events.length = 0;
