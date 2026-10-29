@@ -50,7 +50,9 @@
         if (!playing) return;
         if (e.code === "Escape" || e.code === "KeyP") return pause("Paused");
         if (e.code === "KeyR") {
+            saveLog();
             s = Sim.create((Math.random() * 1e9) | 0);
+            matchId = Date.now();
             return;
         }
         const act = KEYS[e.code];
@@ -105,6 +107,7 @@
             acc += dt;
             while (acc >= Sim.DT) {
                 Sim.step(s, held);
+                if (s.log.length !== logged && performance.now() - savedAt > 3000) saveLog();
                 acc -= Sim.DT;
             }
         } else acc = 0;
@@ -490,9 +493,41 @@
         ctx.fillText(t, cw / 2, y);
     }
 
-    // Hooks for poking at it from the console.
-    // render() draws one frame by hand, for when the tab gets no animation frames.
-    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1) };
+    /* ---------- Match log ----------
+       The last few matches' logs are kept in this browser so a restart or a
+       reload does not lose them. Only used for tuning. */
+
+    const LOG_KEY = "nbs-five-log";
+    let matchId = Date.now();
+    let logged = 0;
+    let savedAt = 0;
+
+    function loadLogs() {
+        try {
+            return JSON.parse(localStorage.getItem(LOG_KEY)) || [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveLog() {
+        savedAt = performance.now();
+        logged = s.log.length;
+        if (!s.log.length) return;
+        const all = loadLogs().filter((m) => m.id !== matchId);
+        all.push({ id: matchId, score: s.score.slice(), minutes: +(s.t / 60).toFixed(1), log: s.log });
+        try {
+            localStorage.setItem(LOG_KEY, JSON.stringify(all.slice(-5)));
+        } catch (error) {
+            /* Storage full or blocked: this match just is not kept. */
+        }
+    }
+
+    window.addEventListener("pagehide", saveLog);
+
+    // Hooks for poking at it from the console. render() draws one frame by
+    // hand, for when the tab gets no animation frames; logs() lists saved matches.
+    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1), logs: loadLogs };
 
     requestAnimationFrame((now) => {
         last = now;
