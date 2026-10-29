@@ -247,7 +247,9 @@
             dy /= m;
         }
         const moving = m > 0.1;
-        if (moving) me.aim = { x: dx / Math.max(m, 1e-6), y: dy / Math.max(m, 1e-6) };
+        // Kicks go where the stick points now, or where the player faces if it is let go.
+        me.aim = moving ? { x: dx / m, y: dy / m } : { x: Math.cos(me.face), y: Math.sin(me.face) };
+        me.stickHeld = moving;
 
         const has = s.carrier === me.id;
         const sprint = !!inp.sprint && moving && me.stamina > 0.04;
@@ -263,7 +265,9 @@
         if (sp && sp.taker === me.id) {
             // Taking a throw-in or corner: stand still, the stick only aims (always infield).
             let a = moving ? { x: dx / m, y: dy / m } : sp.inward;
-            if (a.x * sp.inward.x + a.y * sp.inward.y < 0.15) a = sp.inward;
+            // Along or out of the line: bend it infield but keep the side the stick picked.
+            const dot = a.x * sp.inward.x + a.y * sp.inward.y;
+            if (dot < 0.3) a = norm(a.x + sp.inward.x * (0.6 - dot), a.y + sp.inward.y * (0.6 - dot));
             me.aim = a;
             me.face = Math.atan2(a.y, a.x);
             me.x = sp.x - a.x * 0.6;
@@ -273,8 +277,8 @@
             // No stick input while a pass is coming to you: go and meet it.
             const at = intercept(b, me, JOG);
             seek(me, at.x, at.y, JOG);
-        } else if (onBall && (me.chargeKind || me.queued) && b.z < 1) {
-            // Winding up on the ball: run onto it; the stick only aims.
+        } else if (!moving && onBall && (me.chargeKind || me.queued) && b.z < 1) {
+            // Winding up on the ball with the stick let go: step onto it.
             const at = intercept(b, me, top);
             seek(me, at.x, at.y, top);
         } else {
@@ -396,6 +400,13 @@
             const speed = Math.min(14, (d * 0.85) / flight);
             vx = ((tx - b.x) / d) * speed;
             vy = ((ty - b.y) / d) * speed;
+        } else if (kind === "shoot" && towardGoal(p, dir, b) < -0.3) {
+            // Turned back towards your own half: no shot at goal, just a hit where you face.
+            const speed = 14 + 14 * power;
+            vx = dir.x * speed;
+            vy = dir.y * speed;
+            vz = header ? 0 : 0.5 + power * 2.5;
+            s.pass = null;
         } else if (kind === "shoot") {
             const gx = goalX(1 - p.team);
             // Aimed with the stick, or else away from the side the keeper covers.
@@ -403,7 +414,9 @@
             const open = keeper && Math.abs(keeper.y - W / 2) > 0.3 ? -Math.sign(keeper.y - W / 2) : b.y < W / 2 ? 1 : -1;
             const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : open * (0.55 + s.rand() * 0.3);
             const dist = hyp(gx - b.x, W / 2 - b.y);
-            const spread = 0.35 + dist * 0.035 + (power > 0.85 ? (power - 0.85) * 6 : 0);
+            // Side-on to goal the strike gets wilder.
+            const twist = Math.max(0, 0.3 - towardGoal(p, dir, b)) * 1.5;
+            const spread = 0.35 + dist * 0.035 + twist + (power > 0.85 ? (power - 0.85) * 6 : 0);
             const ty = W / 2 + sideways * (GOAL_W / 2 - 0.7) + (s.rand() - 0.5) * 2 * spread;
             const tx = gx + ad * 0.3;
             // Headers and volleys are softer than a struck shot along the ground.
@@ -494,6 +507,16 @@
 
         // FIFA habit: control follows the pass.
         if (p.team === 0 && s.pass && s.players[s.pass.to]) setUser(s, s.players[s.pass.to]);
+    }
+
+    // How much the player is turned towards the goal they attack: 1 square on,
+    // 0 side-on, -1 back to goal. The better of body facing and stick, so pressing
+    // up or down to pick a corner still counts as facing the goal.
+    function towardGoal(p, dir, b) {
+        // A header faces the incoming cross; with the stick let go it goes at goal.
+        if (b.z > 1.1 && !p.stickHeld) return 1;
+        const ad = attackDir(p.team);
+        return Math.max(Math.cos(p.face) * ad, dir.x * ad);
     }
 
     function tackle(s, p, chance) {
