@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" class="soccer-match">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Five-a-side · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Five-a-side: a top-down football game for the keyboard. Dribble, pass, and shoot past the keeper.">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="soccer.css">
+    <link rel="stylesheet" href="match.css">
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="./">Soccer Hub</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main class="match-page">
+        <div class="match-head wrap">
+            <h1>Five-a-side</h1>
+            <p class="match-tag">Prototype &middot; training match</p>
+        </div>
+
+        <div class="match-stage wrap" id="match">
+            <canvas class="match-canvas" tabindex="0" aria-label="Top-down football game. Move with WASD or the arrow keys; pass, shoot and lob with J, K and L or Space, X and C."></canvas>
+
+            <div class="match-overlay" data-overlay>
+                <div class="overlay-card">
+                    <p class="kicker" data-overlay-kicker>Training match</p>
+                    <h2 data-overlay-title>Your five vs two defenders and a keeper</h2>
+                    <div class="keys">
+                        <div class="key-col">
+                            <p class="key-head">WASD hands</p>
+                            <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</p>
+                            <p><kbd>J</kbd> Pass</p>
+                            <p><kbd>K</kbd> Shoot (hold)</p>
+                            <p><kbd>L</kbd> Lob / through ball</p>
+                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Q</kbd> Switch &middot; <kbd>E</kbd> Tackle</p>
+                        </div>
+                        <div class="key-col">
+                            <p class="key-head">Arrow-key hands</p>
+                            <p><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> Move</p>
+                            <p><kbd>Space</kbd> Pass</p>
+                            <p><kbd>X</kbd> Shoot (hold)</p>
+                            <p><kbd>C</kbd> Lob / through ball</p>
+                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Tab</kbd> Switch &middot; <kbd>Z</kbd> Tackle</p>
+                        </div>
+                    </div>
+                    <p class="overlay-tip">Hold shoot longer for power; past the red line it flies over. Point the stick at a corner to aim.</p>
+                    <button class="play" type="button" data-play>Play <span>Enter</span></button>
+                    <p class="touch-note" data-touch hidden>This one is built for a laptop keyboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="match-foot wrap"><kbd>Esc</kbd> pause &middot; <kbd>R</kbd> restart</p>
+    </main>
+
+    <script src="match-sim.js"></script>
+    <script src="match.js"></script>
+</body>
+</html>
