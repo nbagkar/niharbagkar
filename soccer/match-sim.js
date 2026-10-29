@@ -588,6 +588,20 @@
             p.dvy *= 0.5;
             return;
         }
+        if (s.held) {
+            // The other side's keeper has it: leave his box and wait outside it.
+            const k = s.players[s.held.id];
+            if (k.team !== p.team) {
+                if (inBox(k.team, p.x, p.y)) return seek(p, goalX(k.team) + attackDir(k.team) * (BOX_D + 2), clamp(p.y, 3, W - 3), AI_RUN);
+                p.dvx = p.dvy = 0;
+                return;
+            }
+            if (p.team === 1) {
+                // Our keeper has it: spread wide outside the box to take the throw.
+                const side = p.id % 2 ? -1 : 1;
+                return seek(p, goalX(p.team) + attackDir(p.team) * (BOX_D + 3), W / 2 + side * 9, AI_RUN);
+            }
+        }
         const sp = s.setPiece;
         if (sp && sp.taker === p.id) {
             // The defenders take theirs quickly, long and away from goal.
@@ -699,7 +713,9 @@
 
         if (s.held && s.held.id === p.id) {
             p.dvx = p.dvy = 0;
-            if (s.t > s.held.until) {
+            // Release once the opponents have cleared the box (or after 3 s regardless).
+            const clear = !s.players.some((q) => q.team !== p.team && inBox(p.team, q.x, q.y));
+            if (s.t > s.held.until && (clear || s.t > s.held.until + 3)) {
                 const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK");
                 const q = mates.reduce((a, c) => (Math.abs(c.y - p.y) + Math.abs(c.x - p.x) * 0.3 < Math.abs(a.y - p.y) + Math.abs(a.x - p.x) * 0.3 ? c : a));
                 kick(s, p, "pass", 0.4, norm(q.x - p.x, q.y - p.y));
@@ -752,6 +768,9 @@
         if (s.held) return;
         for (const p of s.players) {
             if (p.role !== "GK" || (b.last === p.id && s.t - b.kickAt < 0.5)) continue;
+            // Back-pass rule: no handling a ball a teammate deliberately kicked.
+            const last = s.players[b.last];
+            if (last && last !== p && last.team === p.team && b.lastAt === b.kickAt) continue;
             if (!inBox(p.team, b.x, b.y)) continue;
             const reach = p.diving ? 1.45 : 1.0;
             if (hyp(b.x - p.x, b.y - p.y) > reach || b.z > 2.5) continue;
