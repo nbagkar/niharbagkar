@@ -37,7 +37,7 @@
     let started = false;
     let last = 0;
     let acc = 0;
-    const cam = { x: L / 2, y: W / 2 };
+    const cam = { x: L / 2, y: W / 2, view: VIEW };
     const legs = {};
 
     /* ---------- Input ---------- */
@@ -128,7 +128,6 @@
         }
         cw = w;
         ch = h;
-        sc = cw / VIEW;
     }
 
     const X = (x) => (x - cam.x) * sc + cw / 2;
@@ -136,14 +135,18 @@
 
     function moveCamera(dt) {
         const b = s.ball;
-        // Look a little ahead of the ball, and stay on the pitch.
-        const tx = b.x + b.vx * 0.3;
-        const ty = b.y + b.vy * 0.2;
+        // Look a little ahead of the ball, and stay on the pitch. At a corner,
+        // pull back so the flag and the box are both in shot.
+        const corner = s.setPiece && s.setPiece.kind === "Corner";
+        const tx = corner ? b.x * 0.4 + (b.x < L / 2 ? 8 : L - 8) * 0.6 : b.x + b.vx * 0.3;
+        const ty = corner ? b.y * 0.45 + (W / 2) * 0.55 : b.y + b.vy * 0.2;
         const k = 1 - Math.exp(-dt * 4);
         cam.x += (tx - cam.x) * k;
         cam.y += (ty - cam.y) * k;
-        const hw = VIEW / 2;
-        const hh = (VIEW * ch) / cw / 2;
+        cam.view += ((corner ? 46 : VIEW) - cam.view) * k;
+        sc = cw / cam.view;
+        const hw = cam.view / 2;
+        const hh = (cam.view * ch) / cw / 2;
         cam.x = Math.max(hw - 4, Math.min(L + 4 - hw, cam.x));
         cam.y = Math.max(hh - 3, Math.min(W + 3 - hh, cam.y));
     }
@@ -363,10 +366,12 @@
 
     function drawBall() {
         const b = s.ball;
+        // A throw-in is held overhead until it is thrown.
+        const z = s.setPiece && s.setPiece.kind === "Throw-in" ? 1.6 : b.z;
         // Height shows as a lift up the screen and a slightly bigger ball.
         const x = X(b.x);
-        const y = Y(b.y - b.z * 0.45);
-        const r = Sim.R_BALL * 2 * sc * (1 + b.z * 0.12);
+        const y = Y(b.y - z * 0.45);
+        const r = Sim.R_BALL * 2 * sc * (1 + z * 0.12);
         ctx.fillStyle = "#fff";
         ctx.strokeStyle = "#222";
         ctx.lineWidth = Math.max(1, r * 0.18);
@@ -446,7 +451,31 @@
         ctx.fill();
     }
 
+    // Your throw-in or corner: a dotted aim line and the keys to play it.
+    function drawSetPiece() {
+        const sp = s.setPiece;
+        if (!sp || sp.team !== 0) return;
+        const p = s.players[sp.taker];
+        const a = p.aim || sp.inward;
+        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.lineWidth = Math.max(2, 0.08 * sc);
+        ctx.setLineDash([0.3 * sc, 0.3 * sc]);
+        line(sp.x, sp.y, sp.x + a.x * 7, sp.y + a.y * 7);
+        ctx.setLineDash([]);
+        const u = cw / 960;
+        const keys = sp.kind === "Corner" ? "Aim, then L to cross (shoot to head it) · J short pass" : "Aim, then J to throw";
+        ctx.font = `700 ${Math.round(16 * u)}px Saira, sans-serif`;
+        ctx.textAlign = "center";
+        const w = ctx.measureText(keys).width + 24 * u;
+        const y = ch - 140 * u;
+        ctx.fillStyle = "rgba(6,6,13,0.72)";
+        ctx.fillRect(cw / 2 - w / 2, y - 18 * u, w, 28 * u);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(keys, cw / 2, y + 1 * u);
+    }
+
     function drawFlash() {
+        drawSetPiece();
         if (!s.flash) return;
         const u = cw / 960;
         const goal = s.flash.text === "Goal!";

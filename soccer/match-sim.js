@@ -220,6 +220,10 @@
         for (const p of s.players) if (p !== me) think(s, p);
         for (const p of s.players) move(s, p);
         separate(s);
+        if (s.setPiece) {
+            holdSetPiece(s);
+            return s;
+        }
         touches(s);
         keepers(s);
         ballPhysics(s);
@@ -255,7 +259,17 @@
 
         const b = s.ball;
         const onBall = s.carrier === me.id || (b.last === me.id && hyp(b.x - me.x, b.y - me.y) < 4);
-        if (!moving && s.pass && s.pass.to === me.id && s.carrier !== me.id) {
+        const sp = s.setPiece;
+        if (sp && sp.taker === me.id) {
+            // Taking a throw-in or corner: stand still, the stick only aims (always infield).
+            let a = moving ? { x: dx / m, y: dy / m } : sp.inward;
+            if (a.x * sp.inward.x + a.y * sp.inward.y < 0.15) a = sp.inward;
+            me.aim = a;
+            me.face = Math.atan2(a.y, a.x);
+            me.x = sp.x - a.x * 0.6;
+            me.y = sp.y - a.y * 0.6;
+            me.vx = me.vy = me.dvx = me.dvy = 0;
+        } else if (!moving && s.pass && s.pass.to === me.id && s.carrier !== me.id) {
             // No stick input while a pass is coming to you: go and meet it.
             const at = intercept(b, me, JOG);
             seek(me, at.x, at.y, JOG);
@@ -285,7 +299,7 @@
         }
         if (me.queued) {
             if (s.t > me.queued.until) me.queued = null;
-            else if (canKick(s, me)) {
+            else if (canKick(s, me, me.queued.kind)) {
                 kick(s, me, me.queued.kind, me.queued.power, me.aim);
                 me.queued = null;
             }
@@ -295,6 +309,7 @@
 
     function swap(s) {
         const b = s.ball;
+        if (s.setPiece) return;
         let best = null;
         let bestD = Infinity;
         for (const p of s.players) {
@@ -322,11 +337,14 @@
 
     /* ---------- Kicking ---------- */
 
-    function canKick(s, p) {
+    function canKick(s, p, kind) {
         const b = s.ball;
         if (s.held && s.held.id !== p.id) return false;
+        if (s.setPiece && s.setPiece.taker !== p.id) return false;
         const reach = s.carrier === p.id ? 1.4 : REACH + 0.15;
-        return p.kickCd <= 0 && p.stun <= 0 && b.z < 1.1 && hyp(b.x - p.x, b.y - p.y) < reach;
+        // A shot can meet the ball in the air: a header or volley.
+        const high = kind === "shoot" ? 2.3 : 1.1;
+        return p.kickCd <= 0 && p.stun <= 0 && b.z < high && hyp(b.x - p.x, b.y - p.y) < reach;
     }
 
     function pickTarget(s, p, dir, maxAngle) {
@@ -356,21 +374,46 @@
         let vx;
         let vy;
         let vz = 0;
+        const piece = s.setPiece ? s.setPiece.kind : null;
+        s.setPiece = null;
+        if (piece) for (const q of s.players) q.spot = null;
+        const header = kind === "shoot" && b.z > 1.1;
 
-        if (kind === "shoot") {
+        if (piece === "Throw-in") {
+            // Thrown from the hands: short and looping, whichever button.
+            const q = p.team === 0 ? pickTarget(s, p, dir, 1.0) : null;
+            let tx = b.x + dir.x * (8 + 8 * power);
+            let ty = b.y + dir.y * (8 + 8 * power);
+            if (q) {
+                tx = q.x + q.vx * 0.5;
+                ty = q.y + q.vy * 0.5;
+                s.pass = { to: q.id, from: p.id, at: s.t };
+            } else s.pass = null;
+            const d = hyp(tx - b.x, ty - b.y) || 1;
+            b.z = 1.6;
+            vz = clamp(1.5 + d * 0.15, 2, 5);
+            const flight = (vz + Math.sqrt(vz * vz + 2 * G * b.z)) / G;
+            const speed = Math.min(14, (d * 0.85) / flight);
+            vx = ((tx - b.x) / d) * speed;
+            vy = ((ty - b.y) / d) * speed;
+        } else if (kind === "shoot") {
             const gx = goalX(1 - p.team);
-            const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : (s.rand() - 0.5) * 0.6;
+            // Aimed with the stick, or else away from the side the keeper covers.
+            const keeper = s.players.find((q) => q.team !== p.team && q.role === "GK");
+            const open = keeper && Math.abs(keeper.y - W / 2) > 0.3 ? -Math.sign(keeper.y - W / 2) : b.y < W / 2 ? 1 : -1;
+            const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : open * (0.55 + s.rand() * 0.3);
             const dist = hyp(gx - b.x, W / 2 - b.y);
             const spread = 0.35 + dist * 0.035 + (power > 0.85 ? (power - 0.85) * 6 : 0);
             const ty = W / 2 + sideways * (GOAL_W / 2 - 0.7) + (s.rand() - 0.5) * 2 * spread;
             const tx = gx + ad * 0.3;
-            const speed = 15 + 15 * power;
+            // Headers and volleys are softer than a struck shot along the ground.
+            const speed = header ? 14 + 6 * power : 15 + 15 * power;
             const d = hyp(tx - b.x, ty - b.y);
             const t = d / speed;
             // Past 85% power the shot starts to rise; a full bar usually clears the bar.
             const h = 0.2 + power * 1.1 + (power > 0.85 ? (power - 0.85) * 7 : 0) + s.rand() * 0.3;
             // Driven, not chipped: long weak shots skid in along the ground.
-            vz = clamp((h + 0.5 * G * t * t) / t, 0, 1.5 + power * 4);
+            vz = clamp((h - b.z + 0.5 * G * t * t) / t, header ? -8 : 0, 1.5 + power * 4);
             vx = ((tx - b.x) / d) * speed;
             vy = ((ty - b.y) / d) * speed;
             s.pass = null;
@@ -398,6 +441,18 @@
             const q = p.team === 0 ? pickTarget(s, p, dir, 1.2) : null;
             let tx;
             let ty;
+            if (q && piece === "Corner") {
+                // A cross: drop it on the teammate's head; meet it with shoot.
+                const dq = hyp(q.x - b.x, q.y - b.y);
+                vz = 6.2 + 1.5 * power;
+                const down = (vz + Math.sqrt(Math.max(0, vz * vz - 2 * G * 1.5))) / G;
+                const speed = dq / down;
+                b.vx = ((q.x - b.x) / dq) * speed;
+                b.vy = ((q.y - b.y) / dq) * speed;
+                s.pass = { to: q.id, from: p.id, at: s.t };
+                q.run = { x: q.x, y: q.y, until: s.t + down };
+                return launched(s, p, kind, power, b.vx, b.vy, vz);
+            }
             if (q) {
                 tx = clamp(q.x + ad * (4 + 5 * power), 2, L - 2);
                 ty = clamp(q.y + q.vy * 0.6, 2, W - 2);
@@ -416,7 +471,11 @@
             vx = ((tx - b.x) / d) * speed;
             vy = ((ty - b.y) / d) * speed;
         }
+        launched(s, p, kind, power, vx, vy, vz);
+    }
 
+    function launched(s, p, kind, power, vx, vy, vz) {
+        const b = s.ball;
         b.vx = vx;
         b.vy = vy;
         b.vz = vz;
@@ -426,6 +485,7 @@
         b.kickAt = s.t;
         b.fromX = b.x;
         b.fromY = b.y;
+        b.header = kind === "shoot" && b.z > 1.1;
         p.kickCd = 0.3;
         p.touchCd = 0.35;
         p.face = Math.atan2(vy, vx);
@@ -490,6 +550,14 @@
             p.dvy *= 0.5;
             return;
         }
+        const sp = s.setPiece;
+        if (sp && sp.taker === p.id) {
+            // The defenders take theirs quickly, long and away from goal.
+            p.dvx = p.dvy = 0;
+            if (s.t - sp.at > 0.9) kick(s, p, "lob", 0.6, norm(attackDir(p.team) * 0.7, sp.inward.y || sp.inward.x));
+            return;
+        }
+        if (sp && p.spot) return seek(p, p.spot.x, p.spot.y, AI_RUN);
         if (p.team === 0) return mateThink(s, p);
         return defenderThink(s, p);
     }
@@ -533,7 +601,7 @@
         if (bsp > 15 && canKick(s, p) && p.blockTried !== b.kickAt) {
             // A hard shot through a defender: sometimes blocked, never cleanly.
             p.blockTried = b.kickAt;
-            if (s.rand() < 0.45) {
+            if (s.rand() < 0.3) {
                 b.vx = -b.vx * 0.25 + (s.rand() - 0.5) * 4;
                 b.vy = b.vy * 0.3 + (s.rand() - 0.5) * 9;
                 b.vz = s.rand() * 3;
@@ -561,7 +629,7 @@
                 const gdy = W / 2 - b.y;
                 const gd = hyp(gdx, gdy) || 1;
                 seek(p, b.x + (gdx / gd) * 0.9, b.y + (gdy / gd) * 0.9, AI_RUN);
-                if (hyp(b.x - p.x, b.y - p.y) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.38);
+                if (hyp(b.x - p.x, b.y - p.y) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.3);
                 return;
             }
             const at = intercept(b, p, AI_RUN);
@@ -660,7 +728,8 @@
             // Slow shots stick; hard ones into the corners beat them. From range the
             // keeper has longer to set, so distance helps him.
             const range = clamp((hyp(b.fromX - p.x, b.fromY - p.y) - 12) * 0.022, 0, 0.32);
-            const save = clamp(1.6 - sp / 22 - edge * 0.2 + range + (p.diving ? 0 : 0.25), 0.2, 0.97);
+            // A header from a cross comes down and late, so it is harder to hold.
+            const save = clamp(1.5 - sp / 22 - edge * 0.2 + range + (p.diving ? 0 : 0.25) - (b.header ? 0.12 : 0), 0.2, 0.97);
             if (s.rand() > save) {
                 // Fingertips: not enough.
                 b.vx *= 0.85;
@@ -731,11 +800,13 @@
                 const d = hyp(dx, dy);
                 const min = R_PLAYER * 2;
                 if (d >= min || d === 0) continue;
-                const push = (min - d) / 2;
-                a.x -= (dx / d) * push;
-                a.y -= (dy / d) * push;
-                c.x += (dx / d) * push;
-                c.y += (dy / d) * push;
+                // Keepers stand their ground: whoever runs into one is moved instead.
+                const overlap = min - d;
+                const wa = a.role === "GK" ? 0 : c.role === "GK" ? 1 : 0.5;
+                a.x -= (dx / d) * overlap * wa;
+                a.y -= (dy / d) * overlap * wa;
+                c.x += (dx / d) * overlap * (1 - wa);
+                c.y += (dy / d) * overlap * (1 - wa);
             }
         }
     }
@@ -954,27 +1025,79 @@
             }
             const pool = st.players.filter((p) => p.team === team && p.role !== "GK");
             const taker = pool.reduce((a, c) => (hyp(c.x - x, c.y - y) < hyp(a.x - x, a.y - y) ? c : a));
-            // Stand behind the ball, facing infield.
-            const inx = clamp(L / 2 - x, -1, 1) * (label === "Corner" ? 1 : 0.4);
-            const iny = clamp(W / 2 - y, -1, 1);
-            const dir = norm(inx, iny);
-            taker.x = x - dir.x * 0.6;
-            taker.y = y - dir.y * 0.6;
+            // The taker stands behind the ball facing infield and plays it with
+            // pass, lob or shoot; until then the ball is dead.
+            const inward = label === "Corner" ? norm(L / 2 - x, W / 2 - y) : { x: 0, y: y < W / 2 ? 1 : -1 };
+            st.setPiece = { kind: label, team, x, y, taker: taker.id, inward, at: st.t };
+            taker.x = x - inward.x * 0.6;
+            taker.y = y - inward.y * 0.6;
             taker.vx = taker.vy = 0;
-            taker.face = Math.atan2(dir.y, dir.x);
-            taker.touchCd = 0;
-            // Opponents give the taker room.
-            for (const p of st.players) {
-                if (p.team === team || p.role === "GK") continue;
-                const d = hyp(p.x - x, p.y - y);
-                if (d < 5) {
-                    const n = norm(p.x - x || 1, p.y - y);
-                    p.x = x + n.x * 5;
-                    p.y = y + n.y * 5;
-                }
+            taker.face = Math.atan2(inward.y, inward.x);
+            taker.aim = inward;
+            for (const p of st.players) p.spot = null;
+            if (label === "Corner") lineUpCorner(st, team, y, taker);
+            else {
+                // Two teammates come short for the throw.
+                const ad = attackDir(team);
+                const near = pool.filter((p) => p !== taker).sort((a, c) => hyp(a.x - x, a.y - y) - hyp(c.x - x, c.y - y));
+                const spots = [
+                    { x: x - ad * 5, y: y + inward.y * 5 },
+                    { x: x + ad * 8, y: y + inward.y * 4 },
+                ];
+                near.slice(0, 2).forEach((p, i) => (p.spot = { x: clamp(spots[i].x, 3, L - 3), y: spots[i].y }));
             }
             if (team === 0) setUser(st, taker);
         };
+    }
+
+    // Corner routine: attackers into the box, defenders marking the six-yard line.
+    function lineUpCorner(s, team, y, taker) {
+        const ad = attackDir(team);
+        const gx = goalX(1 - team);
+        const side = y < W / 2 ? -1 : 1;
+        const attack = [
+            { x: gx - ad * 7, y: W / 2 + side * 0.5 },
+            { x: gx - ad * 4.5, y: W / 2 + side * 2 },
+            { x: gx - ad * 9.5, y: W / 2 - side * 3 },
+        ];
+        const mark = [
+            { x: gx - ad * 4.5, y: W / 2 + side * 1 },
+            { x: gx - ad * 6, y: W / 2 - side * 1.5 },
+        ];
+        const put = (p, at) => {
+            p.x = at.x;
+            p.y = at.y;
+            p.vx = p.vy = 0;
+            p.spot = at;
+        };
+        const mates = s.players.filter((p) => p.team === team && p.role !== "GK" && p !== taker);
+        // The deepest player stays back.
+        mates.sort((a, c) => (a.role === "DF" ? 1 : 0) - (c.role === "DF" ? 1 : 0));
+        mates.forEach((p, i) => put(p, attack[i] || { x: L / 2 + ad * 6, y: W / 2 }));
+        s.players.filter((p) => p.team !== team && p.role !== "GK").forEach((p, i) => put(p, mark[i % mark.length]));
+    }
+
+    // While a set piece waits: the ball is dead, the taker is still and the
+    // other side keeps its distance.
+    function holdSetPiece(s) {
+        const sp = s.setPiece;
+        const b = s.ball;
+        b.x = sp.x;
+        b.y = sp.y;
+        b.z = 0;
+        b.vx = b.vy = b.vz = 0;
+        b.px = b.x;
+        b.py = b.y;
+        const room = sp.kind === "Corner" ? 8 : 3;
+        for (const p of s.players) {
+            if (p.team === sp.team) continue;
+            const d = hyp(p.x - sp.x, p.y - sp.y);
+            if (d < room) {
+                const n = d > 0.01 ? norm(p.x - sp.x, p.y - sp.y) : sp.inward;
+                p.x = sp.x + n.x * room;
+                p.y = sp.y + n.y * room;
+            }
+        }
     }
 
     const api = { create, step, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, TEAMS, speedFor, rollDist };
