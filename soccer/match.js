@@ -27,7 +27,7 @@
         KeyJ: "pass", Space: "pass",
         KeyK: "shoot", KeyX: "shoot",
         KeyL: "lob", KeyC: "lob",
-        KeyQ: "swap", Tab: "swap",
+        KeyQ: "swap", KeyH: "swap", Tab: "swap",
         KeyE: "tackle", KeyZ: "tackle",
     };
 

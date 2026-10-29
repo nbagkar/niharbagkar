@@ -313,7 +313,8 @@
 
     function swap(s) {
         const b = s.ball;
-        if (s.setPiece) return;
+        // On the ball (or taking a set piece) you keep the player you have.
+        if (s.setPiece || s.carrier === s.user) return;
         let best = null;
         let bestD = Infinity;
         for (const p of s.players) {
