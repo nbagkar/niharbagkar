@@ -552,8 +552,14 @@
             if (q) {
                 let d = hyp(q.x - p.x, q.y - p.y);
                 const lead = Math.min(1.2, d / 14);
-                const tx = q.x + q.vx * lead;
-                const ty = q.y + q.vy * lead;
+                let tx = clamp(q.x + q.vx * lead, 1.5, L - 1.5);
+                let ty = clamp(q.y + q.vy * lead, 1, W - 1);
+                // A teammate running back towards our own goal gets it to feet:
+                // leading him there would play it into our own net.
+                if ((tx - b.x) * ad < 0 && (tx - goalX(p.team)) * ad < 14) {
+                    tx = q.x;
+                    ty = q.y;
+                }
                 d = hyp(tx - b.x, ty - b.y);
                 const speed = speedFor(d, 4.5 + power * 3);
                 vx = ((tx - b.x) / d) * speed;
@@ -896,6 +902,8 @@
             const dy = q.y - p.y;
             const d = hyp(dx, dy);
             if (d < 4 || d > 30 || dx * ad < -4) continue;
+            // Never back to someone deep in our own box: one missed touch is a goal.
+            if ((q.x - goalX(p.team)) * ad < 7 && Math.abs(q.y - W / 2) < BOX_W / 2) continue;
             const open = Math.min(...opps.map((o) => hyp(o.x - q.x, o.y - q.y)));
             if (open < 2.5) continue;
             // Anyone standing in the lane?
@@ -1050,8 +1058,10 @@
                 // to the edge of the box where the shooter is waiting.
                 const ad = attackDir(p.team);
                 const side = Math.abs(b.y - p.y) > 0.2 ? Math.sign(b.y - p.y) : Math.sign(b.vy) || 1;
-                b.vx = ad * (2 + s.rand() * 3);
-                b.vy = side * (8 + s.rand() * 4);
+                // From a tight angle by the byline, it goes behind for a corner.
+                const tight = Math.abs(b.fromX - goalX(p.team)) < 6;
+                b.vx = tight ? -ad * (3 + s.rand() * 2) : ad * (2 + s.rand() * 3);
+                b.vy = side * (tight ? 4 + s.rand() * 3 : 8 + s.rand() * 4);
                 b.vz = 1 + s.rand() * 2;
                 b.last = p.id;
                 b.lastAt = s.t;
