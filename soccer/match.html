@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" class="soccer-match">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Five-a-side · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Five-a-side: a top-down football game for the keyboard. Dribble, pass, and shoot past the keeper.">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wdth,wght@0,50..125,400..900;1,50..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="soccer.css">
+    <link rel="stylesheet" href="match.css">
+</head>
+<body>
+    <header class="bar">
+        <a class="mark" href="./">NB <b>Soccer</b></a>
+        <nav class="bar-links">
+            <a href="./">Soccer Hub</a>
+            <a href="https://www.niharbagkar.com/">Portfolio</a>
+        </nav>
+    </header>
+
+    <main class="match-page">
+        <div class="match-head wrap">
+            <h1>Five-a-side</h1>
+            <p class="match-tag">Prototype &middot; five against five</p>
+        </div>
+
+        <div class="match-stage wrap" id="match">
+            <canvas class="match-canvas" tabindex="0" aria-label="Top-down football game. Move with WASD or the arrow keys; pass, shoot and lob with J, K and L or Space, X and C."></canvas>
+
+            <div class="match-overlay" data-overlay>
+                <div class="overlay-card">
+                    <p class="kicker" data-overlay-kicker>Five against five</p>
+                    <h2 data-overlay-title>NB FC vs Rivals</h2>
+                    <div class="match-stats" data-stats hidden></div>
+                    <div class="setup" data-setup>
+                        <div class="seg" role="radiogroup" aria-label="Rivals" data-level-seg>
+                            <span class="seg-label">Rivals</span>
+                            <button type="button" role="radio" data-level="easy">Easy</button>
+                            <button type="button" role="radio" data-level="normal">Normal</button>
+                            <button type="button" role="radio" data-level="hard">Hard</button>
+                        </div>
+                        <div class="seg" role="radiogroup" aria-label="Half length" data-half-seg>
+                            <span class="seg-label">Halves</span>
+                            <button type="button" role="radio" data-half="120">2 min</button>
+                            <button type="button" role="radio" data-half="180">3 min</button>
+                            <button type="button" role="radio" data-half="300">5 min</button>
+                        </div>
+                    </div>
+                    <div class="room" data-room>
+                        <p class="room-row" data-room-start>
+                            <button class="room-btn" type="button" data-room-create>Play a friend online</button>
+                            <span class="room-or">or join a room</span>
+                            <input class="room-code" data-room-code maxlength="4" placeholder="CODE" aria-label="Room code" autocomplete="off" spellcheck="false">
+                            <button class="room-btn" type="button" data-room-join>Join</button>
+                        </p>
+                        <p class="room-status" data-room-status aria-live="polite"></p>
+                        <p class="room-row" data-room-link hidden>
+                            <input class="room-url" readonly aria-label="Room link">
+                            <button class="room-btn" type="button" data-room-copy>Copy link</button>
+                        </p>
+                        <button class="room-btn room-leave" type="button" data-room-leave hidden>Leave room</button>
+                    </div>
+                    <div class="keys" data-keys>
+                        <div class="key-col">
+                            <p class="key-head">WASD hands</p>
+                            <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</p>
+                            <p><kbd>J</kbd> Pass</p>
+                            <p><kbd>K</kbd> Shoot (hold)</p>
+                            <p><kbd>L</kbd> Lob / through ball</p>
+                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Q</kbd> or <kbd>H</kbd> Switch &middot; <kbd>E</kbd> Tackle</p>
+                        </div>
+                        <div class="key-col">
+                            <p class="key-head">Arrow-key hands</p>
+                            <p><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> Move</p>
+                            <p><kbd>Space</kbd> Pass</p>
+                            <p><kbd>X</kbd> Shoot (hold)</p>
+                            <p><kbd>C</kbd> Lob / through ball</p>
+                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Tab</kbd> Switch &middot; <kbd>Z</kbd> Tackle</p>
+                        </div>
+                    </div>
+                    <p class="overlay-tip" data-tip>Hold shoot longer for power; past the red line it flies over. Point the stick at a corner to aim.</p>
+                    <button class="play" type="button" data-play>Play <span>Enter</span></button>
+                    <p class="touch-note" data-touch hidden>This one is built for a laptop keyboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="match-foot wrap"><kbd>Esc</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound <span data-sound-state>on</span></p>
+    </main>
+
+    <script src="/online.js"></script>
+    <script src="match-sim.js"></script>
+    <script src="match.js"></script>
+</body>
+</html>

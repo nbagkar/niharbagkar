@@ -1,0 +1,245 @@
+/* Five-a-side: the game page. The pitch is drawn on the canvas; this file
+   only lays out the stage and the pause card over it. */
+
+.match-page { padding-bottom: 1.5rem; }
+
+.match-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1.1rem 0 0.75rem;
+}
+
+.match-head h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0; }
+
+.match-tag {
+    margin: 0;
+    color: var(--dim);
+    font-weight: 600;
+    font-stretch: 85%;
+    text-transform: uppercase;
+}
+
+.match-stage {
+    position: relative;
+    /* 16:9, but never taller than the window under the top bar. */
+    width: min(72rem, 100% - 2rem, (100dvh - 11rem) * 16 / 9);
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--line);
+    background: #0b2e1c;
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+.match-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+.match-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(4, 6, 12, 0.62);
+    backdrop-filter: blur(3px);
+}
+
+.match-overlay[hidden] { display: none; }
+
+.overlay-card {
+    width: min(36rem, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 1.3rem 1.5rem 1.4rem;
+    background: rgba(10, 12, 22, 0.88);
+    border: 1px solid var(--line);
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+.overlay-card h2 { font-size: 1.5rem; margin: 0.1rem 0 0.9rem; }
+
+.keys {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 1.25rem;
+}
+
+.key-col p { margin: 0 0 0.3rem; font-size: 0.95rem; }
+
+.key-head {
+    color: var(--aqua);
+    font-weight: 700;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    font-size: 0.8rem !important;
+}
+
+kbd {
+    display: inline-block;
+    min-width: 1.5em;
+    margin-right: 0.2em;
+    padding: 0 0.35em;
+    font-family: var(--font);
+    font-size: 0.8em;
+    font-weight: 700;
+    text-align: center;
+    color: var(--ink);
+    background: var(--glass-hi);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+}
+
+.overlay-tip {
+    margin: 0.7rem 0 1rem;
+    font-size: 0.9rem;
+    color: var(--dim);
+}
+
+.play {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.3rem;
+    font-family: var(--font);
+    font-size: 1.15rem;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 75%;
+    text-transform: uppercase;
+    color: #000;
+    background: var(--aqua);
+    border: 0;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 0.6rem) 0, 100% 0.6rem, 100% 100%, 0.6rem 100%, 0 calc(100% - 0.6rem));
+}
+
+.play span { font-size: 0.75rem; font-style: normal; opacity: 0.6; }
+.play:hover, .play:focus-visible { background: #fff; outline: none; }
+
+.setup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 0 0 0.9rem;
+}
+
+.seg { display: flex; align-items: center; gap: 0.25rem; }
+
+.seg-label {
+    margin-right: 0.3rem;
+    color: var(--aqua);
+    font-weight: 700;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.seg button {
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--glass-hi);
+    border: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.seg button[aria-checked="true"] { color: #000; background: var(--aqua); border-color: var(--aqua); }
+.seg button:hover:not([aria-checked="true"]) { border-color: var(--aqua); }
+
+/* Half-time and full-time numbers, home on the left and away on the right. */
+.match-stats { margin: 0 0 1rem; }
+.match-stats[hidden], .setup[hidden], .keys[hidden], .overlay-tip[hidden], .seg[hidden], .room[hidden], .room-row[hidden], .room-btn[hidden], .play[hidden] { display: none; }
+
+/* Friend rooms. */
+.room { margin: 0 0 0.9rem; }
+
+.room-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.4rem;
+}
+
+.room-or { color: var(--dim); font-size: 0.85rem; }
+
+.room-btn {
+    padding: 0.2rem 0.7rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--glass-hi);
+    border: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.room-btn:hover, .room-btn:focus-visible { border-color: var(--aqua); outline: none; }
+
+.room-code, .room-url {
+    padding: 0.2rem 0.5rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
+}
+
+.room-code { width: 5rem; text-transform: uppercase; letter-spacing: 0.15em; }
+.room-url { flex: 1; min-width: 12rem; }
+.room-code:focus, .room-url:focus { border-color: var(--aqua); outline: none; }
+
+.room-status { margin: 0 0 0.4rem; font-size: 0.92rem; }
+.room-status:empty { display: none; }
+.room-status b { color: var(--aqua); letter-spacing: 0.12em; }
+
+.stat-row {
+    display: grid;
+    grid-template-columns: 3rem 1fr 3rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.1rem 0;
+    font-size: 0.95rem;
+}
+
+.stat-row b { font-size: 1.05rem; font-weight: 800; }
+.stat-row b:last-child { text-align: right; }
+
+.stat-mid { text-align: center; }
+
+.stat-name {
+    display: block;
+    color: var(--dim);
+    font-weight: 600;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+}
+
+.stat-bar { display: flex; height: 4px; margin-top: 0.2rem; background: var(--glass-hi); }
+.stat-bar i:first-child { background: var(--aqua); }
+.stat-bar i:last-child { margin-left: auto; background: var(--pink); }
+
+.stat-scorers { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--dim); }
+
+.touch-note { margin: 0.8rem 0 0; color: var(--pink); font-weight: 700; }
+
+.match-foot {
+    margin: 0.6rem auto 0;
+    width: min(72rem, 100% - 2rem, (100dvh - 11rem) * 16 / 9);
+    font-size: 0.85rem;
+    color: var(--dim);
+}
+
+@media (max-width: 760px) {
+    .keys { grid-template-columns: 1fr; }
+    .key-col + .key-col { display: none; }
+    .match-stage, .match-foot { width: calc(100% - 2rem); }
+}

@@ -1,5 +1,5 @@
 (function () {
-    // Kick off friend rooms: a thin layer over Supabase Realtime broadcast and
+    // Friend rooms for Kick off and Five-a-side: a thin layer over Supabase Realtime broadcast and
     // presence. Nothing touches the database; the library is loaded only when
     // someone opens or joins a room.
     const PROJECT_URL = "https://cnqxfazzvpmcvtttkjed.supabase.co";
@@ -49,8 +49,9 @@
 
     // Join room `code` as "host" or "guest". handlers.message(payload) gets
     // every broadcast from the other player; handlers.peers(list) gets the
-    // other people in the room whenever that changes.
-    async function open(code, role, handlers) {
+    // other people in the room whenever that changes. `game` keeps each
+    // game's rooms apart.
+    async function open(code, role, handlers, game) {
         await loadLibrary();
         if (!client) {
             client = window.supabase.createClient(PROJECT_URL, PUBLISHABLE_KEY, {
@@ -58,7 +59,7 @@
             });
         }
         const id = `${role}-${newCode()}${Date.now() % 10000}`;
-        const channel = client.channel(`kickoff:${code}`, {
+        const channel = client.channel(`${game || "kickoff"}:${code}`, {
             config: { broadcast: { self: false }, presence: { key: id } },
         });
         channel.on("broadcast", { event: "msg" }, ({ payload }) => handlers.message(payload));
