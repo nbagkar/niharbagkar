@@ -154,7 +154,51 @@ kbd {
 
 /* Half-time and full-time numbers, home on the left and away on the right. */
 .match-stats { margin: 0 0 1rem; }
-.match-stats[hidden], .setup[hidden], .keys[hidden], .overlay-tip[hidden] { display: none; }
+.match-stats[hidden], .setup[hidden], .keys[hidden], .overlay-tip[hidden], .seg[hidden], .room[hidden], .room-row[hidden], .room-btn[hidden], .play[hidden] { display: none; }
+
+/* Friend rooms. */
+.room { margin: 0 0 0.9rem; }
+
+.room-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.4rem;
+}
+
+.room-or { color: var(--dim); font-size: 0.85rem; }
+
+.room-btn {
+    padding: 0.2rem 0.7rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--glass-hi);
+    border: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.room-btn:hover, .room-btn:focus-visible { border-color: var(--aqua); outline: none; }
+
+.room-code, .room-url {
+    padding: 0.2rem 0.5rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
+}
+
+.room-code { width: 5rem; text-transform: uppercase; letter-spacing: 0.15em; }
+.room-url { flex: 1; min-width: 12rem; }
+.room-code:focus, .room-url:focus { border-color: var(--aqua); outline: none; }
+
+.room-status { margin: 0 0 0.4rem; font-size: 0.92rem; }
+.room-status:empty { display: none; }
+.room-status b { color: var(--aqua); letter-spacing: 0.12em; }
 
 .stat-row {
     display: grid;

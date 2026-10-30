@@ -40,7 +40,18 @@
         /* Private mode: defaults. */
     }
 
-    const newMatch = () => Sim.create((Math.random() * 1e9) | 0, setup);
+    // Friend room state; see "Friend rooms" below.
+    const net = {
+        link: null, role: null, peer: false, joined: 0, full: false,
+        queue: [], guestIn: {}, lastIn: -1, inSeq: 0, inAt: 0,
+        snaps: [], snapAt: 0, events: [], rtt: 150, pingAt: 0, hostMode: "start",
+    };
+    const versus = () => !!(net.link && net.peer);
+    // The side you play: NB FC, or the Rivals when you joined a friend's room.
+    const myTeam = () => (net.role === "guest" ? 1 : 0);
+    const meId = () => (s.users[myTeam()] >= 0 ? s.users[myTeam()] : s.users[0]);
+
+    const newMatch = () => Sim.create((Math.random() * 1e9) | 0, Object.assign({}, setup, { versus: versus() }));
     let s = newMatch();
     let held = {};
     let playing = false;
@@ -54,7 +65,13 @@
     /* ---------- Input ---------- */
 
     window.addEventListener("keydown", (e) => {
+        // Typing a room code.
+        if (e.target instanceof HTMLInputElement) {
+            if (e.code === "Enter" && e.target.matches("[data-room-code]")) joinRoom();
+            return;
+        }
         if (e.code === "KeyM") return toggleSound();
+        if (net.role === "guest") return guestKey(e, true);
         if (e.code === "Enter" && !playing) {
             e.preventDefault();
             if (!overlay.hidden) play();
@@ -62,7 +79,7 @@
         }
         if (!playing) return;
         if (e.code === "Escape" || e.code === "KeyP") return pause();
-        if (e.code === "KeyR") return restart();
+        if (e.code === "KeyR" && !versus()) return restart();
         const act = KEYS[e.code];
         if (!act) return;
         e.preventDefault();
@@ -70,6 +87,7 @@
     });
 
     window.addEventListener("keyup", (e) => {
+        if (net.role === "guest") return guestKey(e, false);
         const act = KEYS[e.code];
         if (act) held[act] = false;
     });
@@ -77,7 +95,8 @@
     // A key released while the tab is in the background would stay held.
     window.addEventListener("blur", () => {
         held = {};
-        if (playing) pause();
+        if (net.role === "guest") sendInput();
+        else if (playing) pause();
     });
 
     playBtn.addEventListener("click", play);
@@ -111,7 +130,10 @@
             s = newMatch();
             matchId = Date.now();
         }
-        if (mode !== "pause") whistle(mode === "halftime" || mode === "full" || mode === "start" ? 1 : 0);
+        if (mode !== "pause") {
+            whistle(1);
+            if (versus()) net.events.push({ type: "kickoff" });
+        }
         mode = "play";
         playing = true;
         held = {};
@@ -145,10 +167,11 @@
         overlay.querySelector("[data-overlay-title]").textContent = mode === "start" ? `${TEAMS[0].name} vs ${TEAMS[1].name}` : line;
         root.querySelector("[data-stats]").hidden = !end;
         if (end) root.querySelector("[data-stats]").innerHTML = statsHtml();
-        root.querySelector("[data-setup]").hidden = !(mode === "start" || mode === "full");
+        root.querySelector("[data-setup]").hidden = !(mode === "start" || mode === "full") || net.role === "guest";
         root.querySelector("[data-keys]").hidden = end;
         root.querySelector("[data-tip]").hidden = end;
-        playBtn.firstChild.textContent = { start: "Play ", pause: "Resume ", halftime: "Second half ", full: "Play again " }[mode];
+        playBtn.firstChild.textContent = { start: versus() ? "Kick off " : "Play ", pause: "Resume ", halftime: "Second half ", full: "Play again " }[mode];
+        renderRoom();
         overlay.hidden = false;
     }
 
@@ -190,14 +213,15 @@
 
     /* ---------- Loop ---------- */
 
-    function frame(now) {
+    function frame(now, byHand) {
         const dt = Math.min(0.1, (now - last) / 1000);
         last = now;
         if (playing) {
             acc += dt;
             while (acc >= Sim.DT && s.phase === "play") {
-                Sim.step(s, held);
+                Sim.step(s, held, versus() ? nextGuestInput() : undefined);
                 react(s.events);
+                if (net.link) noteEvents(s.events);
                 if (s.log.length !== logged && performance.now() - savedAt > 3000) saveLog();
                 acc -= Sim.DT;
             }
@@ -217,8 +241,10 @@
             acc = 0;
             if (crowd) crowd.gain.value = 0;
         }
+        if (net.role === "guest") guestFrame(now);
+        else if (versus() && now - net.snapAt > (playing ? 50 : 250)) sendSnap(now);
         draw(dt);
-        requestAnimationFrame(frame);
+        if (!byHand) requestAnimationFrame(frame);
     }
 
     /* ---------- Drawing ---------- */
@@ -286,7 +312,7 @@
 
     // When the player you control is off-screen, an arrow on the edge points to them.
     function drawOffscreen() {
-        const p = s.players[s.user];
+        const p = s.players[meId()];
         const x = X(p.x);
         const y = Y(p.y);
         const m = 0.9 * sc;
@@ -297,7 +323,7 @@
         ctx.save();
         ctx.translate(ex, ey);
         ctx.rotate(a);
-        ctx.fillStyle = TEAMS[0].kit;
+        ctx.fillStyle = TEAMS[myTeam()].kit;
         ctx.beginPath();
         ctx.moveTo(0.45 * sc, 0);
         ctx.lineTo(-0.3 * sc, -0.35 * sc);
@@ -393,13 +419,21 @@
         const team = TEAMS[p.team];
         const x = X(p.x);
         const y = Y(p.y);
-        const user = p.id === s.user;
+        const user = p.id === meId();
+        // Your friend's player, in a room.
+        const friend = !user && s.users[p.team] === p.id;
         const sp = Math.hypot(p.vx, p.vy);
         legs[p.id] = ((legs[p.id] || 0) + sp * dt * 2.4) % (Math.PI * 2);
 
         if (user) {
             ctx.strokeStyle = "#fff";
             ctx.lineWidth = Math.max(2, 0.08 * sc);
+            ctx.beginPath();
+            ctx.arc(x, y, 0.85 * BIG * sc, 0, Math.PI * 2);
+            ctx.stroke();
+        } else if (friend) {
+            ctx.strokeStyle = team.kit;
+            ctx.lineWidth = Math.max(1.5, 0.06 * sc);
             ctx.beginPath();
             ctx.arc(x, y, 0.85 * BIG * sc, 0, Math.PI * 2);
             ctx.stroke();
@@ -449,7 +483,7 @@
     function drawMarker(p, x, y) {
         // Arrow above the head, stamina bar under it.
         const top = y - 1.2 * BIG * sc;
-        ctx.fillStyle = TEAMS[0].kit;
+        ctx.fillStyle = TEAMS[myTeam()].kit;
         ctx.beginPath();
         ctx.moveTo(x - 0.3 * sc, top - 0.35 * sc);
         ctx.lineTo(x + 0.3 * sc, top - 0.35 * sc);
@@ -500,7 +534,7 @@
     }
 
     function drawCharge() {
-        const p = s.players[s.user];
+        const p = s.players[meId()];
         if (!p.chargeKind) return;
         const x = X(p.x);
         const y = Y(p.y) - 2.6 * BIG * sc;
@@ -570,7 +604,7 @@
         for (const p of s.players) {
             ctx.fillStyle = TEAMS[p.team].kit;
             ctx.beginPath();
-            ctx.arc(rx + p.x * k, ry + p.y * k, (p.id === s.user ? 3.2 : 2.2) * u, 0, Math.PI * 2);
+            ctx.arc(rx + p.x * k, ry + p.y * k, (p.id === meId() ? 3.2 : 2.2) * u, 0, Math.PI * 2);
             ctx.fill();
         }
         ctx.fillStyle = "#fff";
@@ -582,7 +616,7 @@
     // Your throw-in or corner: a dotted aim line and the keys to play it.
     function drawSetPiece() {
         const sp = s.setPiece;
-        if (!sp || sp.team !== 0) return;
+        if (!sp || sp.team !== myTeam()) return;
         const p = s.players[sp.taker];
         const a = p.aim || sp.inward;
         ctx.strokeStyle = "rgba(255,255,255,0.7)";
@@ -756,6 +790,8 @@
                 burst(e.team);
             } else if (e.type === "out") {
                 whistle(0);
+            } else if (e.type === "kickoff") {
+                whistle(1);
             } else if (e.type === "whistle") {
                 whistle(3);
                 roar = Math.max(roar, 0.6);
@@ -804,6 +840,311 @@
         confetti = confetti.filter((p) => p.life > 0);
     }
 
+    /* ---------- Friend rooms ----------
+       One laptop hosts: it runs the match (its person plays NB FC) and sends
+       a snapshot twenty times a second. The friend's laptop plays the Rivals:
+       it sends its keys and draws the snapshots a tenth of a second behind,
+       smoothed, with its own player pushed ahead by half the round trip so it
+       answers the keys sooner. The rooms are online.js, shared with Kick off. */
+
+    const SNAP_DELAY = 100;
+    const SOUND_EVENTS = new Set(["kick", "save", "post", "tackle", "goal", "out", "whistle", "kickoff"]);
+    const room = root.querySelector("[data-room]");
+    const roomStatus = root.querySelector("[data-room-status]");
+    const r2 = (v) => Math.round(v * 100) / 100;
+
+    room.querySelector("[data-room-create]").addEventListener("click", () => openRoom("host", window.KickoffNet.newCode()));
+    room.querySelector("[data-room-join]").addEventListener("click", joinRoom);
+    room.querySelector("[data-room-leave]").addEventListener("click", () => leaveRoom(""));
+    room.querySelector("[data-room-copy]").addEventListener("click", () => {
+        const input = room.querySelector(".room-url");
+        input.select();
+        if (navigator.clipboard) navigator.clipboard.writeText(input.value).catch(() => {});
+        room.querySelector("[data-room-copy]").textContent = "Copied";
+    });
+
+    function joinRoom() {
+        const code = window.KickoffNet.cleanCode(room.querySelector("[data-room-code]").value);
+        if (code.length !== 4) {
+            roomStatus.textContent = "A room code is four letters.";
+            return;
+        }
+        openRoom("guest", code);
+    }
+
+    function roomLink(code) {
+        return `${location.origin}${location.pathname}?room=${code}`;
+    }
+
+    async function openRoom(role, code) {
+        if (net.link || !window.KickoffNet) return;
+        roomStatus.textContent = role === "host" ? "Making a room…" : `Joining room ${code}…`;
+        net.role = role;
+        net.peer = false;
+        net.full = false;
+        net.joined = Date.now();
+        try {
+            net.link = await window.KickoffNet.open(code, role, { message: onMessage, peers: onPeers }, "five");
+        } catch (error) {
+            net.role = null;
+            roomStatus.textContent = error.message;
+            return;
+        }
+        if (net.full) return leaveRoom("That room already has two people in it.");
+        if (role === "guest") {
+            s = newMatch();
+            // Nobody hosting it: say so rather than wait forever.
+            window.setTimeout(() => {
+                if (net.link && net.role === "guest" && !net.peer) leaveRoom(`Nobody is in room ${code}. Check the code with your friend.`);
+            }, 8000);
+        }
+        show(mode);
+    }
+
+    function leaveRoom(note) {
+        if (net.link) net.link.close();
+        Object.assign(net, { link: null, role: null, peer: false, queue: [], snaps: [], events: [], lastIn: -1, guestIn: {}, hostMode: "start" });
+        if (location.search.includes("room=")) history.replaceState(null, "", location.pathname);
+        playing = false;
+        held = {};
+        breakAt = 0;
+        s = newMatch();
+        matchId = Date.now();
+        show("start");
+        roomStatus.textContent = note;
+    }
+
+    function onPeers(list) {
+        net.lastPeers = list;
+        // A third person in the room: the latest arrival leaves.
+        const earlier = list.filter((peer) => (peer.joined || 0) < net.joined);
+        if (earlier.some((peer) => peer.role === net.role) || earlier.length > 1) {
+            if (!net.link) net.full = true;
+            else leaveRoom("That room already has two people in it.");
+            return;
+        }
+        const had = net.peer;
+        net.peer = list.some((peer) => peer.role === (net.role === "host" ? "guest" : "host"));
+        if (!net.link || had === net.peer) return;
+        if (net.role === "host") {
+            if (net.peer) {
+                // A fresh match with your friend on the Rivals.
+                playing = false;
+                breakAt = 0;
+                s = newMatch();
+                matchId = Date.now();
+                show("start");
+            } else if (mode === "start") {
+                s = newMatch();
+                show("start");
+            } else {
+                // They left mid-match: the AI takes their side, and you can play on.
+                s.users[1] = -1;
+                s.versus = false;
+                if (playing) pause();
+                else show(mode);
+                roomStatus.textContent = "Your friend left. The AI has the Rivals now.";
+            }
+        } else if (had) {
+            leaveRoom("The host left the room.");
+        }
+    }
+
+    function onMessage(m) {
+        if (!m || typeof m !== "object") return;
+        if (net.role === "host") {
+            if (m.t === "in" && Number(m.n) > net.lastIn) {
+                net.lastIn = Number(m.n);
+                const k = {};
+                for (const act of Object.values(KEYS)) if (m.k && m.k[act]) k[act] = true;
+                net.queue.push(k);
+                if (net.queue.length > 12) net.queue.shift();
+            } else if (m.t === "ping") {
+                net.link.send({ t: "pong", c: m.c });
+            } else if (m.t === "pause" && playing) {
+                pause();
+            }
+        } else if (m.t === "snap") {
+            net.snaps.push({ at: performance.now(), d: m });
+            if (net.snaps.length > 8) net.snaps.shift();
+            if (Array.isArray(m.ev)) react(m.ev);
+        } else if (m.t === "pong") {
+            const rtt = performance.now() - Number(m.c);
+            if (rtt > 0 && rtt < 2000) net.rtt = net.rtt * 0.7 + rtt * 0.3;
+        }
+    }
+
+    // Host: one queued key state from the friend per step, so a quick tap
+    // between two snapshots still counts as a press and a release.
+    function nextGuestInput() {
+        if (net.queue.length) net.guestIn = net.queue.shift();
+        return net.guestIn;
+    }
+
+    function noteEvents(events) {
+        for (const e of events) {
+            if (SOUND_EVENTS.has(e.type)) net.events.push({ type: e.type, kind: e.kind, won: e.won, team: e.team });
+        }
+        if (net.events.length > 30) net.events.splice(0, net.events.length - 30);
+    }
+
+    function sendSnap(now) {
+        net.snapAt = now;
+        const b = s.ball;
+        const sp = s.setPiece;
+        const taker = sp ? s.players[sp.taker] : null;
+        const aim = taker ? taker.aim || sp.inward : null;
+        const msg = {
+            t: "snap",
+            m: mode,
+            ph: s.phase,
+            sc: s.score,
+            ck: r2(s.clock),
+            h: s.half,
+            hl: s.halfLen,
+            p: s.players.map((p) => [r2(p.x), r2(p.y), r2(p.face), r2(p.vx), r2(p.vy)]),
+            b: [r2(b.x), r2(b.y), r2(b.z), r2(b.vx), r2(b.vy)],
+            u: s.users,
+            c: s.carrier,
+            pt: s.pass ? s.pass.to : -1,
+            hu: s.users.map((id) => (id >= 0 ? [s.players[id].chargeKind, r2(s.players[id].charge), r2(s.players[id].stamina)] : null)),
+            fl: s.flash ? [s.flash.text, s.flash.team] : null,
+            sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
+            ev: net.events.splice(0),
+        };
+        if (mode === "halftime" || mode === "full") {
+            msg.stats = s.stats;
+            msg.goals = s.log.filter((e) => e.type === "goal").map((e) => ({ type: "goal", team: e.team, scorer: e.scorer, min: e.min }));
+        }
+        net.link.send(msg);
+    }
+
+    // Guest: keys go to the host as they change.
+    function guestKey(e, down) {
+        if (down && (e.code === "Escape" || e.code === "KeyP")) {
+            if (net.hostMode === "play") net.link.send({ t: "pause" });
+            return;
+        }
+        const act = KEYS[e.code];
+        if (!act) return;
+        e.preventDefault();
+        if (!!held[act] === down) return;
+        held[act] = down;
+        sendInput();
+    }
+
+    function sendInput() {
+        if (!net.link) return;
+        net.inAt = performance.now();
+        net.link.send({ t: "in", n: ++net.inSeq, k: held });
+    }
+
+    function guestFrame(now) {
+        if (now - net.pingAt > 1000) {
+            net.pingAt = now;
+            net.link.send({ t: "ping", c: now });
+        }
+        // Resend the keys now and then, in case a message went missing.
+        if (now - net.inAt > 400) sendInput();
+        const snaps = net.snaps;
+        if (!snaps.length) return;
+        const last = snaps[snaps.length - 1];
+        const d = last.d;
+
+        // Everyone else: between the two snapshots either side of a moment
+        // slightly in the past.
+        const at = now - SNAP_DELAY;
+        let a = snaps[0];
+        let b = snaps[0];
+        for (let i = 0; i < snaps.length - 1; i++) {
+            if (snaps[i].at <= at && snaps[i + 1].at > at) {
+                a = snaps[i];
+                b = snaps[i + 1];
+                break;
+            }
+            if (snaps[i + 1].at <= at) a = b = snaps[i + 1];
+        }
+        const k = b.at > a.at ? Math.min(1, Math.max(0, (at - a.at) / (b.at - a.at))) : 0;
+        const mix = (x, y) => x + (y - x) * k;
+        const angle = (x, y) => x + Math.atan2(Math.sin(y - x), Math.cos(y - x)) * k;
+        s.players.forEach((p, i) => {
+            const pa = a.d.p[i];
+            const pb = b.d.p[i];
+            Object.assign(p, { x: mix(pa[0], pb[0]), y: mix(pa[1], pb[1]), face: angle(pa[2], pb[2]), vx: pb[3], vy: pb[4] });
+        });
+        const ball = s.ball;
+        Object.assign(ball, { x: mix(a.d.b[0], b.d.b[0]), y: mix(a.d.b[1], b.d.b[1]), z: mix(a.d.b[2], b.d.b[2]), vx: b.d.b[3], vy: b.d.b[4] });
+
+        // Your own player, and the ball while you have it: the newest
+        // snapshot, carried on by its speed for the time it took to arrive.
+        const me = d.u[1];
+        if (me >= 0) {
+            const lead = Math.min(0.25, (now - last.at) / 1000 + net.rtt / 2000);
+            const pm = d.p[me];
+            Object.assign(s.players[me], { x: pm[0] + pm[3] * lead, y: pm[1] + pm[4] * lead, face: pm[2], vx: pm[3], vy: pm[4] });
+            if (d.c === me) Object.assign(ball, { x: d.b[0] + d.b[3] * lead, y: d.b[1] + d.b[4] * lead, z: d.b[2] });
+        }
+
+        s.score = d.sc;
+        s.clock = d.ck;
+        s.half = d.h;
+        s.halfLen = d.hl;
+        s.phase = d.ph;
+        s.users = d.u;
+        s.user = d.u[0];
+        s.carrier = d.c;
+        s.pass = d.pt >= 0 ? { to: d.pt } : null;
+        s.flash = d.fl ? { text: d.fl[0], team: d.fl[1] } : null;
+        d.u.forEach((id, i) => {
+            if (id >= 0 && d.hu[i]) Object.assign(s.players[id], { chargeKind: d.hu[i][0], charge: d.hu[i][1], stamina: d.hu[i][2] });
+        });
+        if (d.sp) {
+            const [kind, team, x, y, taker, ax, ay, ix, iy] = d.sp;
+            s.setPiece = { kind, team, x, y, taker, inward: { x: ix, y: iy } };
+            s.players[taker].aim = { x: ax, y: ay };
+        } else s.setPiece = null;
+        if (d.stats) s.stats = d.stats;
+        if (d.goals) s.log = d.goals;
+
+        // Follow the host's breaks: kick-off card, pause, half time, full time.
+        if (d.m !== net.hostMode) {
+            net.hostMode = d.m;
+            if (d.m === "play") {
+                mode = "play";
+                overlay.hidden = true;
+                canvas.focus({ preventScroll: true });
+            } else show(d.m);
+        }
+    }
+
+    // The room's status line and buttons, for whichever card is showing.
+    function renderRoom() {
+        const guest = net.role === "guest";
+        const host = net.role === "host";
+        room.hidden = !net.link && !(mode === "start" || mode === "full");
+        room.querySelector("[data-room-start]").hidden = !!net.link;
+        room.querySelector("[data-room-leave]").hidden = !net.link;
+        room.querySelector("[data-room-link]").hidden = !(host && !net.peer);
+        root.querySelector("[data-level-seg]").hidden = !!net.link;
+        root.querySelector("[data-half-seg]").hidden = guest;
+        playBtn.hidden = guest || (host && !net.peer);
+        if (!net.link) return;
+        const code = net.link.code;
+        room.querySelector(".room-url").value = roomLink(code);
+        room.querySelector("[data-room-copy]").textContent = "Copy link";
+        if (host && !net.peer) {
+            roomStatus.innerHTML = `Room <b>${code}</b>. Send your friend the link, or the code to type in. The match starts once they're here.`;
+        } else if (host) {
+            roomStatus.textContent = mode === "start" || mode === "full"
+                ? `Your friend is in. You're ${TEAMS[0].name} (attacking right); they're the ${TEAMS[1].name} (attacking left).`
+                : "";
+        } else {
+            roomStatus.innerHTML = mode === "start"
+                ? `You're in room <b>${code}</b> as the ${TEAMS[1].name}: pink, attacking left. Your friend kicks off.`
+                : "Waiting for your friend to carry on.";
+        }
+    }
+
     /* ---------- Match log ----------
        The last few matches' logs are kept in this browser so a restart or a
        reload does not lose them. Only used for tuning. */
@@ -834,13 +1175,20 @@
         }
     }
 
-    window.addEventListener("pagehide", saveLog);
+    window.addEventListener("pagehide", () => {
+        saveLog();
+        if (net.link) net.link.close();
+    });
 
     renderSetup();
+    // Opened from a friend's room link.
+    const linked = new URLSearchParams(location.search).get("room");
+    if (linked && window.KickoffNet) openRoom("guest", window.KickoffNet.cleanCode(linked));
 
     // Hooks for poking at it from the console. render() draws one frame by
     // hand, for when the tab gets no animation frames; logs() lists saved matches.
-    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1), logs: loadLogs };
+    // tick() runs one whole frame by hand, for a tab in the background.
+    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1), logs: loadLogs, tick: () => frame(performance.now(), true), net };
 
     requestAnimationFrame((now) => {
         last = now;

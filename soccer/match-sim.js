@@ -80,7 +80,9 @@
         opts = opts || {};
         const s = {
             t: 0,
-            level: LEVELS[opts.level] ? opts.level : "normal",
+            // Against a friend both sides are people, so the Rivals get no level.
+            versus: !!opts.versus,
+            level: !opts.versus && LEVELS[opts.level] ? opts.level : "normal",
             halfLen: opts.half || HALF,
             half: 1,
             // Seconds played in this half; it stops while the ball is dead after a goal.
@@ -119,6 +121,9 @@
                 queued: null,
                 run: null,
             })),
+            // The player each side's person controls, or -1 for a side the AI runs.
+            // `user` is always NB FC's, for the single-player screen.
+            users: [4, opts.versus ? 9 : -1],
             user: 4,
             carrier: -1,
             pass: null,
@@ -126,7 +131,7 @@
             pause: 0,
             after: null,
             flash: null,
-            prev: {},
+            prev: [{}, {}],
             events: [],
             // Match log for tuning from real play: kicks, goals, saves, tackles.
             log: [],
@@ -160,7 +165,8 @@
         const fw = s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
         fw.x = L / 2 - attackDir(team) * 0.7;
         fw.y = W / 2;
-        s.user = s.players.find((p) => p.team === 0 && p.role === "FW").id;
+        for (const t of [0, 1]) if (human(s, t)) s.users[t] = s.players.find((p) => p.team === t && p.role === "FW").id;
+        s.user = s.users[0];
         s.carrier = -1;
         s.pass = null;
         s.held = null;
@@ -213,8 +219,9 @@
 
     /* ---------- Step ---------- */
 
-    function step(s, inp) {
-        stepInner(s, inp);
+    // inp drives NB FC's player; inp2 the Rivals' when a friend plays them.
+    function step(s, inp, inp2) {
+        stepInner(s, [inp || {}, inp2 || {}]);
         count(s);
         for (const e of s.events) {
             if (e.type === "switch" || e.type === "control" || s.log.length > 4000) continue;
@@ -295,14 +302,16 @@
         kickoff(s, 1);
     }
 
-    function stepInner(s, inp) {
-        inp = inp || {};
+    function human(s, team) {
+        return s.users[team] >= 0;
+    }
+
+    function stepInner(s, inps) {
         s.events.length = 0;
         if (s.phase !== "play") return s;
         s.t += DT;
-        s.events.length = 0;
-        const prev = s.prev;
-        s.prev = Object.assign({}, inp);
+        const prevs = s.prev;
+        s.prev = inps.map((inp) => Object.assign({}, inp));
         if (s.flash && s.t > s.flash.until) s.flash = null;
 
         if (s.pause > 0) {
@@ -316,9 +325,6 @@
         }
         s.clock += DT;
 
-        const pressed = (k) => inp[k] && !prev[k];
-        const released = (k) => !inp[k] && prev[k];
-
         for (const p of s.players) {
             p.touchCd = Math.max(0, p.touchCd - DT);
             p.kickCd = Math.max(0, p.kickCd - DT);
@@ -326,10 +332,19 @@
             p.stun = Math.max(0, p.stun - DT);
         }
 
-        if (pressed("swap")) swap(s);
-        const me = s.players[s.user];
-        control(s, me, inp, pressed, released);
-        for (const p of s.players) if (p !== me) think(s, p);
+        const mine = [];
+        for (const t of [0, 1]) {
+            if (!human(s, t)) continue;
+            const inp = inps[t];
+            const prev = prevs[t] || {};
+            const pressed = (k) => inp[k] && !prev[k];
+            const released = (k) => !inp[k] && prev[k];
+            if (pressed("swap")) swap(s, t);
+            const me = s.players[s.users[t]];
+            control(s, me, inp, pressed, released);
+            mine.push(me);
+        }
+        for (const p of s.players) if (!mine.includes(p)) think(s, p);
         for (const p of s.players) move(s, p);
         separate(s);
         if (s.setPiece) {
@@ -427,14 +442,14 @@
         if (owner && owner.team !== me.team && me.tackleCd <= 0 && hyp(b.x - me.x, b.y - me.y) < 1.0) tackle(s, me, 0.3, true);
     }
 
-    function swap(s) {
+    function swap(s, team) {
         const b = s.ball;
         // On the ball (or taking a set piece) you keep the player you have.
-        if (s.setPiece || s.carrier === s.user) return;
+        if (s.setPiece || s.carrier === s.users[team]) return;
         let best = null;
         let bestD = Infinity;
         for (const p of s.players) {
-            if (p.team !== 0 || p.role === "GK" || p.id === s.user) continue;
+            if (p.team !== team || p.role === "GK" || p.id === s.users[team]) continue;
             const d = hyp(p.x - b.x, p.y - b.y);
             if (d < bestD) {
                 bestD = d;
@@ -445,13 +460,15 @@
     }
 
     function setUser(s, p) {
-        const old = s.players[s.user];
+        if (!human(s, p.team)) return;
+        const old = s.players[s.users[p.team]];
         if (old && old !== p) {
             old.chargeKind = null;
             old.charge = 0;
             old.queued = null;
         }
-        s.user = p.id;
+        s.users[p.team] = p.id;
+        s.user = s.users[0];
         p.run = null;
         s.events.push({ type: "switch", id: p.id });
     }
@@ -574,7 +591,7 @@
         } else {
             // Lob: a lofted through ball into the space ahead of a teammate.
             // The defenders' clearances go to space, not to each other.
-            const q = p.team === 0 ? pickTarget(s, p, dir, 1.2) : null;
+            const q = human(s, p.team) ? pickTarget(s, p, dir, 1.2) : null;
             let tx;
             let ty;
             if (q && piece === "Corner") {
@@ -630,7 +647,7 @@
         s.events.push({ type: "kick", kind, id: p.id, power });
 
         // FIFA habit: control follows the pass.
-        if (p.team === 0 && s.pass && s.players[s.pass.to]) setUser(s, s.players[s.pass.to]);
+        if (human(s, p.team) && s.pass && s.players[s.pass.to]) setUser(s, s.players[s.pass.to]);
     }
 
     // How much the player is turned towards the goal they attack: 1 square on,
@@ -789,8 +806,8 @@
         const d = (q) => hyp(b.x - q.x, b.y - q.y);
         const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0);
         const nearest = mates.reduce((a, q) => (d(q) < d(a) ? q : a));
-        const me = s.players[s.user];
-        const go = p.team === 0 ? nearest === p && d(p) < d(me) - 1 : nearest === p;
+        const me = human(s, p.team) ? s.players[s.users[p.team]] : null;
+        const go = me ? nearest === p && d(p) < d(me) - 1 : nearest === p;
         if (go && !s.held) {
             const at = intercept(b, p, AI_RUN);
             return seek(p, at.x, at.y, AI_RUN);
@@ -805,11 +822,11 @@
         const b = s.ball;
         const gx = goalX(p.team);
         const d = (q) => hyp(b.x - q.x, b.y - q.y);
-        const me = s.players[s.user];
-        const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0 && !(q.team === 0 && q === me));
+        const me = human(s, p.team) ? s.players[s.users[p.team]] : null;
+        const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0 && q !== me);
         const nearest = mates.reduce((a, q) => (d(q) < d(a) ? q : a), mates[0]);
         // You count as the presser only when close and goal-side, not chasing from behind.
-        const userPresses = p.team === 0 && (d(me) < 2.5 || (d(me) < 7 && (b.x - me.x) * attackDir(owner.team) < 0.5));
+        const userPresses = !!me && (d(me) < 2.5 || (d(me) < 7 && (b.x - me.x) * attackDir(owner.team) < 0.5));
         if (nearest === p && !userPresses) {
             const g = norm(gx - b.x, W / 2 - b.y);
             seek(p, b.x + g.x * 0.9, b.y + g.y * 0.9, AI_RUN);
@@ -1192,12 +1209,13 @@
             s.events.push({ type: "control", id: p.id });
             p.gotAt = s.t;
             const before = s.players[b.last];
-            // The Rivals win it and the player you control is far away: switch
-            // to whoever on your side is nearest the ball.
-            if (p.team === 1 && (!before || before.team === 0)) {
-                const me = s.players[s.user];
+            // The other side wins it and the player you control is far away:
+            // switch to whoever on your side is nearest the ball.
+            const other = 1 - p.team;
+            if (human(s, other) && (!before || before.team === other)) {
+                const me = s.players[s.users[other]];
                 if (hyp(b.x - me.x, b.y - me.y) > 8) {
-                    const q = s.players.filter((o) => o.team === 0 && o.role !== "GK").reduce((a, o) => (hyp(b.x - o.x, b.y - o.y) < hyp(b.x - a.x, b.y - a.y) ? o : a));
+                    const q = s.players.filter((o) => o.team === other && o.role !== "GK").reduce((a, o) => (hyp(b.x - o.x, b.y - o.y) < hyp(b.x - a.x, b.y - a.y) ? o : a));
                     setUser(s, q);
                 }
             }
@@ -1206,7 +1224,7 @@
         b.lastAt = s.t;
         s.carrier = p.id;
         if (s.pass && s.pass.to === p.id) s.pass = null;
-        if (p.team === 0 && p.id !== s.user) setUser(s, p);
+        if (p.id !== s.users[p.team]) setUser(s, p);
     }
 
     function updateCarrier(s) {
@@ -1384,7 +1402,7 @@
                 ];
                 near.slice(0, 2).forEach((p, i) => (p.spot = { x: clamp(spots[i].x, 3, L - 3), y: spots[i].y }));
             }
-            if (team === 0) setUser(st, taker);
+            setUser(st, taker);
         };
     }
 
