@@ -61,12 +61,34 @@
         };
     }
 
+    // How good the Rivals are. Normal is the balance tuned on real matches;
+    // the others move their pace, tackling, keeping and decisions around it.
+    const LEVELS = {
+        easy: { pace: 0.9, tackle: 0.6, save: -0.12, think: 0.45 },
+        normal: { pace: 1, tackle: 1, save: 0, think: 0.25 },
+        hard: { pace: 1.06, tackle: 1.3, save: 0.06, think: 0.15 },
+    };
+    // A half lasts this many real seconds unless create() is told otherwise.
+    const HALF = 180;
+
     const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
     const hyp = Math.hypot;
 
-    function create(seed) {
+    const blankStats = () => ({ shots: 0, onTarget: 0, passes: 0, passesOk: 0, tackles: 0, tacklesWon: 0, saves: 0, corners: 0, poss: 0 });
+
+    function create(seed, opts) {
+        opts = opts || {};
         const s = {
             t: 0,
+            level: LEVELS[opts.level] ? opts.level : "normal",
+            halfLen: opts.half || HALF,
+            half: 1,
+            // Seconds played in this half; it stops while the ball is dead after a goal.
+            clock: 0,
+            // "play", "halftime" or "full".
+            phase: "play",
+            stats: [blankStats(), blankStats()],
+            tally: { pass: null, shot: null },
             rand: rng(seed || 7),
             score: [0, 0],
             ball: { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 },
@@ -193,6 +215,7 @@
 
     function step(s, inp) {
         stepInner(s, inp);
+        count(s);
         for (const e of s.events) {
             if (e.type === "switch" || e.type === "control" || s.log.length > 4000) continue;
             const b = s.ball;
@@ -203,8 +226,79 @@
         return s;
     }
 
+    // Match stats from this step's events. A pass counts as completed when a
+    // teammate is next to touch it; a shot is on target if it is saved or goes in.
+    function count(s) {
+        const st = s.stats;
+        const tl = s.tally;
+        const owner = s.held ? s.players[s.held.id] : s.players[s.carrier];
+        if (owner && s.phase === "play" && s.pause <= 0) st[owner.team].poss += DT;
+        for (const e of s.events) {
+            const p = s.players[e.id];
+            if (e.type === "kick") {
+                if (e.kind === "shoot") {
+                    st[p.team].shots += 1;
+                    tl.shot = { team: p.team };
+                    tl.pass = null;
+                } else {
+                    st[p.team].passes += 1;
+                    tl.pass = { team: p.team };
+                    tl.shot = null;
+                }
+            } else if (e.type === "control" || e.type === "catch") {
+                if (tl.pass && tl.pass.team === p.team) st[p.team].passesOk += 1;
+                tl.pass = null;
+            } else if (e.type === "save" && e.won) {
+                st[p.team].saves += 1;
+                if (tl.shot && tl.shot.team !== p.team) st[tl.shot.team].onTarget += 1;
+                tl.shot = null;
+            } else if (e.type === "goal") {
+                if (tl.shot && tl.shot.team === e.team) st[e.team].onTarget += 1;
+                tl.shot = tl.pass = null;
+            } else if (e.type === "tackle" || e.type === "nick") {
+                if (e.type === "tackle" || e.won) st[p.team].tackles += 1;
+                if (e.won) st[p.team].tacklesWon += 1;
+                tl.pass = null;
+            } else if (e.type === "out") {
+                if (e.label === "Corner") st[e.team].corners += 1;
+                tl.pass = tl.shot = null;
+            }
+        }
+    }
+
+    // The whistle for half time or full time. A shot already on its way to
+    // goal is allowed to finish, for a few seconds at most.
+    function checkClock(s) {
+        if (s.clock < s.halfLen || s.setPiece) return;
+        const b = s.ball;
+        const sp = hyp(b.vx, b.vy);
+        const goalward = sp > 10 && (b.vx > 0 ? L - b.x : b.x) < 26 && Math.abs(b.vx) > sp * 0.6;
+        if (goalward && s.clock < s.halfLen + 4) return;
+        s.phase = s.half === 1 ? "halftime" : "full";
+        s.flash = { text: s.half === 1 ? "Half time" : "Full time", until: s.t + 1e9 };
+        s.carrier = -1;
+        s.pass = null;
+        for (const p of s.players) Object.assign(p, { vx: 0, vy: 0, dvx: 0, dvy: 0, charge: 0, chargeKind: null, queued: null });
+        s.events.push({ type: "whistle", phase: s.phase, score: s.score.slice() });
+    }
+
+    // Second half: the Rivals kick off. Teams keep their ends.
+    function secondHalf(s) {
+        if (s.phase !== "halftime") return;
+        s.half = 2;
+        s.clock = 0;
+        s.phase = "play";
+        s.pause = 0;
+        s.after = null;
+        s.setPiece = null;
+        for (const p of s.players) p.spot = null;
+        kickoff(s, 1);
+    }
+
     function stepInner(s, inp) {
         inp = inp || {};
+        s.events.length = 0;
+        if (s.phase !== "play") return s;
         s.t += DT;
         s.events.length = 0;
         const prev = s.prev;
@@ -220,6 +314,7 @@
             }
             return s;
         }
+        s.clock += DT;
 
         const pressed = (k) => inp[k] && !prev[k];
         const released = (k) => !inp[k] && prev[k];
@@ -246,6 +341,7 @@
         ballPhysics(s);
         rules(s);
         updateCarrier(s);
+        if (s.pause <= 0) checkClock(s);
         return s;
     }
 
@@ -517,6 +613,7 @@
         b.last = p.id;
         b.lastAt = s.t;
         b.kickAt = s.t;
+        b.kicker = p.id;
         b.fromX = b.x;
         b.fromY = b.y;
         b.header = kind === "shoot" && b.z > 1.1;
@@ -710,7 +807,7 @@
         if (nearest === p && !userPresses) {
             const g = norm(gx - b.x, W / 2 - b.y);
             seek(p, b.x + g.x * 0.9, b.y + g.y * 0.9, AI_RUN);
-            if (d(p) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.33);
+            if (d(p) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.33 * (p.team === 1 ? LEVELS[s.level].tackle : 1));
             return;
         }
         // Mark: share out the other side's outfield players (not the one on the
@@ -748,7 +845,7 @@
         const dist = (q) => hyp(q.x - p.x, q.y - p.y);
         const press = Math.min(...opps.map(dist));
         if (canKick(s, p) && s.t >= (p.decideAt || 0)) {
-            p.decideAt = s.t + 0.25;
+            p.decideAt = s.t + LEVELS[s.level].think;
             const settled = s.t - (p.gotAt || 0) > 0.3;
             // Shoot: close in, or with a defender closing, or now and then from range.
             if (dG < 16 && Math.abs(b.y - W / 2) < 10 && (dG < 9.5 || (press < 2 && dG < 13) || s.rand() < 0.015)) {
@@ -925,7 +1022,7 @@
             // From range the keeper has longer to set, so distance helps him.
             const range = clamp((hyp(b.fromX - p.x, b.fromY - p.y) - 12) * 0.022, 0, 0.32);
             // A header from a cross comes down and late, so it is harder to hold.
-            const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0), 0.15, 0.95);
+            const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0) + (p.team === 1 ? LEVELS[s.level].save : 0), 0.15, 0.95);
             if (s.rand() > save) {
                 // Fingertips: half the time that turns it round the post, half
                 // the time it still goes in.
@@ -973,8 +1070,9 @@
     /* ---------- Movement ---------- */
 
     function move(s, p) {
-        let ax = p.dvx - p.vx;
-        let ay = p.dvy - p.vy;
+        const k = p.team === 1 && p.role !== "GK" ? LEVELS[s.level].pace : 1;
+        let ax = p.dvx * k - p.vx;
+        let ay = p.dvy * k - p.vy;
         const a = hyp(ax, ay);
         const lim = (p.role === "GK" ? 16 : ACCEL) * DT;
         if (a > lim) {
@@ -1213,7 +1311,14 @@
         b.x = team === 0 ? L + GOAL_D * 0.7 : -GOAL_D * 0.7;
         b.vx = b.vy = b.vz = 0;
         b.z = 0.3;
-        s.events.push({ type: "goal", team, scorer: b.last });
+        // The match minute, as the clock shows it: each half is 45.
+        const min = Math.min(s.half * 45, Math.floor((s.half - 1) * 45 + (s.clock / s.halfLen) * 45) + 1);
+        // A deflection or a keeper's fingertips on the way in still counts for
+        // whoever struck it; only a defender's own kick or touch is an own goal.
+        const last = s.players[b.last];
+        const kicker = s.players[b.kicker];
+        const scorer = last && last.team === team ? last.id : kicker && kicker.team === team && b.lastAt - b.kickAt < 1.5 ? kicker.id : b.last;
+        s.events.push({ type: "goal", team, scorer, min });
         s.flash = { text: "Goal!", team, until: s.t + 2.4 };
         s.carrier = -1;
         s.pass = null;
@@ -1320,7 +1425,7 @@
         }
     }
 
-    const api = { create, step, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, TEAMS, speedFor, rollDist };
+    const api = { create, step, secondHalf, LEVELS, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, TEAMS, speedFor, rollDist };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     else root.MatchSim = api;
 })(typeof window !== "undefined" ? window : globalThis);

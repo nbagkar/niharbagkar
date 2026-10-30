@@ -36,7 +36,22 @@
                 <div class="overlay-card">
                     <p class="kicker" data-overlay-kicker>Five against five</p>
                     <h2 data-overlay-title>NB FC vs Rivals</h2>
-                    <div class="keys">
+                    <div class="match-stats" data-stats hidden></div>
+                    <div class="setup" data-setup>
+                        <div class="seg" role="radiogroup" aria-label="Rivals">
+                            <span class="seg-label">Rivals</span>
+                            <button type="button" role="radio" data-level="easy">Easy</button>
+                            <button type="button" role="radio" data-level="normal">Normal</button>
+                            <button type="button" role="radio" data-level="hard">Hard</button>
+                        </div>
+                        <div class="seg" role="radiogroup" aria-label="Half length">
+                            <span class="seg-label">Halves</span>
+                            <button type="button" role="radio" data-half="120">2 min</button>
+                            <button type="button" role="radio" data-half="180">3 min</button>
+                            <button type="button" role="radio" data-half="300">5 min</button>
+                        </div>
+                    </div>
+                    <div class="keys" data-keys>
                         <div class="key-col">
                             <p class="key-head">WASD hands</p>
                             <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</p>
@@ -56,14 +71,14 @@
                             <p><kbd>Tab</kbd> Switch &middot; <kbd>Z</kbd> Tackle</p>
                         </div>
                     </div>
-                    <p class="overlay-tip">Hold shoot longer for power; past the red line it flies over. Point the stick at a corner to aim.</p>
+                    <p class="overlay-tip" data-tip>Hold shoot longer for power; past the red line it flies over. Point the stick at a corner to aim.</p>
                     <button class="play" type="button" data-play>Play <span>Enter</span></button>
                     <p class="touch-note" data-touch hidden>This one is built for a laptop keyboard.</p>
                 </div>
             </div>
         </div>
 
-        <p class="match-foot wrap"><kbd>Esc</kbd> pause &middot; <kbd>R</kbd> restart</p>
+        <p class="match-foot wrap"><kbd>Esc</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound <span data-sound-state>on</span></p>
     </main>
 
     <script src="match-sim.js"></script>
