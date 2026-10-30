@@ -1041,13 +1041,18 @@
                 s.events.push({ type: "save", id: p.id, won: false });
                 continue;
             }
-            if (sp < 17 && s.rand() < 0.7) hold(s, p);
+            // Hit at him he usually holds it, even a hard one; at a stretch he can
+            // only push it away.
+            const grip = sp < 17 ? 0.7 : stretch < 0.4 ? 0.55 : stretch < 0.7 ? 0.25 : 0;
+            if (s.rand() < grip) hold(s, p);
             else {
-                // Parry away from goal.
+                // Parry wide, towards the side the ball was heading, not back out
+                // to the edge of the box where the shooter is waiting.
                 const ad = attackDir(p.team);
-                b.vx = ad * Math.abs(b.vx) * 0.35 + ad * 2;
-                b.vy = b.vy * 0.4 + (s.rand() - 0.5) * 10;
-                b.vz = 2 + s.rand() * 2;
+                const side = Math.abs(b.y - p.y) > 0.2 ? Math.sign(b.y - p.y) : Math.sign(b.vy) || 1;
+                b.vx = ad * (2 + s.rand() * 3);
+                b.vy = side * (8 + s.rand() * 4);
+                b.vz = 1 + s.rand() * 2;
                 b.last = p.id;
                 b.lastAt = s.t;
                 s.pass = null;
