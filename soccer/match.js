@@ -204,6 +204,7 @@
             }).join(", ") || "–";
             html.push(`<p class="stat-scorers">${TEAMS[0].name}: ${list(0)} &middot; ${TEAMS[1].name}: ${list(1)}</p>`);
         }
+        if (mode === "halftime") html.push(`<p class="stat-scorers">Teams change ends: ${TEAMS[0].name} attack the left goal in the second half.</p>`);
         return html.join("");
     }
 

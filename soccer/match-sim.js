@@ -68,6 +68,9 @@
         normal: { pace: 1, tackle: 1, save: 0, think: 0.25 },
         hard: { pace: 1.06, tackle: 1.3, save: 0.06, think: 0.15 },
     };
+    // How often an AI player meets a cross with his head, free or marked.
+    const HEAD_FREE = 0.55;
+    const HEAD_MARKED = 0.25;
     // A half lasts this many real seconds unless create() is told otherwise.
     const HALF = 180;
 
@@ -85,6 +88,8 @@
             level: !opts.versus && LEVELS[opts.level] ? opts.level : "normal",
             halfLen: opts.half || HALF,
             half: 1,
+            // 0 in the first half (NB FC attack right), 1 after the change of ends.
+            ends: 0,
             // Seconds played in this half; it stops while the ball is dead after a goal.
             clock: 0,
             // "play", "halftime" or "full".
@@ -140,30 +145,42 @@
         return s;
     }
 
-    function attackDir(team) {
-        return team === 0 ? 1 : -1;
+    // Which way a side attacks: NB FC go right in the first half, and the
+    // teams change ends at half time.
+    function attackDir(s, team) {
+        return (team ^ (s.ends || 0)) === 0 ? 1 : -1;
     }
 
-    function goalX(team) {
+    // Formation spots are written for the first half; after the change of
+    // ends the whole pitch is mirrored.
+    function homeX(s, p) {
+        return (s.ends ? 1 - p.hx : p.hx) * L;
+    }
+
+    function homeY(s, p) {
+        return (s.ends ? 1 - p.hy : p.hy) * W;
+    }
+
+    function goalX(s, team) {
         // The goal this team defends.
-        return team === 0 ? 0 : L;
+        return attackDir(s, team) === 1 ? 0 : L;
     }
 
     function kickoff(s, team) {
         const b = s.ball;
         Object.assign(b, { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 });
         for (const p of s.players) {
-            p.x = p.hx * L;
-            p.y = p.hy * W;
+            p.x = homeX(s, p);
+            p.y = homeY(s, p);
             // Everyone back in their own half, and the side not kicking off
             // outside the centre circle.
-            p.x = p.team === 0 ? Math.min(p.x, L / 2 - 1.5) : Math.max(p.x, L / 2 + 1.5);
-            if (p.team !== team && hyp(p.x - L / 2, p.y - W / 2) < 7) p.x = L / 2 - attackDir(p.team) * 7;
+            p.x = attackDir(s, p.team) === 1 ? Math.min(p.x, L / 2 - 1.5) : Math.max(p.x, L / 2 + 1.5);
+            if (p.team !== team && hyp(p.x - L / 2, p.y - W / 2) < 7) p.x = L / 2 - attackDir(s, p.team) * 7;
             Object.assign(p, { vx: 0, vy: 0, dvx: 0, dvy: 0, stun: 0, run: null, queued: null, charge: 0, chargeKind: null });
-            p.face = p.team ? Math.PI : 0;
+            p.face = attackDir(s, p.team) === 1 ? 0 : Math.PI;
         }
         const fw = s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
-        fw.x = L / 2 - attackDir(team) * 0.7;
+        fw.x = L / 2 - attackDir(s, team) * 0.7;
         fw.y = W / 2;
         for (const t of [0, 1]) if (human(s, t)) s.users[t] = s.players.find((p) => p.team === t && p.role === "FW").id;
         s.user = s.users[0];
@@ -289,10 +306,11 @@
         s.events.push({ type: "whistle", phase: s.phase, score: s.score.slice() });
     }
 
-    // Second half: the Rivals kick off. Teams keep their ends.
+    // Second half: the teams change ends and the Rivals kick off.
     function secondHalf(s) {
         if (s.phase !== "halftime") return;
         s.half = 2;
+        s.ends = 1;
         s.clock = 0;
         s.phase = "play";
         s.pause = 0;
@@ -508,7 +526,7 @@
     function kick(s, p, kind, power, aim) {
         const b = s.ball;
         const dir = aim || { x: Math.cos(p.face), y: Math.sin(p.face) };
-        const ad = attackDir(p.team);
+        const ad = attackDir(s, p.team);
         let vx;
         let vy;
         let vz = 0;
@@ -534,7 +552,7 @@
             const speed = Math.min(14, (d * 0.85) / flight);
             vx = ((tx - b.x) / d) * speed;
             vy = ((ty - b.y) / d) * speed;
-        } else if (kind === "shoot" && towardGoal(p, dir, b) < -0.3) {
+        } else if (kind === "shoot" && towardGoal(s, p, dir, b) < -0.3) {
             // Turned back towards your own half: no shot at goal, just a hit where you face.
             const speed = 14 + 14 * power;
             vx = dir.x * speed;
@@ -542,14 +560,14 @@
             vz = header ? 0 : 0.5 + power * 2.5;
             s.pass = null;
         } else if (kind === "shoot") {
-            const gx = goalX(1 - p.team);
+            const gx = goalX(s, 1 - p.team);
             // Aimed with the stick, or else away from the side the keeper covers.
             const keeper = s.players.find((q) => q.team !== p.team && q.role === "GK");
             const open = keeper && Math.abs(keeper.y - W / 2) > 0.3 ? -Math.sign(keeper.y - W / 2) : b.y < W / 2 ? 1 : -1;
             const sideways = Math.abs(dir.y) > 0.3 ? Math.sign(dir.y) * Math.min(1, Math.abs(dir.y) * 1.3) : open * (0.35 + s.rand() * 0.4);
             const dist = hyp(gx - b.x, W / 2 - b.y);
             // Side-on to goal the strike gets wilder.
-            const twist = Math.max(0, 0.3 - towardGoal(p, dir, b)) * 1.5;
+            const twist = Math.max(0, 0.3 - towardGoal(s, p, dir, b)) * 1.5;
             const spread = 0.35 + dist * 0.035 + twist + (power > 0.85 ? (power - 0.85) * 6 : 0);
             const ty = W / 2 + sideways * (GOAL_W / 2 - 0.7) + (s.rand() - 0.5) * 2 * spread;
             const tx = gx + ad * 0.3;
@@ -573,7 +591,7 @@
                 let ty = clamp(q.y + q.vy * lead, 1, W - 1);
                 // A teammate running back towards our own goal gets it to feet:
                 // leading him there would play it into our own net.
-                if ((tx - b.x) * ad < 0 && (tx - goalX(p.team)) * ad < 14) {
+                if ((tx - b.x) * ad < 0 && (tx - goalX(s, p.team)) * ad < 14) {
                     tx = q.x;
                     ty = q.y;
                 }
@@ -591,7 +609,8 @@
         } else {
             // Lob: a lofted through ball into the space ahead of a teammate.
             // The defenders' clearances go to space, not to each other.
-            const q = human(s, p.team) ? pickTarget(s, p, dir, 1.2) : null;
+            // The AI's crosses from a corner pick a head too; its clearances don't.
+            const q = human(s, p.team) || piece === "Corner" ? pickTarget(s, p, dir, 1.2) : null;
             let tx;
             let ty;
             if (q && piece === "Corner") {
@@ -653,10 +672,10 @@
     // How much the player is turned towards the goal they attack: 1 square on,
     // 0 side-on, -1 back to goal. The better of body facing and stick, so pressing
     // up or down to pick a corner still counts as facing the goal.
-    function towardGoal(p, dir, b) {
+    function towardGoal(s, p, dir, b) {
         // A header faces the incoming cross; with the stick let go it goes at goal.
         if (b.z > 1.1 && !p.stickHeld) return 1;
-        const ad = attackDir(p.team);
+        const ad = attackDir(s, p.team);
         return Math.max(Math.cos(p.face) * ad, dir.x * ad);
     }
 
@@ -731,7 +750,7 @@
             // The other side's keeper has it: leave his box and wait outside it.
             const k = s.players[s.held.id];
             if (k.team !== p.team) {
-                if (inBox(k.team, p.x, p.y)) return seek(p, goalX(k.team) + attackDir(k.team) * (BOX_D + 2), clamp(p.y, 3, W - 3), AI_RUN);
+                if (inBox(s, k.team, p.x, p.y)) return seek(p, goalX(s, k.team) + attackDir(s, k.team) * (BOX_D + 2), clamp(p.y, 3, W - 3), AI_RUN);
                 p.dvx = p.dvy = 0;
                 return;
             }
@@ -742,12 +761,35 @@
         if (sp && sp.taker === p.id) {
             // The AI takes its set pieces quickly: a throw to a teammate, a corner into the box.
             p.dvx = p.dvy = 0;
-            if (s.t - sp.at > 0.9) kick(s, p, sp.kind === "Throw-in" ? "pass" : "lob", 0.6, norm(attackDir(p.team) * 0.7, sp.inward.y || sp.inward.x));
+            if (s.t - sp.at > 0.9) {
+                const ad = attackDir(s, p.team);
+                let aim;
+                if (sp.kind === "Corner") {
+                    // Cross towards the penalty spot, where teammates are lined up.
+                    const gx = goalX(s, 1 - p.team);
+                    aim = norm(gx - ad * 7 - p.x, W / 2 - p.y);
+                } else {
+                    // Throw to an open teammate, or else infield and up the line.
+                    const q = passOption(s, p, s.players.filter((o) => o.team !== p.team && o.role !== "GK"));
+                    aim = q ? norm(q.x - p.x, q.y - p.y) : norm(ad * 0.5, sp.inward.y);
+                }
+                kick(s, p, sp.kind === "Throw-in" ? "pass" : "lob", 0.6, aim);
+            }
             return;
         }
         if (sp && p.spot) return seek(p, p.spot.x, p.spot.y, AI_RUN);
         if (block(s, p)) return;
         if (s.pass && s.pass.to === p.id && s.carrier !== p.id) {
+            // A cross dropping onto his head near goal: head it at a corner.
+            // He doesn't always get there first: much less often with a defender on him.
+            if (b.z > 0.8 && canKick(s, p, "shoot") && hyp(goalX(s, 1 - p.team) - b.x, W / 2 - b.y) < 14 && p.headerTried !== b.kickAt) {
+                p.headerTried = b.kickAt;
+                const marked = s.players.some((o) => o.team !== p.team && o.role !== "GK" && hyp(o.x - p.x, o.y - p.y) < 1.6);
+                if (s.rand() < (marked ? HEAD_MARKED : HEAD_FREE)) {
+                    const side = s.rand() < 0.5 ? -1 : 1;
+                    return kick(s, p, "shoot", 0.4 + s.rand() * 0.35, norm(attackDir(s, p.team), side * (0.3 + s.rand() * 0.5)));
+                }
+            }
             const at = intercept(b, p, JOG);
             return seek(p, at.x, at.y, JOG);
         }
@@ -780,9 +822,9 @@
     // Formation spot, sliding with the ball; forwards stay ahead of it.
     function shape(s, p, outOfBox) {
         const b = s.ball;
-        const ad = attackDir(p.team);
-        let x = p.hx * L + (b.x - L / 2) * 0.5;
-        let y = p.hy * W + (b.y - W / 2) * 0.3;
+        const ad = attackDir(s, p.team);
+        let x = homeX(s, p) + (b.x - L / 2) * 0.5;
+        let y = homeY(s, p) + (b.y - W / 2) * 0.3;
         if (p.role === "FW") x = ad > 0 ? Math.max(x, b.x + 6) : Math.min(x, b.x - 6);
         if (outOfBox) x = ad > 0 ? Math.max(x, BOX_D + 2) : Math.min(x, L - BOX_D - 2);
         x = clamp(x, 4, L - 4);
@@ -820,13 +862,13 @@
     // presser unless they are far from the ball.
     function defend(s, p, owner) {
         const b = s.ball;
-        const gx = goalX(p.team);
+        const gx = goalX(s, p.team);
         const d = (q) => hyp(b.x - q.x, b.y - q.y);
         const me = human(s, p.team) ? s.players[s.users[p.team]] : null;
         const mates = s.players.filter((q) => q.team === p.team && q.role !== "GK" && q.stun <= 0 && q !== me);
         const nearest = mates.reduce((a, q) => (d(q) < d(a) ? q : a), mates[0]);
         // You count as the presser only when close and goal-side, not chasing from behind.
-        const userPresses = !!me && (d(me) < 2.5 || (d(me) < 7 && (b.x - me.x) * attackDir(owner.team) < 0.5));
+        const userPresses = !!me && (d(me) < 2.5 || (d(me) < 7 && (b.x - me.x) * attackDir(s, owner.team) < 0.5));
         if (nearest === p && !userPresses) {
             const g = norm(gx - b.x, W / 2 - b.y);
             seek(p, b.x + g.x * 0.9, b.y + g.y * 0.9, AI_RUN);
@@ -844,7 +886,7 @@
             let bestD = Infinity;
             for (const t of targets) {
                 if (taken.has(t)) continue;
-                const dd = hyp(t.x - m.hx * L, t.y - m.hy * W);
+                const dd = hyp(t.x - homeX(s, m), t.y - homeY(s, m));
                 if (dd < bestD) {
                     bestD = dd;
                     best = t;
@@ -861,8 +903,8 @@
     // AI on the ball (the Rivals; your own AI players hand the ball to you).
     function carrierThink(s, p) {
         const b = s.ball;
-        const ad = attackDir(p.team);
-        const gx = goalX(1 - p.team);
+        const ad = attackDir(s, p.team);
+        const gx = goalX(s, 1 - p.team);
         const dG = hyp(gx - b.x, W / 2 - b.y);
         const opps = s.players.filter((q) => q.team !== p.team && q.role !== "GK");
         const dist = (q) => hyp(q.x - p.x, q.y - p.y);
@@ -876,7 +918,7 @@
                 return kick(s, p, "shoot", 0.45 + s.rand() * 0.32, aim);
             }
             // Pinned in our own box: clear it.
-            if (inBox(p.team, b.x, b.y) && press < 3) {
+            if (inBox(s, p.team, b.x, b.y) && press < 3) {
                 return kick(s, p, "lob", 0.7, norm(ad, b.y < W / 2 ? -0.6 : 0.6));
             }
             // Under pressure, or a teammate clearly better placed: pass.
@@ -910,7 +952,7 @@
 
     // An open teammate not behind the ball, with a clear lane.
     function passOption(s, p, opps) {
-        const ad = attackDir(p.team);
+        const ad = attackDir(s, p.team);
         let best = null;
         let bestScore = -Infinity;
         for (const q of s.players) {
@@ -920,7 +962,7 @@
             const d = hyp(dx, dy);
             if (d < 4 || d > 30 || dx * ad < -4) continue;
             // Never back to someone deep in our own box: one missed touch is a goal.
-            if ((q.x - goalX(p.team)) * ad < 7 && Math.abs(q.y - W / 2) < BOX_W / 2) continue;
+            if ((q.x - goalX(s, p.team)) * ad < 7 && Math.abs(q.y - W / 2) < BOX_W / 2) continue;
             const open = Math.min(...opps.map((o) => hyp(o.x - q.x, o.y - q.y)));
             if (open < 2.5) continue;
             // Anyone standing in the lane?
@@ -945,21 +987,21 @@
 
     /* ---------- Keepers ---------- */
 
-    function inBox(team, x, y) {
-        const gx = goalX(team);
+    function inBox(s, team, x, y) {
+        const gx = goalX(s, team);
         return Math.abs(x - gx) < BOX_D && Math.abs(y - W / 2) < BOX_W / 2;
     }
 
     function keeperThink(s, p) {
         const b = s.ball;
-        const gx = goalX(p.team);
-        const ad = attackDir(p.team);
+        const gx = goalX(s, p.team);
+        const ad = attackDir(s, p.team);
         p.diving = false;
 
         if (s.held && s.held.id === p.id) {
             p.dvx = p.dvy = 0;
             // Release once the opponents have cleared the box (or after 3 s regardless).
-            const clear = !s.players.some((q) => q.team !== p.team && inBox(p.team, q.x, q.y));
+            const clear = !s.players.some((q) => q.team !== p.team && inBox(s, p.team, q.x, q.y));
             if (s.t > s.held.until && (clear || s.t > s.held.until + 3)) {
                 // Roll it to an open teammate with a clear lane; if nobody is free, punt it long.
                 const opps = s.players.filter((q) => q.team !== p.team && q.role !== "GK");
@@ -997,10 +1039,10 @@
 
         // A dribbler bearing down in the box: come out and smother it.
         const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
-        if (owner && owner.team !== p.team && inBox(p.team, b.x, b.y) && hyp(b.x - p.x, b.y - p.y) < 5) return seek(p, b.x, b.y, 6);
+        if (owner && owner.team !== p.team && inBox(s, p.team, b.x, b.y) && hyp(b.x - p.x, b.y - p.y) < 5) return seek(p, b.x, b.y, 6);
 
         // Loose ball in the box and nobody nearer: come and claim it.
-        if (s.carrier < 0 && inBox(p.team, b.x, b.y) && hyp(b.vx, b.vy) < 9) {
+        if (s.carrier < 0 && inBox(s, p.team, b.x, b.y) && hyp(b.vx, b.vy) < 9) {
             const mine = hyp(b.x - p.x, b.y - p.y);
             const rival = Math.min(...s.players.filter((q) => q.team !== p.team).map((q) => hyp(b.x - q.x, b.y - q.y)));
             if (mine < rival) return seek(p, b.x, b.y, 6.5);
@@ -1022,7 +1064,7 @@
             // Back-pass rule: no handling a ball a teammate deliberately kicked.
             const last = s.players[b.last];
             if (last && last !== p && last.team === p.team && b.lastAt === b.kickAt) continue;
-            if (!inBox(p.team, b.x, b.y)) continue;
+            if (!inBox(s, p.team, b.x, b.y)) continue;
             const reach = p.diving ? 1.45 : 1.0;
             if (hyp(b.x - p.x, b.y - p.y) > reach || b.z > 2.5) continue;
             const sp = hyp(b.vx, b.vy);
@@ -1073,10 +1115,10 @@
             else {
                 // Parry wide, towards the side the ball was heading, not back out
                 // to the edge of the box where the shooter is waiting.
-                const ad = attackDir(p.team);
+                const ad = attackDir(s, p.team);
                 const side = Math.abs(b.y - p.y) > 0.2 ? Math.sign(b.y - p.y) : Math.sign(b.vy) || 1;
                 // From a tight angle by the byline, it goes behind for a corner.
-                const tight = Math.abs(b.fromX - goalX(p.team)) < 6;
+                const tight = Math.abs(b.fromX - goalX(s, p.team)) < 6;
                 b.vx = tight ? -ad * (3 + s.rand() * 2) : ad * (2 + s.rand() * 3);
                 b.vy = side * (tight ? 4 + s.rand() * 3 : 8 + s.rand() * 4);
                 b.vz = 1 + s.rand() * 2;
@@ -1315,20 +1357,22 @@
         const b = s.ball;
         if (s.held) return;
         const inMouth = Math.abs(b.y - W / 2) < GOAL_W / 2 && b.z < GOAL_H;
-        if (b.px <= L && b.x > L && inMouth) return goal(s, 0);
-        if (b.px >= 0 && b.x < 0 && inMouth) return goal(s, 1);
+        // `right` is the side defending the right-hand goal this half.
+        const right = goalX(s, 0) === L ? 0 : 1;
+        if (b.px <= L && b.x > L && inMouth) return goal(s, 1 - right);
+        if (b.px >= 0 && b.x < 0 && inMouth) return goal(s, right);
 
         if (b.y < 0 || b.y > W) {
             const team = lastTeam(s) === 0 ? 1 : 0;
             return restart(s, "Throw-in", team, clamp(b.x, 1, L - 1), b.y < 0 ? 0.3 : W - 0.3);
         }
         if (b.x < 0 || b.x > L) {
-            const defending = b.x > L ? 1 : 0;
-            const gx = goalX(defending);
+            const defending = b.x > L ? right : 1 - right;
+            const gx = goalX(s, defending);
             if (lastTeam(s) === defending) {
                 return restart(s, "Corner", 1 - defending, gx === 0 ? 0.5 : L - 0.5, b.y < W / 2 ? 0.5 : W - 0.5);
             }
-            return restart(s, "Goal kick", defending, gx + attackDir(defending) * 4, W / 2);
+            return restart(s, "Goal kick", defending, gx + attackDir(s, defending) * 4, W / 2);
         }
     }
 
@@ -1341,7 +1385,7 @@
         s.score[team] += 1;
         const b = s.ball;
         // Let it sit in the net.
-        b.x = team === 0 ? L + GOAL_D * 0.7 : -GOAL_D * 0.7;
+        b.x = attackDir(s, team) === 1 ? L + GOAL_D * 0.7 : -GOAL_D * 0.7;
         b.vx = b.vy = b.vz = 0;
         b.z = 0.3;
         // The match minute, as the clock shows it: each half is 45.
@@ -1375,7 +1419,7 @@
                 const k = st.players.find((p) => p.team === team && p.role === "GK");
                 k.x = x;
                 k.y = y;
-                k.face = team === 0 ? 0 : Math.PI;
+                k.face = attackDir(st, team) === 1 ? 0 : Math.PI;
                 st.held = { id: k.id, until: st.t + 0.8 };
                 return;
             }
@@ -1394,7 +1438,7 @@
             if (label === "Corner") lineUpCorner(st, team, y, taker);
             else {
                 // Two teammates come short for the throw.
-                const ad = attackDir(team);
+                const ad = attackDir(s, team);
                 const near = pool.filter((p) => p !== taker).sort((a, c) => hyp(a.x - x, a.y - y) - hyp(c.x - x, c.y - y));
                 const spots = [
                     { x: x - ad * 5, y: y + inward.y * 5 },
@@ -1408,8 +1452,8 @@
 
     // Corner routine: attackers into the box, defenders marking the six-yard line.
     function lineUpCorner(s, team, y, taker) {
-        const ad = attackDir(team);
-        const gx = goalX(1 - team);
+        const ad = attackDir(s, team);
+        const gx = goalX(s, 1 - team);
         const side = y < W / 2 ? -1 : 1;
         const attack = [
             { x: gx - ad * 7, y: W / 2 + side * 0.5 },
