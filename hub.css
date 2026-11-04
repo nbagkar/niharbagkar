@@ -97,6 +97,7 @@ kbd {
 
 .hub .home-quick {
     display: inline-block;
+    white-space: nowrap;
     font-weight: 600;
     color: inherit;
     text-underline-offset: 0.2em;
@@ -842,7 +843,13 @@ kbd {
     }
 
     .home-foot {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
         margin-top: 0.6rem;
+    }
+
+    .hub .home-quick {
+        flex-basis: 100%;
     }
 
     .pack-replay {
