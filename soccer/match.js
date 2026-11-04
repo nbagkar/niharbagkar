@@ -124,7 +124,17 @@
         for (const btn of root.querySelectorAll("[data-half]")) btn.setAttribute("aria-checked", String(+btn.dataset.half === setup.half));
     }
 
+    function track(name, title) {
+        if (window.goatcounter && window.goatcounter.count) {
+            window.goatcounter.count({ path: name, title: title, event: true });
+        }
+    }
+
     function play() {
+        if (mode === "start" || mode === "full") {
+            if (versus()) track("five-match-friend", "Five-a-side: started a friend match");
+            else if (net.role !== "guest") track(`five-match-${setup.level}`, `Five-a-side: started a match on ${setup.level}`);
+        }
         if (mode === "halftime") Sim.secondHalf(s);
         if (mode === "full") {
             s = newMatch();
@@ -235,6 +245,10 @@
                     playing = false;
                     held = {};
                     saveLog();
+                    if (s.phase === "full" && net.role !== "guest") {
+                        const where = versus() ? "friend" : setup.level;
+                        track(`five-full-time-${where}`, `Five-a-side full time (${where}): ${s.score[0]}–${s.score[1]}`);
+                    }
                     show(s.phase);
                 }
             }
@@ -881,6 +895,7 @@
         if (net.link || !window.KickoffNet) return;
         roomStatus.textContent = role === "host" ? "Making a room…" : `Joining room ${code}…`;
         net.role = role;
+        track(`five-room-${role}`, role === "host" ? "Five-a-side: opened a friend room" : "Five-a-side: joined a friend room");
         net.peer = false;
         net.full = false;
         net.joined = Date.now();
