@@ -421,3 +421,30 @@ if (canHover && motionOK) {
 document.querySelectorAll(".slot-empty").forEach((slot) => {
     slot.addEventListener("click", () => slot.classList.toggle("is-peeled"));
 });
+
+const copyEmail = document.querySelector(".contact-copy");
+
+if (copyEmail) {
+    const tag = copyEmail.querySelector(".contact-copy-tag");
+    const status = document.querySelector(".contact-copy-status");
+    let resetCopy = 0;
+    copyEmail.addEventListener("click", async () => {
+        const address = copyEmail.dataset.copy;
+        try {
+            await navigator.clipboard.writeText(address);
+            tag.textContent = "Copied";
+            status.textContent = "Email address copied.";
+        } catch (error) {
+            window.prompt("Copy my email address:", address);
+            return;
+        }
+        copyEmail.classList.add("is-copied");
+        track("email-copy", "Copied email address");
+        clearTimeout(resetCopy);
+        resetCopy = setTimeout(() => {
+            tag.textContent = "Copy";
+            status.textContent = "";
+            copyEmail.classList.remove("is-copied");
+        }, 2000);
+    });
+}

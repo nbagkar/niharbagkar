@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihar Bagkar | Recruiter view</title>
+    <meta name="description" content="Nihar Bagkar at a glance: NYU Stern, product management intern at Microsoft, two apps live on the App Store. Resume, experience, projects, and contact on one page.">
+    <meta name="theme-color" content="#f6f5f1">
+    <link rel="canonical" href="https://www.niharbagkar.com/recruiter.html">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="https://www.niharbagkar.com/recruiter.html">
+    <meta property="og:title" content="Nihar Bagkar, at a glance">
+    <meta property="og:description" content="Product, venture, and fintech. NYU Stern. Resume, experience, and projects on one page.">
+    <meta property="og:image" content="https://www.niharbagkar.com/og-hub.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@100,400..800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f5f1;
+            --card: #ffffff;
+            --ink: #15151c;
+            --muted: #5d5d68;
+            --line: #e2e0d8;
+            --accent: #0b7a68;
+            --accent-ink: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0b0b12;
+                --card: #14141d;
+                --ink: #ececf1;
+                --muted: #a0a0ad;
+                --line: #262633;
+                --accent: #3ee0c2;
+                --accent-ink: #06060d;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Saira", system-ui, sans-serif;
+            font-size: 1.0625rem;
+            line-height: 1.55;
+            color: var(--ink);
+            background: var(--bg);
+        }
+
+        a { color: inherit; }
+
+        .wrap {
+            max-width: 52rem;
+            margin: 0 auto;
+            padding: 2.5rem 1rem 4rem;
+        }
+
+        .back {
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .back:hover { color: var(--ink); }
+
+        header.top { margin: 1.5rem 0 2rem; }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 6vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .role {
+            margin: 0.4rem 0 0;
+            font-size: 1.15rem;
+            color: var(--muted);
+        }
+
+        .facts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 1.2rem;
+            margin: 1rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .facts li::before {
+            content: "";
+            display: inline-block;
+            width: 0.4rem;
+            height: 0.4rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+            background: var(--accent);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.6rem;
+        }
+
+        .actions a,
+        .actions button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1rem;
+            font: inherit;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--ink);
+            text-decoration: none;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 0.4rem;
+            cursor: pointer;
+        }
+
+        .actions a:hover,
+        .actions button:hover { border-color: var(--ink); }
+
+        .actions .primary {
+            color: var(--accent-ink);
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .actions .primary:hover { border-color: var(--accent); filter: brightness(1.08); }
+
+        nav.jump {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 1.2rem;
+            margin: 0 0 2.5rem;
+            padding: 0.8rem 0;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        nav.jump a { color: var(--muted); text-decoration: none; }
+        nav.jump a:hover { color: var(--ink); }
+
+        section { margin-bottom: 2.8rem; scroll-margin-top: 1rem; }
+
+        h2 {
+            margin: 0 0 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .list { margin: 0; padding: 0; list-style: none; }
+
+        .item {
+            display: grid;
+            grid-template-columns: 8.5rem 1fr;
+            gap: 0.2rem 1.2rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .item:first-child { border-top: 0; padding-top: 0; }
+
+        .when { color: var(--muted); font-size: 0.95rem; }
+
+        h3 {
+            margin: 0;
+            font-size: 1.08rem;
+            font-weight: 700;
+        }
+
+        .item p { margin: 0.2rem 0 0; color: var(--muted); }
+
+        .tags { font-size: 0.9rem; }
+
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 1rem;
+            margin-top: 0.4rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .links a { text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+
+        .awards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+            gap: 0.5rem 1.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .awards span { color: var(--muted); }
+
+        .more {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            color: var(--muted);
+            border-top: 1px solid var(--line);
+        }
+
+        .sr-status {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+        }
+
+        @media (max-width: 560px) {
+            .item { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            :root { --bg: #fff; --card: #fff; --ink: #000; --muted: #333; --line: #ccc; --accent: #000; }
+            .back, nav.jump, .actions button, .more { display: none; }
+            .wrap { padding: 0; }
+            section { break-inside: avoid-page; }
+        }
+    </style>
+    <script data-goatcounter="https://niharbagkar.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+    <main class="wrap">
+        <a class="back" href="/">&larr; Interactive site</a>
+
+        <header class="top">
+            <h1>Nihar Bagkar</h1>
+            <p class="role">Product &middot; Venture &middot; Fintech &middot; New York</p>
+            <ul class="facts">
+                <li>NYU Stern, BS in Business, Technology &amp; Entrepreneurship, 3.88 GPA</li>
+                <li>Product management intern at Microsoft, summer 2026</li>
+                <li>Two apps live on the App Store</li>
+            </ul>
+            <div class="actions">
+                <a class="primary" href="/resume.pdf" target="_blank" rel="noopener" data-track="rv-resume">Resume (PDF) <span aria-hidden="true">&nearr;</span></a>
+                <a href="mailto:nihar.bagkar@stern.nyu.edu">nihar.bagkar@stern.nyu.edu</a>
+                <button type="button" class="rv-copy" data-copy="nihar.bagkar@stern.nyu.edu">Copy email</button>
+                <a href="https://linkedin.com/in/nihar-bagkar" target="_blank" rel="noopener">LinkedIn <span aria-hidden="true">&nearr;</span></a>
+                <a href="https://github.com/nbagkar" target="_blank" rel="noopener">GitHub <span aria-hidden="true">&nearr;</span></a>
+            </div>
+            <span class="sr-status" role="status"></span>
+        </header>
+
+        <nav class="jump" aria-label="On this page">
+            <a href="#experience">Experience</a>
+            <a href="#projects">Projects</a>
+            <a href="#awards">Awards &amp; writing</a>
+        </nav>
+
+        <section id="experience" aria-labelledby="experience-title">
+            <h2 id="experience-title">Experience</h2>
+            <ol class="list">
+                <li class="item">
+                    <span class="when">Summer 2026</span>
+                    <div>
+                        <h3>Microsoft, Product Management Intern</h3>
+                        <p>Product work at enterprise scale, plus SignalPath, a hackathon build for incident routing that placed in the top five of 47 teams.</p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">2025 &ndash; now</span>
+                    <div>
+                        <h3>Berkley Center for Entrepreneurship, Operations Intern</h3>
+                        <p>Screened 75+ startups and wrote 20+ investment memos. Redesigned the opportunity pipeline&rsquo;s data architecture, improving retrieval and monitoring by 30%.</p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Summer 2025</span>
+                    <div>
+                        <h3>Baltimore City Public Schools, Financial Systems Intern</h3>
+                        <p>Built dashboards and models over a rolling five-year budget, automated extraction of 170+ budget files (saving 100+ hours), and presented KPIs to finance leadership.</p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">On campus</span>
+                    <div>
+                        <h3>Product Management Club &amp; Entrepreneurial Exchange Group</h3>
+                        <p>Led student communities, with 114% attendance growth, ownership of the budget, and events with founders and investors.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="projects" aria-labelledby="projects-title">
+            <h2 id="projects-title">Projects</h2>
+            <ul class="list">
+                <li class="item">
+                    <span class="when">Live on App Store</span>
+                    <div>
+                        <h3>Viridian</h3>
+                        <p>A fractional marketplace for collectible trading cards. <span class="tags">Fintech &middot; iOS</span></p>
+                        <p class="links"><a href="viridian.html">Case file</a><a href="https://apps.apple.com/us/app/viridian-vault-portfolio/id6782263013" target="_blank" rel="noopener">App Store &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Live on App Store</span>
+                    <div>
+                        <h3>UPHouse</h3>
+                        <p>A clubhouse for your friends: birthdays, polls, and games in one private space. <span class="tags">Social &middot; iOS</span></p>
+                        <p class="links"><a href="uphouse.html">Case file</a><a href="https://apps.apple.com/us/app/viridian-uphouse/id6793402489" target="_blank" rel="noopener">App Store &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Hackathon, top 5 of 47</span>
+                    <div>
+                        <h3>SignalPath</h3>
+                        <p>One click from a Sev 1 incident to the engineer who can fix it. <span class="tags">AI &middot; DevOps</span></p>
+                        <p class="links"><a href="signalpath.html">Case file</a><a href="https://signalpath-demo-sar75e.azurewebsites.net/" target="_blank" rel="noopener">Live demo &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">1st place, team of four</span>
+                    <div>
+                        <h3>Uber AV Strategy</h3>
+                        <p>Why Uber&rsquo;s next autonomous fleet should launch in Atlanta. <span class="tags">Strategy &middot; Finance</span></p>
+                        <p class="links"><a href="uber-av-strategy.html">Case file</a><a href="https://canva.link/6xrpu0uywghgwhw" target="_blank" rel="noopener">Deck &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Live</span>
+                    <div>
+                        <h3>Cue</h3>
+                        <p>Describe a sound in words, get production-ready audio. <span class="tags">AI &middot; Music</span></p>
+                        <p class="links"><a href="cue.html">Case file</a><a href="https://cue-self.vercel.app/" target="_blank" rel="noopener">Visit Cue &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Open source</span>
+                    <div>
+                        <h3>BCPS Parser</h3>
+                        <p>Messy budget PDFs in, clean tables out. <span class="tags">AI &middot; Finance</span></p>
+                        <p class="links"><a href="https://github.com/nbagkar/bcps-pdf-parser" target="_blank" rel="noopener">Repository &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Live</span>
+                    <div>
+                        <h3>IB Prep Hub</h3>
+                        <p>Applications, outreach, and prep in one recruiting dashboard. <span class="tags">Fintech &middot; Workflow</span></p>
+                        <p class="links"><a href="https://ibprep.vercel.app" target="_blank" rel="noopener">Visit &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Live</span>
+                    <div>
+                        <h3>BinderChain</h3>
+                        <p>Verifiable ownership records for collectibles. <span class="tags">Infrastructure &middot; Trust</span></p>
+                        <p class="links"><a href="https://binderchain.vercel.app/" target="_blank" rel="noopener">Visit &nearr;</a></p>
+                    </div>
+                </li>
+                <li class="item">
+                    <span class="when">Side project</span>
+                    <div>
+                        <h3>Soccer Analytics</h3>
+                        <p>Football forecasts on free data, graded honestly against the market. 610 tests, CI. <span class="tags">Sports Analytics &middot; Python</span></p>
+                        <p class="links"><a href="soccer-analytics.html">Case file</a><a href="https://github.com/nbagkar/soccer-analytics" target="_blank" rel="noopener">GitHub &nearr;</a></p>
+                    </div>
+                </li>
+            </ul>
+            <p class="more" style="margin-top:1rem;padding-top:0;border:0">Plus 11 concepts, prototypes, and case studies in the <a href="/#binder">project binder</a>.</p>
+        </section>
+
+        <section id="awards" aria-labelledby="awards-title">
+            <h2 id="awards-title">Awards &amp; writing</h2>
+            <ul class="awards">
+                <li>Uber Finance Case Competition <span>&middot; Winner</span></li>
+                <li>CodePi Ideathon <span>&middot; Winner</span></li>
+                <li>NYUVC <span>&middot; Finalist</span></li>
+                <li>Stern Scholarship <span>&middot; Recipient</span></li>
+                <li>Dean&rsquo;s List <span>&middot; NYU Stern</span></li>
+                <li>CV Hall of Fame <span>&middot; Business Student</span></li>
+                <li>Future Goals Scholarship <span>&middot; Recipient</span></li>
+                <li>H.A.R.I Temple Scholarship <span>&middot; Recipient</span></li>
+                <li>Summa Cum Laude <span>&middot; CVHS</span></li>
+            </ul>
+            <ul class="list" style="margin-top:1.4rem">
+                <li class="item">
+                    <span class="when">Substack, 2025</span>
+                    <div><h3><a href="https://niharbagkar.substack.com/p/reimagining-trust-in-the-collectibles" target="_blank" rel="noopener">Reimagining Trust in the Collectibles Market</a></h3></div>
+                </li>
+                <li class="item">
+                    <span class="when">Amazon KDP, 2023</span>
+                    <div><h3><a href="https://www.amazon.com/dp/B0CF4FWH6F" target="_blank" rel="noopener">A Quest For Glory: The Journey To State Cup</a></h3></div>
+                </li>
+            </ul>
+        </section>
+
+        <p class="more">Want the fun version? The <a href="/">interactive site</a> has the project binder, a player card, and a soccer mini-game.</p>
+    </main>
+
+    <script>
+        function track(name, title) {
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({ path: name, title: title, event: true });
+            }
+        }
+
+        document.addEventListener("click", function (event) {
+            var link = event.target.closest("a[href]");
+            if (!link) return;
+            var href = link.getAttribute("href");
+            if (link.dataset.track) return track(link.dataset.track, "Recruiter view: resume");
+            if (href.indexOf("mailto:") === 0) return track("rv-email", "Recruiter view: email link");
+            var item = link.closest(".item");
+            var label = item ? item.querySelector("h3").textContent.trim() : link.textContent.trim();
+            track("rv-" + label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), "Recruiter view: " + label + " → " + link.textContent.trim());
+        });
+
+        var copy = document.querySelector(".rv-copy");
+        var status = document.querySelector(".sr-status");
+        copy.addEventListener("click", function () {
+            var address = copy.dataset.copy;
+            navigator.clipboard.writeText(address).then(function () {
+                copy.textContent = "Copied";
+                status.textContent = "Email address copied.";
+                setTimeout(function () { copy.textContent = "Copy email"; status.textContent = ""; }, 2000);
+            }, function () {
+                window.prompt("Copy my email address:", address);
+            });
+            track("rv-email-copy", "Recruiter view: copied email");
+        });
+    </script>
+</body>
+</html>

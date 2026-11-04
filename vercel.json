@@ -19,6 +19,11 @@
             "has": [{ "type": "host", "value": "soccer.niharbagkar.com" }],
             "dest": "/soccer/index.html"
         },
+        {
+            "src": "/recruiter/?",
+            "has": [{ "type": "host", "value": "www.niharbagkar.com" }],
+            "dest": "/recruiter.html"
+        },
         { "handle": "filesystem" },
         {
             "src": "/(.*)",

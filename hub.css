@@ -83,6 +83,25 @@ kbd {
     background: var(--accent);
 }
 
+.hub .hub-quick {
+    margin-left: auto;
+}
+
+.hub .hub-quick + .hub-resume {
+    margin-left: 0;
+}
+
+.home-quick {
+    display: none;
+}
+
+.hub .home-quick {
+    display: inline-block;
+    font-weight: 600;
+    color: inherit;
+    text-underline-offset: 0.2em;
+}
+
 .hub .sound-toggle {
     display: grid;
     place-items: center;
@@ -752,6 +771,14 @@ kbd {
         display: none;
     }
 
+    .hub .hub-quick {
+        display: none;
+    }
+
+    .hub .hub-quick + .hub-resume {
+        margin-left: auto;
+    }
+
     .hub .home {
         padding: 0.7rem 0.8rem 0;
         overflow-y: auto;
@@ -1022,6 +1049,12 @@ kbd {
 .pack-skip:hover {
     color: var(--paper-light);
     border-color: var(--paper-light);
+}
+
+.pack-recruiter {
+    right: auto;
+    left: 1rem;
+    text-decoration: none;
 }
 
 .is-tearing .pack {

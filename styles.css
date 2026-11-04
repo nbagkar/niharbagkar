@@ -1190,6 +1190,61 @@ a {
     background: var(--accent);
 }
 
+a.btn {
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Contact: the email button and a one-click copy of the address */
+
+.contact-email {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem 1.2rem;
+}
+
+.contact-email .btn {
+    margin-top: 0;
+}
+
+.contact-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-color: color-mix(in srgb, currentColor 35%, transparent);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.contact-copy:hover,
+.contact-copy:focus-visible {
+    border-color: currentColor;
+}
+
+.contact-copy-tag {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.contact-copy.is-copied .contact-copy-tag {
+    opacity: 1;
+}
+
+.contact-copy-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
 /* Colophon */
 
 .colophon {
