@@ -45,6 +45,8 @@
         link: null, role: null, peer: false, joined: 0, full: false,
         queue: [], guestIn: {}, lastIn: -1, inSeq: 0, inAt: 0,
         snaps: [], snapAt: 0, events: [], rtt: 150, pingAt: 0, hostMode: "start",
+        // When the first kick-off happens by itself, once a friend has joined.
+        autoAt: 0, autoLeft: 0,
     };
     const versus = () => !!(net.link && net.peer);
     // The side you play: NB FC, or the Rivals when you joined a friend's room.
@@ -99,8 +101,9 @@
         else if (playing) pause();
     });
 
-    playBtn.addEventListener("click", play);
+    playBtn.addEventListener("click", () => (net.role === "guest" ? goAhead() : play()));
     canvas.addEventListener("click", () => {
+        if (net.role === "guest") return;
         if (!playing && !overlay.hidden) play();
     });
 
@@ -131,6 +134,7 @@
     }
 
     function play() {
+        net.autoAt = 0;
         if (mode === "start" || mode === "full") {
             if (versus()) track("five-match-friend", "Five-a-side: started a friend match");
             else if (net.role !== "guest") track(`five-match-${setup.level}`, `Five-a-side: started a match on ${setup.level}`);
@@ -256,6 +260,7 @@
             acc = 0;
             if (crowd) crowd.gain.value = 0;
         }
+        if (net.role === "host") autoKickoff(now);
         if (net.role === "guest") guestFrame(now);
         else if (versus() && now - net.snapAt > (playing ? 50 : 250)) sendSnap(now);
         draw(dt);
@@ -863,6 +868,7 @@
        answers the keys sooner. The rooms are online.js, shared with Kick off. */
 
     const SNAP_DELAY = 100;
+    const AUTO_KICKOFF = 5000;
     const SOUND_EVENTS = new Set(["kick", "save", "post", "tackle", "goal", "out", "whistle", "kickoff"]);
     const room = root.querySelector("[data-room]");
     const roomStatus = root.querySelector("[data-room-status]");
@@ -919,7 +925,7 @@
 
     function leaveRoom(note) {
         if (net.link) net.link.close();
-        Object.assign(net, { link: null, role: null, peer: false, queue: [], snaps: [], events: [], lastIn: -1, guestIn: {}, hostMode: "start" });
+        Object.assign(net, { link: null, role: null, peer: false, queue: [], snaps: [], events: [], lastIn: -1, guestIn: {}, hostMode: "start", autoAt: 0, autoLeft: 0 });
         if (location.search.includes("room=")) history.replaceState(null, "", location.pathname);
         playing = false;
         held = {};
@@ -949,8 +955,11 @@
                 breakAt = 0;
                 s = newMatch();
                 matchId = Date.now();
+                // Nobody has to find the button: it kicks off by itself shortly.
+                net.autoAt = performance.now() + AUTO_KICKOFF;
                 show("start");
             } else if (mode === "start") {
+                net.autoAt = 0;
                 s = newMatch();
                 show("start");
             } else {
@@ -979,6 +988,9 @@
                 net.link.send({ t: "pong", c: m.c });
             } else if (m.t === "pause" && playing) {
                 pause();
+            } else if (m.t === "go" && !playing && mode !== "play" && !overlay.hidden) {
+                // Your friend pressed Enter on the card: kick off, resume or carry on.
+                play();
             }
         } else if (m.t === "snap") {
             net.snaps.push({ at: performance.now(), d: m });
@@ -1027,6 +1039,7 @@
             fl: s.flash ? [s.flash.text, s.flash.team] : null,
             sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
             ev: net.events.splice(0),
+            ka: net.autoLeft,
         };
         if (mode === "halftime" || mode === "full") {
             msg.stats = s.stats;
@@ -1041,12 +1054,22 @@
             if (net.hostMode === "play") net.link.send({ t: "pause" });
             return;
         }
+        if (down && e.code === "Enter") {
+            e.preventDefault();
+            goAhead();
+            return;
+        }
         const act = KEYS[e.code];
         if (!act) return;
         e.preventDefault();
         if (!!held[act] === down) return;
         held[act] = down;
         sendInput();
+    }
+
+    // Guest: Enter or the button on a card asks the host's game to carry on.
+    function goAhead() {
+        if (net.link && net.hostMode !== "play") net.link.send({ t: "go" });
     }
 
     function sendInput() {
@@ -1122,6 +1145,11 @@
         if (d.stats) s.stats = d.stats;
         if (d.goals) s.log = d.goals;
 
+        if ((d.ka || 0) !== net.autoLeft) {
+            net.autoLeft = d.ka || 0;
+            if (mode === "start") renderRoom();
+        }
+
         // Follow the host's breaks: kick-off card, pause, half time, full time.
         if (d.m !== net.hostMode) {
             net.hostMode = d.m;
@@ -1143,7 +1171,7 @@
         room.querySelector("[data-room-link]").hidden = !(host && !net.peer);
         root.querySelector("[data-level-seg]").hidden = !!net.link;
         root.querySelector("[data-half-seg]").hidden = guest;
-        playBtn.hidden = guest || (host && !net.peer);
+        playBtn.hidden = (guest && !net.peer) || (host && !net.peer);
         if (!net.link) return;
         const code = net.link.code;
         room.querySelector(".room-url").value = roomLink(code);
@@ -1151,13 +1179,36 @@
         if (host && !net.peer) {
             roomStatus.innerHTML = `Room <b>${code}</b>. Send your friend the link, or the code to type in. The match starts once they're here.`;
         } else if (host) {
-            roomStatus.textContent = mode === "start" || mode === "full"
-                ? `Your friend is in. You're ${TEAMS[0].name} (attacking right); they're the ${TEAMS[1].name} (attacking left).`
-                : "";
+            roomStatus.textContent = mode === "start"
+                ? `Your friend is in. You're ${TEAMS[0].name} (attacking right); they're the ${TEAMS[1].name}. ${countdown()}`
+                : "Either of you can press Enter to carry on.";
         } else {
             roomStatus.innerHTML = mode === "start"
-                ? `You're in room <b>${code}</b> as the ${TEAMS[1].name}: pink, attacking left. Your friend kicks off.`
-                : "Waiting for your friend to carry on.";
+                ? `You're in room <b>${code}</b> as the ${TEAMS[1].name}: pink, attacking left. ${countdown()}`
+                : "Either of you can press Enter to carry on.";
+        }
+    }
+
+    function countdown() {
+        return net.autoLeft > 0 ? `Kicking off in ${net.autoLeft}… or press Enter now.` : "Press Enter to kick off.";
+    }
+
+    // Host: run the first kick-off's countdown, and kick off when it ends.
+    function autoKickoff(now) {
+        if (!net.autoAt || mode !== "start" || !versus()) {
+            net.autoAt = 0;
+            net.autoLeft = 0;
+            return;
+        }
+        if (now >= net.autoAt) {
+            net.autoLeft = 0;
+            play();
+            return;
+        }
+        const left = Math.ceil((net.autoAt - now) / 1000);
+        if (left !== net.autoLeft) {
+            net.autoLeft = left;
+            renderRoom();
         }
     }
 
