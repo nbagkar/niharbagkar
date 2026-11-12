@@ -228,7 +228,17 @@
 
     /* ---------- Loop ---------- */
 
+    // One frame; whatever goes wrong in it, the next one is still asked for,
+    // so a single error can't freeze the game.
     function frame(now, byHand) {
+        try {
+            runFrame(now);
+        } finally {
+            if (!byHand) requestAnimationFrame(frame);
+        }
+    }
+
+    function runFrame(now) {
         const dt = Math.min(0.1, (now - last) / 1000);
         last = now;
         if (playing) {
@@ -264,7 +274,6 @@
         if (net.role === "guest") guestFrame(now);
         else if (versus() && now - net.snapAt > (playing ? 50 : 250)) sendSnap(now);
         draw(dt);
-        if (!byHand) requestAnimationFrame(frame);
     }
 
     /* ---------- Drawing ---------- */
@@ -1051,7 +1060,7 @@
     // Guest: keys go to the host as they change.
     function guestKey(e, down) {
         if (down && (e.code === "Escape" || e.code === "KeyP")) {
-            if (net.hostMode === "play") net.link.send({ t: "pause" });
+            if (net.link && net.hostMode === "play") net.link.send({ t: "pause" });
             return;
         }
         if (down && e.code === "Enter") {
@@ -1079,6 +1088,8 @@
     }
 
     function guestFrame(now) {
+        // Still connecting: the role is set before the room is open.
+        if (!net.link) return;
         if (now - net.pingAt > 1000) {
             net.pingAt = now;
             net.link.send({ t: "ping", c: now });
