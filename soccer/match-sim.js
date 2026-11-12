@@ -1502,7 +1502,7 @@
         }
     }
 
-    const api = { create, step, secondHalf, LEVELS, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, TEAMS, speedFor, rollDist };
+    const api = { create, step, secondHalf, LEVELS, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     else root.MatchSim = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -47,6 +47,9 @@
         snaps: [], snapAt: 0, events: [], rtt: 150, pingAt: 0, hostMode: "start",
         // When the first kick-off happens by itself, once a friend has joined.
         autoAt: 0, autoLeft: 0,
+        // Guest: how unevenly snapshots arrive, and where we think our own
+        // player is right now. Host: the friend's ping, as they measured it.
+        off: null, jitter: 0, pred: null, peerRtt: 0,
     };
     const versus = () => !!(net.link && net.peer);
     // The side you play: NB FC, or the Rivals when you joined a friend's room.
@@ -272,7 +275,7 @@
         }
         if (net.role === "host") autoKickoff(now);
         if (net.role === "guest") guestFrame(now);
-        else if (versus() && now - net.snapAt > (playing ? 50 : 250)) sendSnap(now);
+        else if (versus() && now - net.snapAt > (playing ? SNAP_EVERY : 250)) sendSnap(now);
         draw(dt);
     }
 
@@ -342,6 +345,7 @@
     // When the player you control is off-screen, an arrow on the edge points to them.
     function drawOffscreen() {
         const p = s.players[meId()];
+        if (!p) return;
         const x = X(p.x);
         const y = Y(p.y);
         const m = 0.9 * sc;
@@ -564,7 +568,7 @@
 
     function drawCharge() {
         const p = s.players[meId()];
-        if (!p.chargeKind) return;
+        if (!p || !p.chargeKind) return;
         const x = X(p.x);
         const y = Y(p.y) - 2.6 * BIG * sc;
         const w = 1.8 * sc;
@@ -605,6 +609,17 @@
         ctx.fillRect(pad + w + 4 * u, pad, cwid, h);
         ctx.fillStyle = s.clock >= s.halfLen ? "#e8c25a" : "#fff";
         ctx.fillText(clock, pad + w + 14 * u, pad + h / 2 + 1);
+        // In a room: the round trip to your friend, so lag has a number.
+        const ping = net.role === "guest" ? net.rtt : net.peerRtt;
+        if (versus() && ping > 0) {
+            ctx.font = `700 ${Math.round(13 * u)}px Saira, sans-serif`;
+            const label = `Ping ${Math.round(ping)} ms`;
+            const x = pad + w + cwid + 8 * u;
+            ctx.fillStyle = "rgba(6,6,13,0.6)";
+            ctx.fillRect(x, pad + 6 * u, ctx.measureText(label).width + 16 * u, h - 12 * u);
+            ctx.fillStyle = ping < 120 ? "#1ef2c8" : ping < 220 ? "#e8c25a" : "#ff2d87";
+            ctx.fillText(label, x + 8 * u, pad + h / 2 + 1);
+        }
         ctx.textBaseline = "alphabetic";
     }
 
@@ -876,7 +891,12 @@
        smoothed, with its own player pushed ahead by half the round trip so it
        answers the keys sooner. The rooms are online.js, shared with Kick off. */
 
-    const SNAP_DELAY = 100;
+    // Thirty snapshots a second; the friend draws them a little in the past,
+    // further back when they arrive unevenly.
+    const SNAP_EVERY = 30;
+    // Run speeds and acceleration for predicting your own player, with the
+    // sim's values as fallbacks in case an older match-sim.js is cached.
+    const RUN = { jog: Sim.JOG || 6.2, sprint: Sim.SPRINT || 8.4, accel: Sim.ACCEL || 24 };
     const AUTO_KICKOFF = 5000;
     const SOUND_EVENTS = new Set(["kick", "save", "post", "tackle", "goal", "out", "whistle", "kickoff"]);
     const room = root.querySelector("[data-room]");
@@ -934,7 +954,7 @@
 
     function leaveRoom(note) {
         if (net.link) net.link.close();
-        Object.assign(net, { link: null, role: null, peer: false, queue: [], snaps: [], events: [], lastIn: -1, guestIn: {}, hostMode: "start", autoAt: 0, autoLeft: 0 });
+        Object.assign(net, { link: null, role: null, peer: false, queue: [], snaps: [], events: [], lastIn: -1, guestIn: {}, hostMode: "start", autoAt: 0, autoLeft: 0, off: null, jitter: 0, pred: null, peerRtt: 0 });
         if (location.search.includes("room=")) history.replaceState(null, "", location.pathname);
         playing = false;
         held = {};
@@ -995,6 +1015,7 @@
                 if (net.queue.length > 12) net.queue.shift();
             } else if (m.t === "ping") {
                 net.link.send({ t: "pong", c: m.c });
+                if (Number(m.r) > 0) net.peerRtt = Math.min(2000, Number(m.r));
             } else if (m.t === "pause" && playing) {
                 pause();
             } else if (m.t === "go" && !playing && mode !== "play" && !overlay.hidden) {
@@ -1002,8 +1023,20 @@
                 play();
             }
         } else if (m.t === "snap") {
-            net.snaps.push({ at: performance.now(), d: m });
-            if (net.snaps.length > 8) net.snaps.shift();
+            const at = performance.now();
+            const ht = Number(m.ht) || at;
+            // How far the host's clock is behind ours, by the quickest a
+            // snapshot has made it here; creeps up slowly in case the route
+            // gets slower. How much later than that they tend to land is the jitter.
+            const off = at - ht;
+            if (net.off === null || off < net.off) net.off = off;
+            else net.off += (off - net.off) * 0.003;
+            net.jitter = net.jitter * 0.92 + (off - net.off) * 0.08;
+            const prev = net.snaps[net.snaps.length - 1];
+            if (!prev || ht > prev.ht) {
+                net.snaps.push({ at, ht, d: m });
+                if (net.snaps.length > 30) net.snaps.shift();
+            }
             if (Array.isArray(m.ev)) react(m.ev);
         } else if (m.t === "pong") {
             const rtt = performance.now() - Number(m.c);
@@ -1049,6 +1082,7 @@
             sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
             ev: net.events.splice(0),
             ka: net.autoLeft,
+            ht: Math.round(now),
         };
         if (mode === "halftime" || mode === "full") {
             msg.stats = s.stats;
@@ -1092,7 +1126,7 @@
         if (!net.link) return;
         if (now - net.pingAt > 1000) {
             net.pingAt = now;
-            net.link.send({ t: "ping", c: now });
+            net.link.send({ t: "ping", c: now, r: Math.round(net.rtt) });
         }
         // Resend the keys now and then, in case a message went missing.
         if (now - net.inAt > 400) sendInput();
@@ -1101,39 +1135,38 @@
         const last = snaps[snaps.length - 1];
         const d = last.d;
 
-        // Everyone else: between the two snapshots either side of a moment
-        // slightly in the past.
-        const at = now - SNAP_DELAY;
+        // Everyone else: replayed on the host's own clock, a little in the
+        // past, between the two snapshots either side of that moment. The more
+        // unevenly they arrive, the further back, so a late one is already
+        // here when it is needed.
+        const delay = Math.min(250, Math.max(50, SNAP_EVERY + 10 + net.jitter * 2.5));
+        const at = now - net.off - delay;
         let a = snaps[0];
         let b = snaps[0];
         for (let i = 0; i < snaps.length - 1; i++) {
-            if (snaps[i].at <= at && snaps[i + 1].at > at) {
+            if (snaps[i].ht <= at && snaps[i + 1].ht > at) {
                 a = snaps[i];
                 b = snaps[i + 1];
                 break;
             }
-            if (snaps[i + 1].at <= at) a = b = snaps[i + 1];
+            if (snaps[i + 1].ht <= at) a = b = snaps[i + 1];
         }
-        const k = b.at > a.at ? Math.min(1, Math.max(0, (at - a.at) / (b.at - a.at))) : 0;
+        const k = b.ht > a.ht ? Math.min(1, Math.max(0, (at - a.ht) / (b.ht - a.ht))) : 0;
+        // Run out of snapshots (one is very late): carry on by speed for a
+        // moment rather than stopping dead.
+        const over = a === b ? Math.min(0.1, Math.max(0, (at - b.ht) / 1000)) : 0;
         const mix = (x, y) => x + (y - x) * k;
         const angle = (x, y) => x + Math.atan2(Math.sin(y - x), Math.cos(y - x)) * k;
         s.players.forEach((p, i) => {
             const pa = a.d.p[i];
             const pb = b.d.p[i];
-            Object.assign(p, { x: mix(pa[0], pb[0]), y: mix(pa[1], pb[1]), face: angle(pa[2], pb[2]), vx: pb[3], vy: pb[4] });
+            Object.assign(p, { x: mix(pa[0], pb[0]) + pb[3] * over, y: mix(pa[1], pb[1]) + pb[4] * over, face: angle(pa[2], pb[2]), vx: pb[3], vy: pb[4] });
         });
         const ball = s.ball;
-        Object.assign(ball, { x: mix(a.d.b[0], b.d.b[0]), y: mix(a.d.b[1], b.d.b[1]), z: mix(a.d.b[2], b.d.b[2]), vx: b.d.b[3], vy: b.d.b[4] });
+        const bb = b.d.b;
+        Object.assign(ball, { x: mix(a.d.b[0], bb[0]) + bb[3] * over, y: mix(a.d.b[1], bb[1]) + bb[4] * over, z: mix(a.d.b[2], bb[2]), vx: bb[3], vy: bb[4] });
 
-        // Your own player, and the ball while you have it: the newest
-        // snapshot, carried on by its speed for the time it took to arrive.
-        const me = d.u[1];
-        if (me >= 0) {
-            const lead = Math.min(0.25, (now - last.at) / 1000 + net.rtt / 2000);
-            const pm = d.p[me];
-            Object.assign(s.players[me], { x: pm[0] + pm[3] * lead, y: pm[1] + pm[4] * lead, face: pm[2], vx: pm[3], vy: pm[4] });
-            if (d.c === me) Object.assign(ball, { x: d.b[0] + d.b[3] * lead, y: d.b[1] + d.b[4] * lead, z: d.b[2] });
-        }
+        predictOwn(now, d, last);
 
         s.score = d.sc;
         s.clock = d.ck;
@@ -1170,6 +1203,61 @@
                 canvas.focus({ preventScroll: true });
             } else show(d.m);
         }
+    }
+
+    // Guest: your own player moves the moment you press a key, the way the
+    // host's game will move him, and is eased back towards where the host
+    // says he is. The ball comes with him while he has it.
+    function predictOwn(now, d, last) {
+        const me = d.u[1];
+        if (me < 0) return;
+        const p = s.players[me];
+        const pm = d.p[me];
+        // Where the host has him now: the newest snapshot, carried on by its
+        // speed for the time it took to get here.
+        const lead = Math.min(0.3, (now - last.at) / 1000 + net.rtt / 2000);
+        const hx = pm[0] + pm[3] * lead;
+        const hy = pm[1] + pm[4] * lead;
+        const dt = net.pred ? Math.min(0.05, (now - net.pred.at) / 1000) : 0;
+        const live = net.hostMode === "play" && d.ph === "play" && !(d.sp && d.sp.length);
+        const drift = net.pred ? Math.hypot(net.pred.x - hx, net.pred.y - hy) : Infinity;
+        if (!net.pred || net.pred.id !== me || !live || !(drift <= 3)) {
+            net.pred = { id: me, x: hx, y: hy, vx: pm[3], vy: pm[4], at: now };
+        } else {
+            const q = net.pred;
+            let dx = (held.right ? 1 : 0) - (held.left ? 1 : 0);
+            let dy = (held.down ? 1 : 0) - (held.up ? 1 : 0);
+            const m = Math.hypot(dx, dy);
+            if (m > 0) {
+                dx /= m;
+                dy /= m;
+            }
+            const hu = d.hu[1];
+            const sprint = held.sprint && m > 0 && (!hu || hu[2] > 0.04);
+            const top = (sprint ? RUN.sprint : RUN.jog) * (d.c === me ? 0.9 : 1);
+            let ax = dx * top - q.vx;
+            let ay = dy * top - q.vy;
+            const am = Math.hypot(ax, ay);
+            const lim = RUN.accel * dt;
+            if (am > lim) {
+                ax = (ax / am) * lim;
+                ay = (ay / am) * lim;
+            }
+            q.vx += ax;
+            q.vy += ay;
+            q.x += q.vx * dt;
+            q.y += q.vy * dt;
+            // Ease back towards the host's version so the two never drift apart.
+            const pull = 1 - Math.exp(-dt * 5);
+            q.x += (hx - q.x) * pull;
+            q.y += (hy - q.y) * pull;
+            q.at = now;
+        }
+        const q = net.pred;
+        const face = Math.hypot(q.vx, q.vy) > 0.4 ? Math.atan2(q.vy, q.vx) : pm[2];
+        Object.assign(p, { x: q.x, y: q.y, face, vx: q.vx, vy: q.vy });
+        // On the ball: keep it where the host has it relative to him.
+        if (d.c === me) Object.assign(s.ball, { x: q.x + (d.b[0] - pm[0]), y: q.y + (d.b[1] - pm[1]), z: d.b[2] });
     }
 
     // The room's status line and buttons, for whichever card is showing.
