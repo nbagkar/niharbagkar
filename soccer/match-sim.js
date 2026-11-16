@@ -38,10 +38,97 @@
     const ROLL_A = 1.5;
     const ROLL_K = 0.4;
 
-    const TEAMS = [
-        { name: "NB FC", short: "NBF", kit: "#1ef2c8", trim: "#04342c" },
-        { name: "Rivals", short: "RIV", kit: "#ff2d87", trim: "#3a0619" },
+    // The clubs are made up, and so are their players. rating is the squad's
+    // average; away is the kit worn when the two home kits would clash.
+    const CLUBS = [
+        { id: "nbfc", name: "NB FC", short: "NBF", kit: "#1ef2c8", trim: "#04342c", away: "#f4f4f5", rating: 80, formation: "4-3-3" },
+        { id: "rivals", name: "Rivals", short: "RIV", kit: "#ff2d87", trim: "#3a0619", away: "#facc15", rating: 79, formation: "4-4-2" },
+        { id: "harbor", name: "Harbor City", short: "HAR", kit: "#3b82f6", trim: "#0b1f4a", away: "#f4f4f5", rating: 84, formation: "4-3-3" },
+        { id: "solana", name: "Real Solana", short: "SOL", kit: "#f59e0b", trim: "#4a2c02", away: "#1f2937", rating: 82, formation: "4-4-2" },
+        { id: "kestrel", name: "Kestrel Rovers", short: "KES", kit: "#ef4444", trim: "#450a0a", away: "#f4f4f5", rating: 77, formation: "4-4-2" },
+        { id: "ironvale", name: "Iron Vale", short: "IRV", kit: "#e5e7eb", trim: "#111827", away: "#111827", rating: 75, formation: "4-4-2" },
+        { id: "monteazul", name: "Monte Azul", short: "MAZ", kit: "#8b5cf6", trim: "#2e1065", away: "#fde68a", rating: 86, formation: "4-3-3" },
+        { id: "northbridge", name: "Northbridge Athletic", short: "NTH", kit: "#f97316", trim: "#431407", away: "#0ea5e9", rating: 73, formation: "4-3-3" },
     ];
+    // The two sides of the current match (see usePitch: one match at a time).
+    const TEAMS = [Object.assign({}, CLUBS[0]), Object.assign({}, CLUBS[1])];
+
+    const SURNAMES = ("Okafor Lindqvist Moreau Tanaka Alvarez Novak Haddad Byrne Castell Duarte Eze Fontaine Grieve Halvorsen Ibarra Jansen " +
+        "Kovac Laurent Mbeki Nakamura Oyelaran Petrov Quintero Rahimi Sorensen Tavares Ueda Varga Whitlock Xavier Yilmaz Zubiri Ashby Brandt " +
+        "Coelho Dimitrov Ekstrom Farrow Galvez Hartley Iwata Juarez Keane Lombardi Marlowe Nkemelu Ortega Pryce Rios Salako Thorne Urquhart " +
+        "Velasco Wendt Yamada Zeller Adeyemi Bergstrom Cardoso Delacroix Esposito Fitzroy Gashi Holloway Iliev Jovic Kimura Lachance").split(" ");
+
+    // How each position's attributes sit around the club's rating.
+    const SHAPES = {
+        GK: { pac: -22, sho: -45, pas: -12, def: -30, gk: 3 },
+        CB: { pac: -6, sho: -22, pas: -6, def: 6 },
+        LB: { pac: 4, sho: -16, pas: -1, def: 2 },
+        RB: { pac: 4, sho: -16, pas: -1, def: 2 },
+        CDM: { pac: -3, sho: -9, pas: 3, def: 4 },
+        CM: { pac: 0, sho: -3, pas: 5, def: -4 },
+        LM: { pac: 6, sho: 0, pas: 3, def: -12 },
+        RM: { pac: 6, sho: 0, pas: 3, def: -12 },
+        LW: { pac: 8, sho: 2, pas: 1, def: -22 },
+        RW: { pac: 8, sho: 2, pas: 1, def: -22 },
+        ST: { pac: 4, sho: 6, pas: -3, def: -28 },
+    };
+
+    // Shares of pace, shooting, passing and defending in a position's overall.
+    const WEIGHTS = {
+        CB: [0.2, 0, 0.2, 0.6], LB: [0.35, 0, 0.25, 0.4], RB: [0.35, 0, 0.25, 0.4], CDM: [0.2, 0, 0.35, 0.45],
+        CM: [0.15, 0.15, 0.5, 0.2], LM: [0.35, 0.2, 0.4, 0.05], RM: [0.35, 0.2, 0.4, 0.05],
+        LW: [0.4, 0.3, 0.3, 0], RW: [0.4, 0.3, 0.3, 0], ST: [0.3, 0.45, 0.25, 0],
+    };
+
+    function hash(text) {
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+        return h >>> 0;
+    }
+
+    function kitClash(a, b) {
+        const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        const [x, y] = [rgb(a), rgb(b)];
+        return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 110;
+    }
+
+    // How far an attribute sits from an ordinary 78, as a multiplier: 1 at 78,
+    // `per` more for each point above. Five-a-side ignores attributes, so the
+    // balance tuned there is untouched.
+    function attr(s, p, key, per) {
+        return s.size === "eleven" && p.attrs ? 1 + (p.attrs[key] - 78) * per : 1;
+    }
+
+    // A club's eleven: the same names and numbers every match.
+    function squad(club, spots) {
+        const rand = rng(hash(club.id));
+        const used = new Set();
+        const star = 6 + Math.floor(rand() * 5);
+        return spots.map((d, i) => {
+            let name;
+            do name = SURNAMES[Math.floor(rand() * SURNAMES.length)];
+            while (used.has(name));
+            used.add(name);
+            const initial = "ABCDEFGHJKLMNOPRSTVY"[Math.floor(rand() * 20)];
+            const shape = SHAPES[d.pos] || SHAPES.CM;
+            const lift = i === star ? 6 : 0;
+            const at = (key) => clamp(Math.round(club.rating + (shape[key] || 0) + lift + (rand() - 0.5) * 8), 30, 97);
+            const attrs = { pac: at("pac"), sho: at("sho"), pas: at("pas"), def: at("def"), gk: d.pos === "GK" ? at("gk") : 20 };
+            // Overall: the attributes that matter for the position.
+            const w = WEIGHTS[d.pos] || WEIGHTS.CM;
+            const ovr = d.pos === "GK" ? attrs.gk : Math.round(attrs.pac * w[0] + attrs.sho * w[1] + attrs.pas * w[2] + attrs.def * w[3]);
+            return { name: `${initial}. ${name}`, attrs, ovr };
+        });
+    }
+
+    // NB FC's number nine is the site's owner.
+    function captain(club, list, spots) {
+        if (club.id !== "nbfc") return list;
+        const st = spots.findIndex((d) => d.pos === "ST");
+        const i = st >= 0 ? st : Math.max(0, spots.findIndex((d) => d.role === "FW"));
+        list[i].name = "N. Bagkar";
+        return list;
+    }
 
     // Home spots as fractions of the pitch, team 0 attacking right (so its
     // left side is the top of the screen).
@@ -112,6 +199,11 @@
         normal: { pace: 1, tackle: 1, save: 0, think: 0.25 },
         hard: { pace: 1.06, tackle: 1.3, save: 0.06, think: 0.15 },
     };
+    // Sideways acceleration of a finesse shot, m/s².
+    const CURL = 7;
+    // What a keeper loses against a bending shot, and per metre he has to
+    // cover to reach a shot (eleven a side).
+    const TUNE = { CURL_EDGE: 0.12, NEED: 0.12 };
     // How often an AI player meets a cross with his head, free or marked.
     const HEAD_FREE = 0.55;
     const HEAD_MARKED = 0.25;
@@ -127,7 +219,18 @@
         opts = opts || {};
         const size = opts.size === "eleven" ? "eleven" : "five";
         usePitch(size);
-        const roster = lineup(opts);
+        const clubs = [CLUBS.find((c) => c.id === opts.club) || CLUBS[0], CLUBS.find((c) => c.id === opts.rival) || CLUBS[1]];
+        if (clubs[1] === clubs[0]) clubs[1] = CLUBS[clubs[0] === CLUBS[1] ? 0 : 1];
+        TEAMS[0] = Object.assign({}, clubs[0]);
+        TEAMS[1] = Object.assign({}, clubs[1]);
+        // Kits too alike to tell apart: the away side changes.
+        if (kitClash(TEAMS[0].kit, TEAMS[1].kit)) TEAMS[1].kit = TEAMS[1].away;
+        const roster = lineup(Object.assign({}, opts, { rivalFormation: clubs[1].formation }));
+        const squads = [0, 1].map((t) => {
+            const spots = roster.filter((d) => d.team === t);
+            return captain(clubs[t], squad(clubs[t], spots), spots);
+        });
+        const seen = [0, 0];
         // The person starts on the centre forward.
         const fw = (team) => {
             const st = roster.findIndex((d) => d.team === team && d.pos === "ST");
@@ -137,6 +240,7 @@
             t: 0,
             size,
             formation: opts.formation || null,
+            clubs: clubs.map((c) => c.id),
             // Against a friend both sides are people, so the Rivals get no level.
             versus: !!opts.versus,
             level: !opts.versus && LEVELS[opts.level] ? opts.level : "normal",
@@ -153,7 +257,7 @@
             rand: rng(seed || 7),
             score: [0, 0],
             ball: { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 },
-            players: roster.map((d, id) => ({
+            players: roster.map((d, id) => Object.assign({}, squads[d.team][seen[d.team]++], {
                 id,
                 team: d.team,
                 role: d.role,
@@ -502,7 +606,7 @@
             me.top = top;
         }
 
-        for (const kind of ["pass", "shoot", "lob"]) {
+        for (const kind of ["pass", "shoot", "lob", "finesse"]) {
             if (pressed(kind)) {
                 me.chargeKind = kind;
                 me.charge = 0;
@@ -568,7 +672,7 @@
         if (s.setPiece && s.setPiece.taker !== p.id) return false;
         const reach = s.carrier === p.id ? 1.4 : REACH + 0.15;
         // A shot can meet the ball in the air: a header or volley.
-        const high = kind === "shoot" ? 2.3 : 1.1;
+        const high = kind === "shoot" || kind === "finesse" ? 2.3 : 1.1;
         return p.kickCd <= 0 && p.stun <= 0 && b.z < high && hyp(b.x - p.x, b.y - p.y) < reach;
     }
 
@@ -601,8 +705,11 @@
         let vy;
         let vz = 0;
         const piece = s.setPiece ? s.setPiece.kind : null;
-        if (piece === "Penalty") kind = "shoot";
+        // A finesse shot is a shot: placed and bent rather than hit hard.
+        const finesse = kind === "finesse";
+        if (finesse || piece === "Penalty") kind = "shoot";
         b.piece = piece;
+        b.curl = 0;
         // No offside straight from a throw-in, a corner or a goal kick.
         b.exempt = piece === "Throw-in" || piece === "Corner" || !!(s.held && s.held.id === p.id && s.held.goalKick);
         s.setPiece = null;
@@ -642,13 +749,24 @@
             const dist = hyp(gx - b.x, W / 2 - b.y);
             // Side-on to goal the strike gets wilder.
             const twist = Math.max(0, 0.3 - towardGoal(s, p, dir, b)) * 1.5;
-            const spread = 0.35 + dist * 0.035 + twist + (power > 0.85 ? (power - 0.85) * 6 : 0);
-            const ty = W / 2 + sideways * (GOAL_W / 2 - 0.7) + (s.rand() - 0.5) * 2 * spread;
+            let spread = (0.35 + dist * 0.035 + twist + (power > 0.85 ? (power - 0.85) * 6 : 0)) / attr(s, p, "sho", 0.012);
             const tx = gx + ad * 0.3;
-            // Headers and volleys are softer than a struck shot along the ground.
-            const speed = header ? 14 + 6 * power : 15 + 15 * power;
-            const d = hyp(tx - b.x, ty - b.y);
+            // Headers and volleys are softer than a struck shot along the ground,
+            // and so is a finesse shot, which is placed instead.
+            const bend = finesse && !header;
+            const speed = header ? 14 + 6 * power : bend ? 13 + 10 * power : 15 + 15 * power;
+            if (bend) spread *= 0.5;
+            let ty = W / 2 + sideways * (GOAL_W / 2 - (bend ? 0.45 : 0.7)) + (s.rand() - 0.5) * 2 * spread;
+            let d = hyp(tx - b.x, ty - b.y);
             const t = d / speed;
+            if (bend) {
+                // It starts outside the post and curls back in: aim wide by
+                // what the swerve will bring back over the flight.
+                const out = Math.sign(ty - W / 2) || 1;
+                b.curl = -out * CURL;
+                ty += out * 0.5 * CURL * t * t;
+                d = hyp(tx - b.x, ty - b.y);
+            }
             // Past 85% power the shot starts to rise; a full bar usually clears the bar.
             const h = 0.2 + power * 1.1 + (power > 0.85 ? (power - 0.85) * 7 : 0) + s.rand() * 0.3;
             // Driven, not chipped: long weak shots skid in along the ground. A
@@ -671,6 +789,10 @@
                     tx = q.x;
                     ty = q.y;
                 }
+                // A poorer passer's ball drifts off line over distance.
+                const slack = Math.max(0, 1 - attr(s, p, "pas", 0.012)) + (s.size === "eleven" ? 0.02 : 0);
+                tx += (s.rand() - 0.5) * d * slack;
+                ty += (s.rand() - 0.5) * d * slack;
                 d = hyp(tx - b.x, ty - b.y);
                 const speed = speedFor(d, 4.5 + power * 3);
                 vx = ((tx - b.x) / d) * speed;
@@ -735,6 +857,14 @@
         b.fromX = b.x;
         b.fromY = b.y;
         b.header = kind === "shoot" && b.z > 1.1;
+        // How far each keeper stands from the line of a shot as it is struck:
+        // on the big goal, the further he has to go the less likely he keeps it out.
+        b.need = 0;
+        if (kind === "shoot" && s.size === "eleven") {
+            const k = s.players.find((q) => q.team !== p.team && q.role === "GK");
+            const sp0 = hyp(vx, vy) || 1;
+            if (k) b.need = Math.min(4.5, Math.abs((k.x - b.x) * vy - (k.y - b.y) * vx) / sp0);
+        }
         p.kickCd = 0.3;
         p.touchCd = 0.35;
         p.face = Math.atan2(vy, vx);
@@ -836,7 +966,7 @@
             behind = ov > 1 && ((p.x - owner.x) * owner.vx + (p.y - owner.y) * owner.vy) / ov < -0.3;
             if (behind) chance *= 0.6;
         }
-        const won = s.rand() < chance;
+        const won = s.rand() < chance * attr(s, p, "def", 0.008);
         // Getting the man: likely when a lunge misses, and from behind even
         // when it gets the ball too.
         if (owner && !soft && hyp(owner.x - p.x, owner.y - p.y) < 1.7) {
@@ -1297,7 +1427,7 @@
             // From range the keeper has longer to set, so distance helps him.
             const range = clamp((hyp(b.fromX - p.x, b.fromY - p.y) - 12) * 0.022, 0, 0.32);
             // A header from a cross comes down and late, so it is harder to hold.
-            const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0) + (p.team === 1 ? LEVELS[s.level].save : 0), 0.15, 0.95);
+            const save = clamp(1.5 - Math.max(0, sp - 12) / 30 - stretch * 0.55 + range + (p.diving ? 0 : 0.1) - (b.header ? 0.12 : 0) + (p.team === 1 ? LEVELS[s.level].save : 0) + (attr(s, p, "gk", 0.006) - 1) - (b.curl ? TUNE.CURL_EDGE : 0) - (b.need || 0) * TUNE.NEED, 0.15, 0.95);
             if (s.rand() > save) {
                 // Fingertips: half the time that turns it round the post, half
                 // the time it still goes in.
@@ -1352,7 +1482,7 @@
     /* ---------- Movement ---------- */
 
     function move(s, p) {
-        const k = p.team === 1 && p.role !== "GK" ? LEVELS[s.level].pace : 1;
+        const k = (p.team === 1 && p.role !== "GK" && !human(s, 1) ? LEVELS[s.level].pace : 1) * attr(s, p, "pac", 0.004);
         let ax = p.dvx * k - p.vx;
         let ay = p.dvy * k - p.vy;
         const a = hyp(ax, ay);
@@ -1500,6 +1630,9 @@
             b.vx = b.vy = b.vz = 0;
             return;
         }
+        // A bent shot swerves until something touches it.
+        if (b.curl && b.last === b.kicker && b.lastAt === b.kickAt && s.t - b.kickAt < 2.5) b.vy += b.curl * DT;
+        else b.curl = 0;
         b.x += b.vx * DT;
         b.y += b.vy * DT;
         b.z += b.vz * DT;
@@ -1605,7 +1738,7 @@
         const kicker = s.players[b.kicker];
         const scorer = last && last.team === team ? last.id : kicker && kicker.team === team && b.lastAt - b.kickAt < 1.5 ? kicker.id : b.last;
         s.events.push({ type: "goal", team, scorer, min });
-        s.flash = { text: "Goal!", team, until: s.t + 2.4 };
+        s.flash = { text: "Goal!", team, until: s.t + 2.4, who: scorer, min };
         s.carrier = -1;
         s.pass = null;
         s.pause = 2.4;
@@ -1751,9 +1884,9 @@
         }
     }
 
-    const api = { create, step, secondHalf, LEVELS, FORMATIONS, PITCHES, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
+    const api = { create, step, secondHalf, LEVELS, FORMATIONS, PITCHES, CLUBS, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
     // For headless tests only.
-    api.test = { restart, isOffside, offsideLine, goalX, attackDir };
+    api.test = { restart, isOffside, offsideLine, goalX, attackDir, TUNE };
     // The pitch's measurements follow whichever match was made last.
     for (const k of ["L", "W", "GOAL_W", "GOAL_H", "BOX_D", "BOX_W", "SIX_D", "SIX_W", "SPOT", "CIRCLE"]) {
         Object.defineProperty(api, k, { enumerable: true, get: () => ({ L, W, GOAL_W, GOAL_H, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE })[k] });

@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Five-a-side · Soccer · Nihar Bagkar</title>
-    <meta name="description" content="Five-a-side: a top-down football game for the keyboard. Dribble, pass, and shoot past the keeper.">
+    <title>Match Day · Soccer · Nihar Bagkar</title>
+    <meta name="description" content="Match Day: a top-down football game for the keyboard. Eleven a side or five a side, with offside, free kicks, penalties, goal replays and online matches against a friend.">
     <meta name="robots" content="noindex">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon-32.png" sizes="32x32">
@@ -27,8 +27,8 @@
 
     <main class="match-page">
         <div class="match-head wrap">
-            <h1>Five-a-side</h1>
-            <p class="match-tag">Prototype &middot; five against five</p>
+            <h1>Match Day</h1>
+            <p class="match-tag">11 a side &middot; 5 a side &middot; online</p>
         </div>
 
         <div class="match-stage wrap" id="match">
@@ -36,7 +36,7 @@
 
             <div class="match-overlay" data-overlay>
                 <div class="overlay-card">
-                    <p class="kicker" data-overlay-kicker>Five against five</p>
+                    <p class="kicker" data-overlay-kicker>Eleven against eleven</p>
                     <h2 data-overlay-title>NB FC vs Rivals</h2>
                     <div class="match-stats" data-stats hidden></div>
                     <div class="setup" data-setup>
@@ -44,6 +44,12 @@
                             <span class="seg-label">Match</span>
                             <button type="button" role="radio" data-size="eleven">11 a side</button>
                             <button type="button" role="radio" data-size="five">5 a side</button>
+                        </div>
+                        <div class="seg" data-club-seg>
+                            <span class="seg-label">Clubs</span>
+                            <select class="club" data-club="0" aria-label="Your club"></select>
+                            <span class="room-or">vs</span>
+                            <select class="club" data-club="1" aria-label="Opposition"></select>
                         </div>
                         <div class="seg" role="radiogroup" aria-label="Formation" data-form-seg>
                             <span class="seg-label">Formation</span>
@@ -83,6 +89,7 @@
                             <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</p>
                             <p><kbd>J</kbd> Pass</p>
                             <p><kbd>K</kbd> Shoot (hold)</p>
+                            <p><kbd>I</kbd> Finesse shot (curls)</p>
                             <p><kbd>L</kbd> Lob / through ball</p>
                             <p><kbd>Shift</kbd> Sprint</p>
                             <p><kbd>Q</kbd> or <kbd>H</kbd> Switch &middot; <kbd>E</kbd> Tackle</p>
@@ -92,6 +99,7 @@
                             <p><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> Move</p>
                             <p><kbd>Space</kbd> Pass</p>
                             <p><kbd>X</kbd> Shoot (hold)</p>
+                            <p><kbd>V</kbd> Finesse shot (curls)</p>
                             <p><kbd>C</kbd> Lob / through ball</p>
                             <p><kbd>Shift</kbd> Sprint</p>
                             <p><kbd>Tab</kbd> Switch &middot; <kbd>Z</kbd> Tackle</p>

@@ -35,13 +35,14 @@
         KeyJ: "pass", Space: "pass",
         KeyK: "shoot", KeyX: "shoot",
         KeyL: "lob", KeyC: "lob",
+        KeyI: "finesse", KeyV: "finesse",
         KeyQ: "swap", KeyH: "swap", Tab: "swap",
         KeyE: "tackle", KeyZ: "tackle",
     };
 
     // Rivals level and half length, remembered between visits.
     const SETUP_KEY = "nbs-five-setup";
-    const setup = { level: "normal", half: 180, size: "eleven", formation: "4-3-3" };
+    const setup = { level: "normal", half: 180, size: "eleven", formation: "4-3-3", club: "nbfc", rival: "rivals" };
     try {
         Object.assign(setup, JSON.parse(localStorage.getItem(SETUP_KEY)) || {});
     } catch (error) {
@@ -95,6 +96,12 @@
             return;
         }
         if (!playing) return;
+        if (replay) {
+            // Any kick key or Enter skips the replay.
+            if (["pass", "shoot", "lob", "finesse"].includes(KEYS[e.code]) || e.code === "Enter") endReplay();
+            e.preventDefault();
+            return;
+        }
         if (e.code === "Escape" || e.code === "KeyP") return pause();
         if (e.code === "KeyR" && !versus()) return restart();
         const act = KEYS[e.code];
@@ -122,6 +129,30 @@
         if (!playing && !overlay.hidden) play();
     });
 
+    // Club pickers: yours and the opposition.
+    for (const sel of root.querySelectorAll("[data-club]")) {
+        for (const c of Sim.CLUBS) sel.add(new Option(`${c.name} · ${c.rating}`, c.id));
+        sel.addEventListener("change", () => {
+            const mine = sel.dataset.club === "0";
+            const other = mine ? "rival" : "club";
+            setup[mine ? "club" : "rival"] = sel.value;
+            // The same club twice: the other side moves to a different one.
+            if (setup[other] === sel.value) setup[other] = Sim.CLUBS.find((c) => c.id !== sel.value).id;
+            saveSetup();
+            if (mode === "start") s = newMatch();
+            renderSetup();
+            if (mode === "start" || mode === "full") show(mode);
+        });
+    }
+
+    function saveSetup() {
+        try {
+            localStorage.setItem(SETUP_KEY, JSON.stringify(setup));
+        } catch (error) {
+            /* Not remembered. */
+        }
+    }
+
     for (const btn of root.querySelectorAll("[data-level], [data-half], [data-size], [data-form]")) {
         btn.addEventListener("click", () => {
             if (btn.dataset.level) setup.level = btn.dataset.level;
@@ -144,6 +175,7 @@
         for (const btn of root.querySelectorAll("[data-size]")) btn.setAttribute("aria-checked", String(btn.dataset.size === setup.size));
         for (const btn of root.querySelectorAll("[data-form]")) btn.setAttribute("aria-checked", String(btn.dataset.form === setup.formation));
         root.querySelector("[data-form-seg]").hidden = setup.size !== "eleven" || net.role === "guest";
+        for (const sel of root.querySelectorAll("[data-club]")) sel.value = sel.dataset.club === "0" ? setup.club : setup.rival;
         for (const btn of root.querySelectorAll("[data-level]")) btn.setAttribute("aria-checked", String(btn.dataset.level === setup.level));
         for (const btn of root.querySelectorAll("[data-half]")) btn.setAttribute("aria-checked", String(+btn.dataset.half === setup.half));
     }
@@ -245,7 +277,7 @@
             const list = (team) => goals.filter((g) => g.team === team).map((g) => {
                 const p = s.players[g.scorer];
                 const own = p && p.team !== team ? " (og)" : "";
-                return `#${p ? p.num : "?"} ${g.min ? `${g.min}'` : ""}${own}`;
+                return `${p ? p.name || `#${p.num}` : "?"} ${g.min ? `${g.min}'` : ""}${own}`;
             }).join(", ") || "–";
             html.push(`<p class="stat-scorers">${TEAMS[0].name}: ${list(0)} &middot; ${TEAMS[1].name}: ${list(1)}</p>`);
         }
@@ -274,9 +306,13 @@
         last = now;
         if (playing) {
             acc += dt;
-            while (acc >= Sim.DT && s.phase === "play") {
+            if (replay) acc = 0;
+            while (acc >= Sim.DT && s.phase === "play" && !replay) {
                 Sim.step(s, held, versus() ? nextGuestInput() : undefined);
                 react(s.events);
+                record(now);
+                // A goal: a moment to celebrate, then the replay.
+                if (s.events.some((e) => e.type === "goal")) replayAt = now + 1300;
                 if (net.link) noteEvents(s.events);
                 if (s.log.length !== logged && performance.now() - savedAt > 3000) saveLog();
                 acc -= Sim.DT;
@@ -301,6 +337,8 @@
             acc = 0;
             if (crowd) crowd.gain.value = 0;
         }
+        if (replayAt && now >= replayAt && net.role !== "guest") startReplay(now);
+        if (replay) runReplay(now, dt);
         if (net.role === "host") autoKickoff(now);
         if (net.role === "guest") guestFrame(now);
         else if (versus() && now - net.snapAt > (playing ? SNAP_EVERY : 250)) sendSnap(now);
@@ -349,6 +387,7 @@
 
     function draw(dt) {
         resize();
+        const live = replay ? showReplayFrame() : null;
         moveCamera(dt);
         shake = Math.max(0, shake - dt);
         const jolt = shake * 22 * (cw / 960);
@@ -367,8 +406,121 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         drawConfetti(dt);
         drawHud();
-        drawRadar();
-        drawFlash();
+        if (replay) drawReplayTag();
+        else {
+            drawRadar();
+            drawPlate();
+            drawFlash();
+        }
+        if (live) live();
+    }
+
+    /* ---------- Goal replays ----------
+       The last few seconds of play are kept on a tape. After a goal they are
+       shown again, slowed down, before the kick-off. Any kick key skips it. */
+
+    const tape = [];
+    let replay = null;
+    let replayAt = 0;
+
+    function record(now) {
+        const b = s.ball;
+        tape.push({ t: now, p: s.players.map((p) => [p.x, p.y, p.face, p.vx, p.vy]), b: [b.x, b.y, b.z], u: s.users.slice() });
+        while (tape.length && now - tape[0].t > 9000) tape.shift();
+    }
+
+    function startReplay(now) {
+        replayAt = 0;
+        // From about five seconds before the ball went in to just after.
+        const frames = tape.filter((f) => f.t > now - 6800 && f.t < now - 700 && f.p.length === s.players.length);
+        if (frames.length < 20 || mode !== "play") return;
+        replay = { frames, at: frames[0].t, end: frames[frames.length - 1].t };
+    }
+
+    function endReplay() {
+        replay = null;
+        replayAt = 0;
+        last = performance.now();
+    }
+
+    function runReplay(now, dt) {
+        replay.at += dt * 1000 * 0.5;
+        // The friend's replay runs for as long as the host's does.
+        if (net.role !== "guest" && replay.at >= replay.end + 500) endReplay();
+    }
+
+    // Put the taped positions into the match for one draw; returns the undo.
+    function showReplayFrame() {
+        const fr = replay.frames;
+        const at = Math.min(replay.at, replay.end);
+        let i = 0;
+        while (i < fr.length - 2 && fr[i + 1].t <= at) i++;
+        const a = fr[i];
+        const b = fr[Math.min(i + 1, fr.length - 1)];
+        const k = b.t > a.t ? Math.min(1, Math.max(0, (at - a.t) / (b.t - a.t))) : 0;
+        const mix = (x, y) => x + (y - x) * k;
+        const kept = { p: s.players.map((p) => [p.x, p.y, p.face, p.vx, p.vy]), b: [s.ball.x, s.ball.y, s.ball.z, s.ball.vx, s.ball.vy], u: s.users, user: s.user };
+        s.players.forEach((p, n) => Object.assign(p, { x: mix(a.p[n][0], b.p[n][0]), y: mix(a.p[n][1], b.p[n][1]), face: a.p[n][2], vx: a.p[n][3], vy: a.p[n][4] }));
+        Object.assign(s.ball, { x: mix(a.b[0], b.b[0]), y: mix(a.b[1], b.b[1]), z: mix(a.b[2], b.b[2]), vx: 0, vy: 0 });
+        s.users = a.u;
+        return () => {
+            s.players.forEach((p, n) => Object.assign(p, { x: kept.p[n][0], y: kept.p[n][1], face: kept.p[n][2], vx: kept.p[n][3], vy: kept.p[n][4] }));
+            Object.assign(s.ball, { x: kept.b[0], y: kept.b[1], z: kept.b[2], vx: kept.b[3], vy: kept.b[4] });
+            s.users = kept.u;
+            s.user = kept.user;
+        };
+    }
+
+    function drawReplayTag() {
+        const u = cw / 960;
+        // Letterbox bars and a tag, like a broadcast.
+        ctx.fillStyle = "rgba(0,0,0,0.78)";
+        ctx.fillRect(0, ch - 34 * u, cw, 34 * u);
+        ctx.font = `italic 900 ${Math.round(20 * u)}px Saira, sans-serif`;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        const blink = Math.floor(performance.now() / 500) % 2;
+        ctx.fillStyle = "#e5263a";
+        if (blink) ctx.fillRect(cw - 126 * u, 22 * u, 10 * u, 10 * u);
+        ctx.fillStyle = "#fff";
+        ctx.fillText("REPLAY", cw - 20 * u, 28 * u);
+        ctx.font = `600 ${Math.round(13 * u)}px Saira, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        ctx.fillText(net.role === "guest" ? "Goal replay" : "Press pass or shoot to skip", cw / 2, ch - 17 * u);
+        ctx.textBaseline = "alphabetic";
+    }
+
+    // Who you are controlling: number, name, position and overall.
+    function drawPlate() {
+        const p = s.players[meId()];
+        if (!p || !p.name) return;
+        const u = cw / 960;
+        const team = TEAMS[myTeam()];
+        ctx.font = `800 ${Math.round(15 * u)}px Saira, sans-serif`;
+        const name = p.name.toUpperCase();
+        const meta = s.size === "eleven" ? `${p.pos} · ${p.ovr}` : p.pos;
+        const w = Math.max(ctx.measureText(name).width, 60 * u) + 62 * u;
+        const h = 40 * u;
+        const x = 14 * u;
+        const y = ch - h - 14 * u;
+        ctx.fillStyle = "rgba(6,6,13,0.72)";
+        ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = team.kit;
+        ctx.fillRect(x, y, 38 * u, h);
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.fillStyle = team.trim || "#000";
+        ctx.font = `italic 900 ${Math.round(20 * u)}px Saira, sans-serif`;
+        ctx.fillText(String(p.num), x + 19 * u, y + h / 2 + 1);
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#fff";
+        ctx.font = `800 ${Math.round(15 * u)}px Saira, sans-serif`;
+        ctx.fillText(name, x + 48 * u, y + 14 * u);
+        ctx.fillStyle = "rgba(255,255,255,0.65)";
+        ctx.font = `600 ${Math.round(11 * u)}px Saira, sans-serif`;
+        ctx.fillText(meta, x + 48 * u, y + 29 * u);
+        ctx.textBaseline = "alphabetic";
     }
 
     // When the player you control is off-screen, an arrow on the edge points to them.
@@ -571,7 +723,7 @@
         ctx.font = `800 ${Math.round(0.42 * sc)}px Saira, sans-serif`;
         ctx.textAlign = "center";
         ctx.fillStyle = "#fff";
-        ctx.fillText(String(p.num), x, top - 0.5 * sc);
+        ctx.fillText(p.name ? p.name.split(". ").pop().toUpperCase() : String(p.num), x, top - 0.5 * sc);
         if (p.stamina < 0.995) {
             const w = 1.2 * sc;
             ctx.fillStyle = "rgba(0,0,0,0.5)";
@@ -620,9 +772,9 @@
         const h = 0.24 * sc;
         ctx.fillStyle = "rgba(0,0,0,0.6)";
         ctx.fillRect(x - w / 2, y, w, h);
-        ctx.fillStyle = { pass: "#1ef2c8", shoot: "#ff2d87", lob: "#e8c25a" }[p.chargeKind];
+        ctx.fillStyle = { pass: "#1ef2c8", shoot: "#ff2d87", lob: "#e8c25a", finesse: "#a78bfa" }[p.chargeKind];
         ctx.fillRect(x - w / 2, y, w * p.charge, h);
-        if (p.chargeKind === "shoot") {
+        if (p.chargeKind === "shoot" || p.chargeKind === "finesse") {
             // Past here the shot starts to rise over the bar.
             ctx.fillStyle = "#fff";
             ctx.fillRect(x - w / 2 + w * 0.85, y - 0.06 * sc, Math.max(2, 0.05 * sc), h + 0.12 * sc);
@@ -743,10 +895,19 @@
         ctx.fillStyle = goal ? TEAMS[s.flash.team].kit : "#fff";
         const y = ch * (goal ? 0.42 : 0.2);
         let t = s.flash.text.toUpperCase();
-        const booked = s.flash.card && s.players[s.flash.who];
-        if (booked) t += ` · #${booked.num}`;
+        const who = s.players[s.flash.who];
+        if (s.flash.card && who) t += ` · ${who.name || `#${who.num}`}`;
         ctx.strokeText(t, cw / 2, y);
         ctx.fillText(t, cw / 2, y);
+        if (goal && who) {
+            // The scorer and the minute under the shout.
+            ctx.font = `800 ${Math.round(26 * u)}px Saira, sans-serif`;
+            ctx.fillStyle = "#fff";
+            const line = `${who.name || `#${who.num}`}${s.flash.min ? `  ${s.flash.min}'` : ""}${who.team !== s.flash.team ? " (og)" : ""}`;
+            ctx.strokeText(line, cw / 2, y + 40 * u);
+            ctx.fillText(line, cw / 2, y + 40 * u);
+            ctx.font = `italic 900 ${Math.round(84 * u)}px Saira, sans-serif`;
+        }
         if (s.flash.card) {
             // The referee's card, beside the words.
             const w = ctx.measureText(t).width;
@@ -1143,13 +1304,15 @@
             c: s.carrier,
             pt: s.pass ? s.pass.to : -1,
             hu: s.users.map((id) => (id >= 0 ? [s.players[id].chargeKind, r2(s.players[id].charge), r2(s.players[id].stamina)] : null)),
-            fl: s.flash ? [s.flash.text, s.flash.team, s.flash.card || null, s.flash.who === undefined ? -1 : s.flash.who] : null,
+            fl: s.flash ? [s.flash.text, s.flash.team, s.flash.card || null, s.flash.who === undefined ? -1 : s.flash.who, s.flash.min || 0] : null,
             sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
             ev: net.events.splice(0),
             ka: net.autoLeft,
             ht: Math.round(now),
+            rp: replay ? 1 : 0,
             sz: s.size,
             fm: s.formation,
+            cl: s.clubs,
         };
         if (mode === "halftime" || mode === "full") {
             msg.stats = s.stats;
@@ -1202,8 +1365,9 @@
         const last = snaps[snaps.length - 1];
         const d = last.d;
         // The host picked the pitch and formation: match them.
-        if ((d.sz || "five") !== s.size || (d.fm || null) !== s.formation || d.p.length !== s.players.length) {
-            s = newMatch({ size: d.sz || "five", formation: d.fm || undefined, versus: true });
+        const cl = d.cl || ["nbfc", "rivals"];
+        if ((d.sz || "five") !== s.size || (d.fm || null) !== s.formation || d.p.length !== s.players.length || cl[0] !== s.clubs[0] || cl[1] !== s.clubs[1]) {
+            s = newMatch({ size: d.sz || "five", formation: d.fm || undefined, club: cl[0], rival: cl[1], versus: true });
             net.pred = null;
             if (mode !== "play") show(mode);
         }
@@ -1254,7 +1418,7 @@
         s.user = d.u[0];
         s.carrier = d.c;
         s.pass = d.pt >= 0 ? { to: d.pt } : null;
-        s.flash = d.fl ? { text: d.fl[0], team: d.fl[1], card: d.fl[2], who: d.fl[3] } : null;
+        s.flash = d.fl ? { text: d.fl[0], team: d.fl[1], card: d.fl[2], who: d.fl[3], min: d.fl[4] } : null;
         d.u.forEach((id, i) => {
             if (id >= 0 && d.hu[i]) Object.assign(s.players[id], { chargeKind: d.hu[i][0], charge: d.hu[i][1], stamina: d.hu[i][2] });
         });
@@ -1270,6 +1434,12 @@
             net.autoLeft = d.ka || 0;
             if (mode === "start") renderRoom();
         }
+
+        // The host is showing a goal replay: show ours, from our own tape.
+        if (d.rp && !replay) {
+            startReplay(now + 600);
+        } else if (!d.rp && replay) endReplay();
+        else if (!d.rp && net.hostMode === "play" && d.ph === "play") record(now);
 
         // Follow the host's breaks: kick-off card, pause, half time, full time.
         if (d.m !== net.hostMode) {
@@ -1424,6 +1594,7 @@
     });
 
     renderSetup();
+    show("start");
     // Opened from a friend's room link.
     const linked = new URLSearchParams(location.search).get("room");
     if (linked && window.KickoffNet) openRoom("guest", window.KickoffNet.cleanCode(linked));
