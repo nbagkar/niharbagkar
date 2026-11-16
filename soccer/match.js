@@ -210,6 +210,13 @@
         overlay.hidden = false;
     }
 
+    // "2Y 1R" style.
+    function cards(t) {
+        const y = t.yellows || 0;
+        const r = t.reds || 0;
+        return y || r ? `${y ? `${y}Y` : ""}${y && r ? " " : ""}${r ? `${r}R` : ""}` : "0";
+    }
+
     function statsHtml() {
         const [a, b] = s.stats;
         const pct = (x, y) => (x + y ? Math.round((100 * x) / (x + y)) : 50);
@@ -223,6 +230,9 @@
             ["Tackles won", a.tacklesWon, b.tacklesWon],
             ["Saves", a.saves, b.saves],
             ["Corners", a.corners, b.corners],
+            ["Fouls", a.fouls || 0, b.fouls || 0],
+            ["Offsides", a.offsides || 0, b.offsides || 0],
+            ["Cards", cards(a), cards(b), null],
         ];
         const html = rows.map(([name, x, y, share]) => {
             const left = share === undefined ? pct(+x, +y) : share;
@@ -346,7 +356,8 @@
         drawPitch();
         drawGoal(0);
         drawGoal(L);
-        const order = s.players.slice().sort((a, b) => a.y - b.y);
+        // A sent-off player is parked far beyond the touchline: not drawn.
+        const order = s.players.filter((p) => !sentOff(p)).sort((a, b) => a.y - b.y);
         for (const p of order) drawShadow(p);
         drawBallShadow();
         for (const p of order) drawPlayer(p, dt);
@@ -387,6 +398,8 @@
         ctx.fillStyle = "#fff";
         ctx.fillText(String(p.num), ex - Math.cos(a) * 0.75 * sc, ey - Math.sin(a) * 0.75 * sc + 0.15 * sc);
     }
+
+    const sentOff = (p) => p.off || p.y < -20;
 
     function drawPitch() {
         ctx.fillStyle = "#0e4a2b";
@@ -678,6 +691,7 @@
         ctx.lineTo(rx + rw / 2, ry + rh);
         ctx.stroke();
         for (const p of s.players) {
+            if (sentOff(p)) continue;
             ctx.fillStyle = TEAMS[p.team].kit;
             ctx.beginPath();
             ctx.arc(rx + p.x * k, ry + p.y * k, (p.id === meId() ? 3.2 : 2.2) * u, 0, Math.PI * 2);
@@ -701,7 +715,12 @@
         line(sp.x, sp.y, sp.x + a.x * 7, sp.y + a.y * 7);
         ctx.setLineDash([]);
         const u = cw / 960;
-        const keys = sp.kind === "Corner" ? "Aim, then L to cross (shoot to head it) · J short pass" : "Aim, then J to throw";
+        const keys = {
+            Corner: "Aim, then L to cross (shoot to head it) · J short pass",
+            "Throw-in": "Aim, then J to throw",
+            "Free kick": "Aim, then hold K to shoot · J pass · L cross",
+            Penalty: "Pick a side with ↑ or ↓, then hold K: longer is harder, too long goes over",
+        }[sp.kind];
         ctx.font = `700 ${Math.round(16 * u)}px Saira, sans-serif`;
         ctx.textAlign = "center";
         const w = ctx.measureText(keys).width + 24 * u;
@@ -723,9 +742,20 @@
         ctx.strokeStyle = "rgba(0,0,0,0.55)";
         ctx.fillStyle = goal ? TEAMS[s.flash.team].kit : "#fff";
         const y = ch * (goal ? 0.42 : 0.2);
-        const t = s.flash.text.toUpperCase();
+        let t = s.flash.text.toUpperCase();
+        const booked = s.flash.card && s.players[s.flash.who];
+        if (booked) t += ` · #${booked.num}`;
         ctx.strokeText(t, cw / 2, y);
         ctx.fillText(t, cw / 2, y);
+        if (s.flash.card) {
+            // The referee's card, beside the words.
+            const w = ctx.measureText(t).width;
+            ctx.fillStyle = s.flash.card === "red" ? "#e5263a" : "#f5d313";
+            ctx.strokeStyle = "rgba(0,0,0,0.6)";
+            ctx.lineWidth = 2 * u;
+            ctx.fillRect(cw / 2 + w / 2 + 14 * u, y - 30 * u, 22 * u, 32 * u);
+            ctx.strokeRect(cw / 2 + w / 2 + 14 * u, y - 30 * u, 22 * u, 32 * u);
+        }
     }
 
     /* ---------- Sound ----------
@@ -868,6 +898,9 @@
                 whistle(0);
             } else if (e.type === "kickoff") {
                 whistle(1);
+            } else if (e.type === "foul" || e.type === "offside") {
+                whistle(1);
+                roar = Math.max(roar, 0.6);
             } else if (e.type === "whistle") {
                 whistle(3);
                 roar = Math.max(roar, 0.6);
@@ -930,7 +963,7 @@
     // sim's values as fallbacks in case an older match-sim.js is cached.
     const RUN = { jog: Sim.JOG || 6.2, sprint: Sim.SPRINT || 8.4, accel: Sim.ACCEL || 24 };
     const AUTO_KICKOFF = 5000;
-    const SOUND_EVENTS = new Set(["kick", "save", "post", "tackle", "goal", "out", "whistle", "kickoff"]);
+    const SOUND_EVENTS = new Set(["kick", "save", "post", "tackle", "goal", "out", "whistle", "kickoff", "foul", "offside"]);
     const room = root.querySelector("[data-room]");
     const roomStatus = root.querySelector("[data-room-status]");
     const r2 = (v) => Math.round(v * 100) / 100;
@@ -1110,7 +1143,7 @@
             c: s.carrier,
             pt: s.pass ? s.pass.to : -1,
             hu: s.users.map((id) => (id >= 0 ? [s.players[id].chargeKind, r2(s.players[id].charge), r2(s.players[id].stamina)] : null)),
-            fl: s.flash ? [s.flash.text, s.flash.team] : null,
+            fl: s.flash ? [s.flash.text, s.flash.team, s.flash.card || null, s.flash.who === undefined ? -1 : s.flash.who] : null,
             sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
             ev: net.events.splice(0),
             ka: net.autoLeft,
@@ -1221,7 +1254,7 @@
         s.user = d.u[0];
         s.carrier = d.c;
         s.pass = d.pt >= 0 ? { to: d.pt } : null;
-        s.flash = d.fl ? { text: d.fl[0], team: d.fl[1] } : null;
+        s.flash = d.fl ? { text: d.fl[0], team: d.fl[1], card: d.fl[2], who: d.fl[3] } : null;
         d.u.forEach((id, i) => {
             if (id >= 0 && d.hu[i]) Object.assign(s.players[id], { chargeKind: d.hu[i][0], charge: d.hu[i][1], stamina: d.hu[i][2] });
         });

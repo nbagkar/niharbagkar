@@ -121,7 +121,7 @@
     const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
     const hyp = Math.hypot;
 
-    const blankStats = () => ({ shots: 0, onTarget: 0, passes: 0, passesOk: 0, tackles: 0, tacklesWon: 0, saves: 0, corners: 0, poss: 0 });
+    const blankStats = () => ({ shots: 0, onTarget: 0, passes: 0, passesOk: 0, tackles: 0, tacklesWon: 0, saves: 0, corners: 0, poss: 0, fouls: 0, offsides: 0, yellows: 0, reds: 0 });
 
     function create(seed, opts) {
         opts = opts || {};
@@ -225,6 +225,7 @@
         const b = s.ball;
         Object.assign(b, { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 });
         for (const p of s.players) {
+            if (p.off) continue;
             p.x = homeX(s, p);
             p.y = homeY(s, p);
             // Everyone back in their own half, and the side not kicking off
@@ -246,7 +247,8 @@
     }
 
     function striker(s, team) {
-        return s.players.find((p) => p.team === team && p.pos === "ST") || s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
+        const on = s.players.filter((p) => p.team === team && !p.off);
+        return on.find((p) => p.pos === "ST") || on.find((p) => p.role === "FW") || on.find((p) => p.role !== "GK");
     }
 
     /* ---------- Ball maths ---------- */
@@ -346,6 +348,12 @@
             } else if (e.type === "out") {
                 if (e.label === "Corner") st[e.team].corners += 1;
                 tl.pass = tl.shot = null;
+            } else if (e.type === "foul") {
+                st[p.team].fouls += 1;
+            } else if (e.type === "offside") {
+                st[p.team].offsides += 1;
+            } else if (e.type === "card") {
+                st[p.team][e.color === "red" ? "reds" : "yellows"] += 1;
             }
         }
     }
@@ -528,7 +536,7 @@
         let best = null;
         let bestD = Infinity;
         for (const p of s.players) {
-            if (p.team !== team || p.role === "GK" || p.id === s.users[team]) continue;
+            if (p.team !== team || p.role === "GK" || p.off || p.id === s.users[team]) continue;
             const d = hyp(p.x - b.x, p.y - b.y);
             if (d < bestD) {
                 bestD = d;
@@ -568,7 +576,7 @@
         let best = null;
         let bestScore = Infinity;
         for (const q of s.players) {
-            if (q.team !== p.team || q.id === p.id || q.role === "GK") continue;
+            if (q.team !== p.team || q.id === p.id || q.role === "GK" || q.off) continue;
             const dx = q.x - p.x;
             const dy = q.y - p.y;
             const d = hyp(dx, dy);
@@ -586,12 +594,17 @@
 
     function kick(s, p, kind, power, aim) {
         const b = s.ball;
+        if (caughtOffside(s, p)) return offside(s, p);
         const dir = aim || { x: Math.cos(p.face), y: Math.sin(p.face) };
         const ad = attackDir(s, p.team);
         let vx;
         let vy;
         let vz = 0;
         const piece = s.setPiece ? s.setPiece.kind : null;
+        if (piece === "Penalty") kind = "shoot";
+        b.piece = piece;
+        // No offside straight from a throw-in, a corner or a goal kick.
+        b.exempt = piece === "Throw-in" || piece === "Corner" || !!(s.held && s.held.id === p.id && s.held.goalKick);
         s.setPiece = null;
         if (piece) for (const q of s.players) q.spot = null;
         const header = kind === "shoot" && b.z > 1.1;
@@ -638,8 +651,10 @@
             const t = d / speed;
             // Past 85% power the shot starts to rise; a full bar usually clears the bar.
             const h = 0.2 + power * 1.1 + (power > 0.85 ? (power - 0.85) * 7 : 0) + s.rand() * 0.3;
-            // Driven, not chipped: long weak shots skid in along the ground.
-            vz = clamp((h - b.z + 0.5 * G * t * t) / t, header ? -8 : 0, 1.5 + power * 4);
+            // Driven, not chipped: long weak shots skid in along the ground. A
+            // free kick is struck up and over the wall and dips.
+            const up = piece === "Free kick";
+            vz = clamp(((up ? h + 0.5 : h) - b.z + 0.5 * G * t * t) / t, header ? -8 : 0, up ? 9 : 1.5 + power * 4);
             vx = ((tx - b.x) / d) * speed;
             vy = ((ty - b.y) / d) * speed;
             s.pass = null;
@@ -725,6 +740,13 @@
         p.face = Math.atan2(vy, vx);
         s.carrier = -1;
         s.events.push({ type: "kick", kind, id: p.id, power });
+        // Offside is judged the moment the ball is played forward to a teammate.
+        if (s.size === "eleven") {
+            for (const q of s.players) {
+                if (q.team !== p.team || q === p) continue;
+                q.offAt = kind !== "shoot" && !b.exempt && !q.off && isOffside(s, q) ? s.t : -1;
+            }
+        }
 
         // FIFA habit: control follows the pass.
         if (human(s, p.team) && s.pass && s.players[s.pass.to]) setUser(s, s.players[s.pass.to]);
@@ -738,6 +760,53 @@
         if (b.z > 1.1 && !p.stickHeld) return 1;
         const ad = attackDir(s, p.team);
         return Math.max(Math.cos(p.face) * ad, dir.x * ad);
+    }
+
+    // Was this player in an offside position when a teammate played the ball
+    // that he is now the first to reach?
+    function caughtOffside(s, p) {
+        const b = s.ball;
+        const from = s.players[b.kicker];
+        return s.size === "eleven" && p.offAt === b.kickAt && b.kickAt > 0 && from && from !== p && from.team === p.team && b.last === from.id && b.lastAt === b.kickAt;
+    }
+
+    function offside(s, p) {
+        p.offAt = -1;
+        s.events.push({ type: "offside", id: p.id });
+        restart(s, "Free kick", 1 - p.team, clamp(p.x, 2, L - 2), clamp(p.y, 2, W - 2), "Offside");
+    }
+
+    function foul(s, p, victim, hard) {
+        const b = s.ball;
+        s.events.push({ type: "foul", id: p.id, on: victim.id });
+        victim.stun = 0.9;
+        let text = "Foul";
+        // A booking for the bad ones; two make a red.
+        if (s.rand() < (hard ? 0.5 : 0.18)) {
+            p.yellow = (p.yellow || 0) + 1;
+            const red = p.yellow >= 2;
+            s.events.push({ type: "card", id: p.id, color: red ? "red" : "yellow" });
+            text = red ? "Red card" : "Yellow card";
+            if (red) sendOff(s, p);
+        }
+        const box = inBox(s, p.team, b.x, b.y);
+        const card = text === "Foul" ? null : text === "Red card" ? "red" : "yellow";
+        if (box) restart(s, "Penalty", victim.team, goalX(s, p.team) + attackDir(s, p.team) * SPOT, W / 2, card ? `Penalty · ${text}` : "Penalty!", card, p.id);
+        else restart(s, "Free kick", victim.team, clamp(b.x, 1, L - 1), clamp(b.y, 1, W - 1), text, card, p.id);
+    }
+
+    // A sent-off player waits out the match beyond the touchline; his side
+    // plays on a man short.
+    function sendOff(s, p) {
+        p.off = true;
+        p.stun = Infinity;
+        Object.assign(p, { x: L / 2, y: -40, vx: 0, vy: 0, dvx: 0, dvy: 0, chargeKind: null, charge: 0, queued: null, run: null });
+        if (s.users[p.team] === p.id) {
+            const b = s.ball;
+            const next = s.players.filter((q) => q.team === p.team && q.role !== "GK" && !q.off).reduce((a, q) => (hyp(b.x - q.x, b.y - q.y) < hyp(b.x - a.x, b.y - a.y) ? q : a));
+            s.users[p.team] = next.id;
+            s.user = s.users[0];
+        }
     }
 
     // soft: the free nick when running into the dribbler (no stun if it fails).
@@ -761,11 +830,24 @@
         const owner = s.carrier >= 0 ? s.players[s.carrier] : null;
         if (owner && owner.team === p.team) return;
         // From behind the dribbler it is much harder to get the ball cleanly.
+        let behind = false;
         if (owner) {
             const ov = hyp(owner.vx, owner.vy);
-            if (ov > 1 && ((p.x - owner.x) * owner.vx + (p.y - owner.y) * owner.vy) / ov < -0.3) chance *= 0.6;
+            behind = ov > 1 && ((p.x - owner.x) * owner.vx + (p.y - owner.y) * owner.vy) / ov < -0.3;
+            if (behind) chance *= 0.6;
         }
-        if (s.rand() < chance) {
+        const won = s.rand() < chance;
+        // Getting the man: likely when a lunge misses, and from behind even
+        // when it gets the ball too.
+        if (owner && !soft && hyp(owner.x - p.x, owner.y - p.y) < 1.7) {
+            const risk = lunge ? (behind ? (won ? 0.3 : 0.6) : won ? 0 : 0.25) : won ? 0 : behind ? 0.25 : 0.08;
+            if (s.rand() < risk) {
+                p.stun = 0.5;
+                s.events.push({ type, id: p.id, won: false });
+                return foul(s, p, owner, lunge && behind);
+            }
+        }
+        if (won) {
             const a = p.face + (s.rand() - 0.5) * 0.8;
             b.vx = Math.cos(a) * 5 + p.vx * 0.3;
             b.vy = Math.sin(a) * 5 + p.vy * 0.3;
@@ -825,9 +907,21 @@
             if (s.t - sp.at > 0.9) {
                 const ad = attackDir(s, p.team);
                 let aim;
+                const gx = goalX(s, 1 - p.team);
+                const dG = hyp(gx - sp.x, W / 2 - sp.y);
+                if (sp.kind === "Penalty") {
+                    return kick(s, p, "shoot", 0.55 + s.rand() * 0.25, norm(ad, (s.rand() < 0.5 ? -1 : 1) * (0.7 + s.rand() * 0.5)));
+                }
+                if (sp.kind === "Free kick" && dG < 27 && Math.abs(sp.y - W / 2) < 16) {
+                    return kick(s, p, "shoot", 0.6 + s.rand() * 0.2, norm(ad, (s.rand() < 0.5 ? -1 : 1) * (0.4 + s.rand() * 0.4)));
+                }
+                if (sp.kind === "Free kick") {
+                    const q = passOption(s, p, s.players.filter((o) => o.team !== p.team && o.role !== "GK"));
+                    if (q) return kick(s, p, "pass", 0.4, norm(q.x - p.x, q.y - p.y));
+                    return kick(s, p, "lob", 0.7, norm(ad, (W / 2 - sp.y) / 30));
+                }
                 if (sp.kind === "Corner") {
                     // Cross towards the penalty spot, where teammates are lined up.
-                    const gx = goalX(s, 1 - p.team);
                     aim = norm(gx - ad * 7 - p.x, W / 2 - p.y);
                 } else {
                     // Throw to an open teammate, or else infield and up the line.
@@ -958,7 +1052,7 @@
         // Mark: share out the other side's outfield players (not the one on the
         // ball) by who is nearest to whose formation spot.
         const markers = mates.filter((q) => userPresses || q !== nearest);
-        const targets = s.players.filter((q) => q.team !== p.team && q.role !== "GK" && q !== owner);
+        const targets = s.players.filter((q) => q.team !== p.team && q.role !== "GK" && q !== owner && !q.off);
         const taken = new Set();
         let mine = null;
         for (const m of markers.sort((a, c) => a.id - c.id)) {
@@ -1039,12 +1133,12 @@
         let best = null;
         let bestScore = -Infinity;
         for (const q of s.players) {
-            if (q.team !== p.team || q === p || q.role === "GK") continue;
+            if (q.team !== p.team || q === p || q.role === "GK" || q.off) continue;
             const dx = q.x - p.x;
             const dy = q.y - p.y;
             const d = hyp(dx, dy);
             if (d < 4 || d > (s.size === "eleven" ? 38 : 30) || dx * ad < -4) continue;
-            if (q.offside) continue;
+            if (s.size === "eleven" && !s.setPiece && isOffside(s, q)) continue;
             // Never back to someone deep in our own box: one missed touch is a goal.
             if ((q.x - goalX(s, p.team)) * ad < 7 && Math.abs(q.y - W / 2) < BOX_W / 2) continue;
             const open = Math.min(...opps.map((o) => hyp(o.x - q.x, o.y - q.y)));
@@ -1069,9 +1163,14 @@
     // for the defence. Returns an x.
     function offsideLine(s, team) {
         const ad = attackDir(s, team);
-        const xs = s.players.filter((q) => q.team !== team).map((q) => q.x * ad).sort((a, c) => c - a);
+        const xs = s.players.filter((q) => q.team !== team && !q.off).map((q) => q.x * ad).sort((a, c) => c - a);
         const second = xs[1] !== undefined ? xs[1] : L * ad;
         return Math.max(second, s.ball.x * ad, (L / 2) * ad) * ad;
+    }
+
+    function isOffside(s, q) {
+        const ad = attackDir(s, q.team);
+        return q.x * ad > offsideLine(s, q.team) * ad + 0.3;
     }
 
     function norm(x, y) {
@@ -1104,6 +1203,21 @@
                 else kick(s, p, "lob", 0.85, norm(ad, (s.rand() - 0.5) * 0.8));
             }
             return;
+        }
+
+        // A penalty: on the line until it is struck.
+        if (s.setPiece && s.setPiece.kind === "Penalty") return seek(p, gx + ad * 0.3, W / 2, 4);
+
+        // Facing a penalty he has to guess: one side or the other, now and
+        // then staying in the middle.
+        if (b.piece === "Penalty" && s.t - b.kickAt < 0.9 && b.last !== p.id && (gx - b.x) * b.vx > 0) {
+            if (p.guessAt !== b.kickAt) {
+                p.guessAt = b.kickAt;
+                const r = s.rand();
+                p.guess = r < 0.12 ? 0 : r < 0.56 ? -1 : 1;
+            }
+            p.diving = true;
+            return seek(p, gx + ad * 0.3, W / 2 + p.guess * 2.5, 6.5);
         }
 
         // Shot coming? React after a short delay and move across.
@@ -1312,6 +1426,7 @@
         }
         if (!best) return;
         const p = best;
+        if (caughtOffside(s, p)) return offside(s, p);
 
         const sp = hyp(p.vx, p.vy);
         const want = hyp(p.dvx, p.dvy);
@@ -1497,15 +1612,19 @@
         s.after = (st) => kickoff(st, 1 - team);
     }
 
-    function restart(s, label, team, x, y) {
+    // `say` is what the screen shows if not the label ("Offside", "Yellow card"),
+    // with the card's colour and who got it.
+    function restart(s, label, team, x, y, say, card, who) {
         const b = s.ball;
         b.vx = b.vy = b.vz = 0;
         b.z = 0;
         s.carrier = -1;
         s.pass = null;
-        s.flash = { text: label, until: s.t + 1.4 };
+        s.held = null;
+        const free = label === "Free kick" || label === "Penalty";
+        s.flash = { text: say || label, until: s.t + (free ? 2 : 1.4), card: card || null, who: who === undefined ? -1 : who };
         s.events.push({ type: "out", label, team });
-        s.pause = 0.9;
+        s.pause = free ? 1.5 : 0.9;
         s.after = (st) => {
             b.x = x;
             b.y = y;
@@ -1514,14 +1633,16 @@
                 k.x = x;
                 k.y = y;
                 k.face = attackDir(st, team) === 1 ? 0 : Math.PI;
-                st.held = { id: k.id, until: st.t + 0.8 };
+                st.held = { id: k.id, until: st.t + 0.8, goalKick: true };
                 return;
             }
-            const pool = st.players.filter((p) => p.team === team && p.role !== "GK");
-            const taker = pool.reduce((a, c) => (hyp(c.x - x, c.y - y) < hyp(a.x - x, a.y - y) ? c : a));
+            const pool = st.players.filter((p) => p.team === team && p.role !== "GK" && !p.off);
+            const nearest = pool.reduce((a, c) => (hyp(c.x - x, c.y - y) < hyp(a.x - x, a.y - y) ? c : a));
+            const taker = label === "Penalty" ? striker(st, team) : nearest;
             // The taker stands behind the ball facing infield and plays it with
             // pass, lob or shoot; until then the ball is dead.
-            const inward = label === "Corner" ? norm(L / 2 - x, W / 2 - y) : { x: 0, y: y < W / 2 ? 1 : -1 };
+            const goalward = norm(goalX(st, 1 - team) - x, W / 2 - y);
+            const inward = free ? goalward : label === "Corner" ? norm(L / 2 - x, W / 2 - y) : { x: 0, y: y < W / 2 ? 1 : -1 };
             st.setPiece = { kind: label, team, x, y, taker: taker.id, inward, at: st.t };
             taker.x = x - inward.x * 0.6;
             taker.y = y - inward.y * 0.6;
@@ -1530,6 +1651,8 @@
             taker.aim = inward;
             for (const p of st.players) p.spot = null;
             if (label === "Corner") lineUpCorner(st, team, y, taker);
+            else if (label === "Penalty") lineUpPenalty(st, team, taker);
+            else if (label === "Free kick") lineUpWall(st, team, x, y);
             else {
                 // Two teammates come short for the throw.
                 const ad = attackDir(s, team);
@@ -1542,6 +1665,37 @@
             }
             setUser(st, taker);
         };
+    }
+
+    // Penalty: everyone but the taker and the keeper outside the box and the arc.
+    function lineUpPenalty(s, team, taker) {
+        const gx = goalX(s, 1 - team);
+        const ad = attackDir(s, team);
+        const keeper = s.players.find((p) => p.team !== team && p.role === "GK");
+        Object.assign(keeper, { x: gx - ad * 0.3, y: W / 2, vx: 0, vy: 0 });
+        const rest = s.players.filter((p) => p !== taker && p !== keeper && !p.off && p.role !== "GK");
+        rest.forEach((p, i) => {
+            const row = Math.floor(i / 2);
+            const at = { x: gx - ad * (BOX_D + 2 + (i % 2) * 2.5), y: W / 2 + (row % 2 ? -1 : 1) * (CIRCLE + 1 + Math.floor(row / 2) * 2.4) };
+            Object.assign(p, { x: at.x, y: clamp(at.y, 2, W - 2), vx: 0, vy: 0, spot: at });
+        });
+    }
+
+    // Free kick in range: the nearest defenders line up ten yards away, between
+    // the ball and the near post.
+    function lineUpWall(s, team, x, y) {
+        const gx = goalX(s, 1 - team);
+        const dG = hyp(gx - x, W / 2 - y);
+        if (dG > 32) return;
+        const room = s.size === "eleven" ? 9.15 : 5;
+        const to = norm(gx - x, W / 2 - y);
+        const n = dG < 24 ? 3 : 2;
+        const men = s.players.filter((p) => p.team !== team && p.role !== "GK" && !p.off).sort((a, c) => hyp(a.x - x, a.y - y) - hyp(c.x - x, c.y - y)).slice(0, n);
+        men.forEach((p, i) => {
+            const off = (i - (n - 1) / 2) * 0.95;
+            const at = { x: x + to.x * room - to.y * off, y: y + to.y * room + to.x * off };
+            Object.assign(p, { x: at.x, y: at.y, vx: 0, vy: 0, spot: at, face: Math.atan2(-to.y, -to.x) });
+        });
     }
 
     // Corner routine: attackers into the box, defenders marking the six-yard line.
@@ -1566,11 +1720,11 @@
             p.vx = p.vy = 0;
             p.spot = at;
         };
-        const mates = s.players.filter((p) => p.team === team && p.role !== "GK" && p !== taker);
+        const mates = s.players.filter((p) => p.team === team && p.role !== "GK" && p !== taker && !p.off);
         // The deepest player stays back.
         mates.sort((a, c) => (a.role === "DF" ? 1 : 0) - (c.role === "DF" ? 1 : 0));
         mates.forEach((p, i) => put(p, attack[i] || { x: L / 2 + ad * 6, y: W / 2 }));
-        s.players.filter((p) => p.team !== team && p.role !== "GK").forEach((p, i) => put(p, mark[i % mark.length]));
+        s.players.filter((p) => p.team !== team && p.role !== "GK" && !p.off).forEach((p, i) => put(p, mark[i % mark.length]));
     }
 
     // While a set piece waits: the ball is dead, the taker is still and the
@@ -1584,9 +1738,10 @@
         b.vx = b.vy = b.vz = 0;
         b.px = b.x;
         b.py = b.y;
-        const room = sp.kind === "Corner" ? (s.size === "eleven" ? 9.15 : 8) : 3;
+        const ten = s.size === "eleven" ? 9.15 : 5;
+        const room = sp.kind === "Corner" ? (s.size === "eleven" ? 9.15 : 8) : sp.kind === "Throw-in" ? 3 : ten;
         for (const p of s.players) {
-            if (p.team === sp.team) continue;
+            if (p.team === sp.team || p.off) continue;
             const d = hyp(p.x - sp.x, p.y - sp.y);
             if (d < room) {
                 const n = d > 0.01 ? norm(p.x - sp.x, p.y - sp.y) : sp.inward;
@@ -1597,6 +1752,8 @@
     }
 
     const api = { create, step, secondHalf, LEVELS, FORMATIONS, PITCHES, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
+    // For headless tests only.
+    api.test = { restart, isOffside, offsideLine, goalX, attackDir };
     // The pitch's measurements follow whichever match was made last.
     for (const k of ["L", "W", "GOAL_W", "GOAL_H", "BOX_D", "BOX_W", "SIX_D", "SIX_W", "SPOT", "CIRCLE"]) {
         Object.defineProperty(api, k, { enumerable: true, get: () => ({ L, W, GOAL_W, GOAL_H, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE })[k] });
