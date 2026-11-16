@@ -39,7 +39,22 @@
                     <p class="kicker" data-overlay-kicker>Eleven against eleven</p>
                     <h2 data-overlay-title>NB FC vs Rivals</h2>
                     <div class="match-stats" data-stats hidden></div>
+                    <div class="subs" data-subs hidden>
+                        <span class="seg-label">Substitution</span>
+                        <select class="club" data-sub-off aria-label="Player coming off"></select>
+                        <span class="room-or">for</span>
+                        <select class="club" data-sub-on aria-label="Substitute coming on"></select>
+                        <button class="room-btn" type="button" data-sub-go>Make change</button>
+                        <span class="room-or" data-sub-count></span>
+                    </div>
+                    <div class="comp" data-comp-info hidden></div>
                     <div class="setup" data-setup>
+                        <div class="seg" role="radiogroup" aria-label="Mode" data-comp-seg>
+                            <span class="seg-label">Mode</span>
+                            <button type="button" role="radio" data-comp="friendly">Friendly</button>
+                            <button type="button" role="radio" data-comp="season">Season</button>
+                            <button type="button" role="radio" data-comp="cup">Cup</button>
+                        </div>
                         <div class="seg" role="radiogroup" aria-label="Match" data-size-seg>
                             <span class="seg-label">Match</span>
                             <button type="button" role="radio" data-size="eleven">11 a side</button>
@@ -91,7 +106,7 @@
                             <p><kbd>K</kbd> Shoot (hold)</p>
                             <p><kbd>I</kbd> Finesse shot (curls)</p>
                             <p><kbd>L</kbd> Lob / through ball</p>
-                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Shift</kbd> Sprint &middot; <kbd>U</kbd> Skill move</p>
                             <p><kbd>Q</kbd> or <kbd>H</kbd> Switch &middot; <kbd>E</kbd> Tackle</p>
                         </div>
                         <div class="key-col">
@@ -101,7 +116,7 @@
                             <p><kbd>X</kbd> Shoot (hold)</p>
                             <p><kbd>V</kbd> Finesse shot (curls)</p>
                             <p><kbd>C</kbd> Lob / through ball</p>
-                            <p><kbd>Shift</kbd> Sprint</p>
+                            <p><kbd>Shift</kbd> Sprint &middot; <kbd>B</kbd> Skill move</p>
                             <p><kbd>Tab</kbd> Switch &middot; <kbd>Z</kbd> Tackle</p>
                         </div>
                     </div>

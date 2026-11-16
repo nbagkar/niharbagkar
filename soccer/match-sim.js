@@ -100,10 +100,16 @@
     }
 
     // A club's eleven: the same names and numbers every match.
+    // The bench: one for each line, a little below the first eleven.
+    const BENCH = [
+        { pos: "GK", num: 12 }, { pos: "CB", num: 13 }, { pos: "CM", num: 14 }, { pos: "RW", num: 15 }, { pos: "ST", num: 16 },
+    ];
+
     function squad(club, spots) {
         const rand = rng(hash(club.id));
         const used = new Set();
         const star = 6 + Math.floor(rand() * 5);
+        const first = spots.filter((d) => !d.bench).length;
         return spots.map((d, i) => {
             let name;
             do name = SURNAMES[Math.floor(rand() * SURNAMES.length)];
@@ -111,13 +117,13 @@
             used.add(name);
             const initial = "ABCDEFGHJKLMNOPRSTVY"[Math.floor(rand() * 20)];
             const shape = SHAPES[d.pos] || SHAPES.CM;
-            const lift = i === star ? 6 : 0;
+            const lift = i === star ? 6 : i >= first ? -3 : 0;
             const at = (key) => clamp(Math.round(club.rating + (shape[key] || 0) + lift + (rand() - 0.5) * 8), 30, 97);
             const attrs = { pac: at("pac"), sho: at("sho"), pas: at("pas"), def: at("def"), gk: d.pos === "GK" ? at("gk") : 20 };
             // Overall: the attributes that matter for the position.
             const w = WEIGHTS[d.pos] || WEIGHTS.CM;
             const ovr = d.pos === "GK" ? attrs.gk : Math.round(attrs.pac * w[0] + attrs.sho * w[1] + attrs.pas * w[2] + attrs.def * w[3]);
-            return { name: `${initial}. ${name}`, attrs, ovr };
+            return { name: `${initial}. ${name}`, attrs, ovr, pos: d.pos, num: d.num };
         });
     }
 
@@ -226,9 +232,12 @@
         // Kits too alike to tell apart: the away side changes.
         if (kitClash(TEAMS[0].kit, TEAMS[1].kit)) TEAMS[1].kit = TEAMS[1].away;
         const roster = lineup(Object.assign({}, opts, { rivalFormation: clubs[1].formation }));
+        const bench = [[], []];
         const squads = [0, 1].map((t) => {
             const spots = roster.filter((d) => d.team === t);
-            return captain(clubs[t], squad(clubs[t], spots), spots);
+            const all = squad(clubs[t], size === "eleven" ? spots.concat(BENCH.map((d) => Object.assign({ bench: true }, d))) : spots);
+            bench[t] = all.splice(spots.length);
+            return captain(clubs[t], all, spots).map((q) => ({ name: q.name, attrs: q.attrs, ovr: q.ovr }));
         });
         const seen = [0, 0];
         // The person starts on the centre forward.
@@ -254,6 +263,16 @@
             phase: "play",
             stats: [blankStats(), blankStats()],
             tally: { pass: null, shot: null },
+            // Substitutes waiting, and how many changes each side has made (five allowed).
+            bench,
+            subs: [0, 0],
+            // A cup tie: level after ninety minutes means extra time, then penalties.
+            knockout: !!opts.knockout,
+            perLen: opts.half || HALF,
+            shootout: null,
+            pens: null,
+            // The side each person's keeper will dive on a penalty: -1, 0 or 1.
+            dive: [0, 0],
             rand: rng(seed || 7),
             score: [0, 0],
             ball: { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 },
@@ -275,6 +294,8 @@
                 face: d.team ? Math.PI : 0,
                 aim: null,
                 stamina: 1,
+                // Long-term tiredness: 1 fresh, falling through the match.
+                energy: 1,
                 sprinting: false,
                 touchCd: 0,
                 kickCd: 0,
@@ -465,33 +486,133 @@
     // The whistle for half time or full time. A shot already on its way to
     // goal is allowed to finish, for a few seconds at most.
     function checkClock(s) {
-        if (s.clock < s.halfLen || s.setPiece) return;
+        if (s.shootout || s.clock < s.perLen || s.setPiece) return;
         const b = s.ball;
         const sp = hyp(b.vx, b.vy);
         const goalward = sp > 10 && (b.vx > 0 ? L - b.x : b.x) < 26 && Math.abs(b.vx) > sp * 0.6;
-        if (goalward && s.clock < s.halfLen + 4) return;
-        s.phase = s.half === 1 ? "halftime" : "full";
-        s.flash = { text: s.half === 1 ? "Half time" : "Full time", until: s.t + 1e9 };
+        if (goalward && s.clock < s.perLen + 4) return;
+        const level = s.score[0] === s.score[1];
+        // Ninety minutes, then for a level cup tie two short halves of extra
+        // time, then penalties.
+        s.phase = s.half === 1 ? "halftime" : s.half === 2 ? (s.knockout && level ? "extra" : "full") : s.half === 3 ? "etbreak" : level ? "pens" : "full";
+        const say = { halftime: "Half time", full: "Full time", extra: "Extra time", etbreak: "Half time in extra time", pens: "Penalties" }[s.phase];
+        s.flash = { text: say, until: s.t + 1e9 };
         s.carrier = -1;
         s.pass = null;
         for (const p of s.players) Object.assign(p, { vx: 0, vy: 0, dvx: 0, dvy: 0, charge: 0, chargeKind: null, queued: null });
         s.events.push({ type: "whistle", phase: s.phase, score: s.score.slice() });
     }
 
-    // Second half: the teams change ends and the Rivals kick off.
-    function secondHalf(s) {
-        if (s.phase !== "halftime") return;
+    // On from a break: the next half or period (the teams change ends and
+    // take turns to kick off), or the shootout.
+    function resume(s) {
+        if (!["halftime", "extra", "etbreak", "pens"].includes(s.phase)) return;
         usePitch(s.size);
-        s.half = 2;
-        s.ends = 1;
-        s.clock = 0;
+        const shoot = s.phase === "pens";
         s.phase = "play";
         s.pause = 0;
         s.after = null;
         s.setPiece = null;
-        for (const p of s.players) p.spot = null;
-        kickoff(s, 1);
+        s.held = null;
+        for (const p of s.players) {
+            p.spot = null;
+            // A breather.
+            p.energy = Math.min(1, (p.energy || 1) + 0.07);
+            p.stamina = 1;
+        }
+        if (shoot) return startShootout(s);
+        s.half += 1;
+        s.ends = (s.half - 1) % 2;
+        s.clock = 0;
+        s.perLen = s.half <= 2 ? s.halfLen : s.halfLen / 3;
+        kickoff(s, (s.half - 1) % 2);
     }
+
+    // The clock's minute at this moment: two halves of 45, extra time of 15 each.
+    function minute(s) {
+        const base = [0, 45, 90, 105][Math.min(3, s.half - 1)];
+        const span = s.half <= 2 ? 45 : 15;
+        return Math.min(base + span, Math.floor(base + (s.clock / s.perLen) * span) + 1);
+    }
+
+    /* ---------- Penalty shootout ---------- */
+
+    function startShootout(s) {
+        s.half = 5;
+        s.ends = 0;
+        s.shootout = { kicks: [[], []], turn: 0, state: "set" };
+        s.carrier = -1;
+        s.pass = null;
+        nextPen(s);
+    }
+
+    // Takers go in order of their shooting.
+    function penTaker(s, team) {
+        const list = s.players.filter((p) => p.team === team && p.role !== "GK" && !p.off).sort((a, c) => c.attrs.sho - a.attrs.sho || a.id - c.id);
+        return list[s.shootout.kicks[team].length % list.length];
+    }
+
+    function nextPen(s) {
+        const so = s.shootout;
+        so.state = "set";
+        const team = so.turn;
+        restart(s, "Penalty", team, goalX(s, 1 - team) - attackDir(s, team) * SPOT, W / 2, `Penalty ${so.kicks[team].length + 1}`);
+    }
+
+    function penResult(s, scored) {
+        const so = s.shootout;
+        const b = s.ball;
+        const team = so.turn;
+        so.kicks[team].push(scored);
+        so.state = "between";
+        b.vx = b.vy = b.vz = 0;
+        s.held = null;
+        s.events.push({ type: "pen", team, scored });
+        const [a, c] = so.kicks.map((k) => k.filter(Boolean).length);
+        const [na, nc] = so.kicks.map((k) => k.length);
+        // Decided once one side cannot be caught in the first five, or is
+        // ahead after the same number of kicks in sudden death.
+        const first = Math.max(na, nc) <= 5;
+        const over = first ? a > c + (5 - nc) || c > a + (5 - na) : na === nc && a !== c;
+        if (over) {
+            s.pens = [a, c];
+            so.state = "done";
+            s.phase = "full";
+            s.flash = { text: "Full time", until: s.t + 1e9 };
+            s.events.push({ type: "whistle", phase: "full", score: s.score.slice() });
+            return;
+        }
+        s.flash = { text: scored ? "Scored" : "No goal", team, until: s.t + 1.4 };
+        so.turn = 1 - team;
+        s.pause = 1.5;
+        s.after = nextPen;
+    }
+
+    /* ---------- Substitutions ---------- */
+
+    // Bring a substitute on for a player: same shirt position, fresh legs.
+    function substitute(s, team, outId, benchIndex) {
+        const p = s.players[outId];
+        const on = s.bench[team] && s.bench[team][benchIndex];
+        if (!p || !on || p.team !== team || p.off || s.subs[team] >= 5 || s.shootout) return false;
+        s.bench[team].splice(benchIndex, 1);
+        Object.assign(p, { name: on.name, attrs: on.attrs, ovr: on.ovr, num: on.num, energy: 1, stamina: 1, yellow: 0 });
+        s.subs[team] += 1;
+        s.events.push({ type: "sub", id: p.id, team });
+        return true;
+    }
+
+    // The AI's changes: its two most tired outfield players, once, in the second half.
+    function autoSub(s, team) {
+        const tired = s.players.filter((p) => p.team === team && p.role !== "GK" && !p.off).sort((a, c) => a.energy - c.energy);
+        for (const p of tired.slice(0, 2)) {
+            const i = s.bench[team].findIndex((q) => q.pos !== "GK");
+            if (i >= 0 && p.energy < 0.8) substitute(s, team, p.id, i);
+        }
+    }
+
+    // Kept for older callers.
+    const secondHalf = resume;
 
     function human(s, team) {
         return s.users[team] >= 0;
@@ -514,7 +635,9 @@
             }
             return s;
         }
-        s.clock += DT;
+        if (!s.shootout) s.clock += DT;
+        // Facing a penalty, a person picks his keeper's side with up or down.
+        for (const t of [0, 1]) s.dive[t] = (inps[t].down ? 1 : 0) - (inps[t].up ? 1 : 0);
 
         for (const p of s.players) {
             p.touchCd = Math.max(0, p.touchCd - DT);
@@ -570,13 +693,30 @@
         me.aim = moving ? { x: dx / m, y: dy / m } : { x: Math.cos(me.face), y: Math.sin(me.face) };
         me.stickHeld = moving;
 
+        // In a shootout only the taker moves.
+        if (s.shootout && !(s.setPiece && s.setPiece.taker === me.id)) {
+            me.dvx = me.dvy = 0;
+            me.chargeKind = null;
+            me.queued = null;
+            return;
+        }
         const has = s.carrier === me.id;
         const sprint = !!inp.sprint && moving && me.stamina > 0.04;
+        // Skill move: a feint and a burst that is hard to tackle for a moment.
+        if (pressed("skill") && has && moving && s.t >= (me.feintCd || 0) && me.stamina > 0.12) {
+            me.feintUntil = s.t + 0.45;
+            me.feintCd = s.t + 1.8;
+            me.stamina -= 0.12;
+            me.vx += (dx / m) * 3;
+            me.vy += (dy / m) * 3;
+            s.events.push({ type: "skill", id: me.id });
+        }
         let top = sprint ? SPRINT * (me.stamina < 0.25 ? 0.82 : 1) : JOG;
         if (has) top *= 0.9;
         if (me.stun > 0) top *= 0.35;
         me.sprinting = sprint;
-        me.stamina = clamp(me.stamina + (sprint ? -0.2 : 0.09) * DT, 0, 1);
+        // Tired legs get their breath back more slowly.
+        me.stamina = clamp(me.stamina + (sprint ? -0.2 : 0.09 * (0.5 + 0.5 * (me.energy === undefined ? 1 : me.energy))) * DT, 0, 1);
 
         const b = s.ball;
         const onBall = s.carrier === me.id || (b.last === me.id && hyp(b.x - me.x, b.y - me.y) < 4);
@@ -710,6 +850,7 @@
         if (finesse || piece === "Penalty") kind = "shoot";
         b.piece = piece;
         b.curl = 0;
+        if (s.shootout && piece === "Penalty") s.shootout.state = "flight";
         // No offside straight from a throw-in, a corner or a goal kick.
         b.exempt = piece === "Throw-in" || piece === "Corner" || !!(s.held && s.held.id === p.id && s.held.goalKick);
         s.setPiece = null;
@@ -966,6 +1107,7 @@
             behind = ov > 1 && ((p.x - owner.x) * owner.vx + (p.y - owner.y) * owner.vy) / ov < -0.3;
             if (behind) chance *= 0.6;
         }
+        if (owner && (owner.feintUntil || 0) > s.t) chance *= 0.4;
         const won = s.rand() < chance * attr(s, p, "def", 0.008);
         // Getting the man: likely when a lunge misses, and from behind even
         // when it gets the ball too.
@@ -1014,6 +1156,10 @@
     function think(s, p) {
         if (p.role === "GK") return keeperThink(s, p);
         const b = s.ball;
+        if (s.shootout && !(s.setPiece && s.setPiece.taker === p.id)) {
+            p.dvx = p.dvy = 0;
+            return;
+        }
         if (p.stun > 0) {
             p.dvx *= 0.5;
             p.dvy *= 0.5;
@@ -1344,7 +1490,9 @@
             if (p.guessAt !== b.kickAt) {
                 p.guessAt = b.kickAt;
                 const r = s.rand();
-                p.guess = r < 0.12 ? 0 : r < 0.56 ? -1 : 1;
+                // A person's keeper goes where they are holding; with no
+                // choice made, or for the AI, he guesses.
+                p.guess = human(s, p.team) && s.dive[p.team] ? s.dive[p.team] : r < 0.12 ? 0 : r < 0.56 ? -1 : 1;
             }
             p.diving = true;
             return seek(p, gx + ad * 0.3, W / 2 + p.guess * 2.5, 6.5);
@@ -1482,7 +1630,13 @@
     /* ---------- Movement ---------- */
 
     function move(s, p) {
-        const k = (p.team === 1 && p.role !== "GK" && !human(s, 1) ? LEVELS[s.level].pace : 1) * attr(s, p, "pac", 0.004);
+        let k = (p.team === 1 && p.role !== "GK" && !human(s, 1) ? LEVELS[s.level].pace : 1) * attr(s, p, "pac", 0.004);
+        if (s.size === "eleven" && p.role !== "GK" && !p.off) {
+            // Running wears players down over the match, sprinting most of all.
+            const sp0 = hyp(p.vx, p.vy) / SPRINT;
+            p.energy = Math.max(0.25, p.energy - DT * (180 / s.halfLen) * (0.0008 + 0.0026 * sp0 * sp0));
+            k *= 0.88 + 0.12 * p.energy;
+        }
         let ax = p.dvx * k - p.vx;
         let ay = p.dvy * k - p.vy;
         const a = hyp(ax, ay);
@@ -1532,7 +1686,7 @@
 
     function touches(s) {
         const b = s.ball;
-        if (s.held) return;
+        if (s.held || s.shootout) return;
         if (b.z > 0.8) return;
         let best = null;
         let bestD = Infinity;
@@ -1697,6 +1851,18 @@
 
     function rules(s) {
         const b = s.ball;
+        if (s.shootout) {
+            const so = s.shootout;
+            if (so.state !== "flight") return;
+            const mouth = Math.abs(b.y - W / 2) < GOAL_W / 2 && b.z < GOAL_H;
+            if ((b.px <= L && b.x > L && mouth) || (b.px >= 0 && b.x < 0 && mouth)) {
+                b.x = b.x > L ? L + GOAL_D * 0.7 : -GOAL_D * 0.7;
+                return penResult(s, true);
+            }
+            const dead = s.held || b.x < 0 || b.x > L || b.y < 0 || b.y > W || s.t - b.kickAt > 3 || (s.t - b.kickAt > 0.8 && hyp(b.vx, b.vy) < 1) || (b.last !== b.kicker && s.t - b.lastAt > 0.7);
+            if (dead) penResult(s, false);
+            return;
+        }
         if (s.held) return;
         const inMouth = Math.abs(b.y - W / 2) < GOAL_W / 2 && b.z < GOAL_H;
         // `right` is the side defending the right-hand goal this half.
@@ -1731,7 +1897,7 @@
         b.vx = b.vy = b.vz = 0;
         b.z = 0.3;
         // The match minute, as the clock shows it: each half is 45.
-        const min = Math.min(s.half * 45, Math.floor((s.half - 1) * 45 + (s.clock / s.halfLen) * 45) + 1);
+        const min = minute(s);
         // A deflection or a keeper's fingertips on the way in still counts for
         // whoever struck it; only a defender's own kick or touch is an own goal.
         const last = s.players[b.last];
@@ -1755,6 +1921,16 @@
         s.pass = null;
         s.held = null;
         const free = label === "Free kick" || label === "Penalty";
+        // The AI makes its changes at a stoppage midway through the second half.
+        if (s.size === "eleven" && s.half === 2 && s.clock > s.perLen * 0.35) {
+            s.aiSubbed = s.aiSubbed || [false, false];
+            for (const t of [0, 1]) {
+                if (!human(s, t) && !s.aiSubbed[t]) {
+                    s.aiSubbed[t] = true;
+                    autoSub(s, t);
+                }
+            }
+        }
         s.flash = { text: say || label, until: s.t + (free ? 2 : 1.4), card: card || null, who: who === undefined ? -1 : who };
         s.events.push({ type: "out", label, team });
         s.pause = free ? 1.5 : 0.9;
@@ -1771,7 +1947,7 @@
             }
             const pool = st.players.filter((p) => p.team === team && p.role !== "GK" && !p.off);
             const nearest = pool.reduce((a, c) => (hyp(c.x - x, c.y - y) < hyp(a.x - x, a.y - y) ? c : a));
-            const taker = label === "Penalty" ? striker(st, team) : nearest;
+            const taker = label === "Penalty" ? (st.shootout ? penTaker(st, team) : striker(st, team)) : nearest;
             // The taker stands behind the ball facing infield and plays it with
             // pass, lob or shoot; until then the ball is dead.
             const goalward = norm(goalX(st, 1 - team) - x, W / 2 - y);
@@ -1884,7 +2060,7 @@
         }
     }
 
-    const api = { create, step, secondHalf, LEVELS, FORMATIONS, PITCHES, CLUBS, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
+    const api = { create, step, secondHalf, resume, substitute, minute, LEVELS, FORMATIONS, PITCHES, CLUBS, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
     // For headless tests only.
     api.test = { restart, isOffside, offsideLine, goalX, attackDir, TUNE };
     // The pitch's measurements follow whichever match was made last.

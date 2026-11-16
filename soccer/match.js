@@ -36,6 +36,7 @@
         KeyK: "shoot", KeyX: "shoot",
         KeyL: "lob", KeyC: "lob",
         KeyI: "finesse", KeyV: "finesse",
+        KeyU: "skill", KeyB: "skill",
         KeyQ: "swap", KeyH: "swap", Tab: "swap",
         KeyE: "tackle", KeyZ: "tackle",
     };
@@ -65,8 +66,31 @@
     const myTeam = () => (net.role === "guest" ? 1 : 0);
     const meId = () => (s.users[myTeam()] >= 0 ? s.users[myTeam()] : s.users[0]);
 
+    // Season, cup and records, kept in this browser (see further down).
+    const CAREER_KEY = "nbs-career";
+    const blankRec = () => ({ p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, streak: 0, best: 0, scorers: {} });
+    const career = { comp: "friendly", season: null, cup: null, rec: blankRec() };
+    try {
+        Object.assign(career, JSON.parse(localStorage.getItem(CAREER_KEY)) || {});
+    } catch (error) {
+        /* Private mode: nothing remembered. */
+    }
+    const saveCareer = () => {
+        try {
+            localStorage.setItem(CAREER_KEY, JSON.stringify(career));
+        } catch (error) {
+            /* Not remembered. */
+        }
+    };
+    const clubOf = (id) => Sim.CLUBS.find((c) => c.id === id) || Sim.CLUBS[0];
+    const shuffled = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+
     function newMatch(opts) {
-        const made = Sim.create((Math.random() * 1e9) | 0, Object.assign({}, setup, { versus: versus() }, opts));
+        // A season or cup match: the fixture decides the opposition.
+        const fx = !versus() && net.role !== "guest" ? fixture() : null;
+        const comp = fx ? { size: "eleven", rival: fx.rival, knockout: fx.knockout } : null;
+        const made = Sim.create((Math.random() * 1e9) | 0, Object.assign({}, setup, { versus: versus() }, comp, opts));
+        made.comp = fx ? career.comp : "friendly";
         readPitch();
         return made;
     }
@@ -171,11 +195,187 @@
         });
     }
 
+    /* ---------- Season, cup and records ----------
+       Kept in this browser. A season is one match against each of the other
+       seven clubs; a cup is three knockout rounds. The matches you don't
+       play are decided by the clubs' ratings. */
+
+
+    // A score for a match nobody plays: goals follow the gap in ratings.
+    function simScore(a, b) {
+        const goals = (mean) => {
+            let k = 0;
+            for (let p = Math.exp(-mean), acc = p, r = Math.random(); r > acc && k < 8; ) acc += p *= mean / ++k;
+            return k;
+        };
+        const gap = (clubOf(a).rating - clubOf(b).rating) / 18;
+        return [goals(1.35 * Math.exp(gap)), goals(1.35 * Math.exp(-gap))];
+    }
+
+    function newSeason() {
+        const ids = shuffled(Sim.CLUBS.map((c) => c.id));
+        // Round robin by the circle method: one club fixed, the rest rotate.
+        const rounds = [];
+        const ring = ids.slice(1);
+        for (let r = 0; r < ids.length - 1; r++) {
+            const order = [ids[0]].concat(ring.slice(r), ring.slice(0, r));
+            rounds.push(order.slice(0, 4).map((id, i) => [id, order[order.length - 1 - i]]));
+        }
+        const table = {};
+        for (const id of ids) table[id] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 };
+        career.season = { club: setup.club, round: 0, rounds, table, done: false };
+        saveCareer();
+    }
+
+    function newCup() {
+        const ids = shuffled(Sim.CLUBS.map((c) => c.id));
+        career.cup = { club: setup.club, round: 0, ties: [0, 1, 2, 3].map((i) => [ids[i * 2], ids[i * 2 + 1]]), out: false, won: false, log: [] };
+        saveCareer();
+    }
+
+    // The competition in play, started (or restarted for a new club) on demand.
+    function fixture() {
+        if (career.comp === "season") {
+            if (!career.season || career.season.club !== setup.club) newSeason();
+            const se = career.season;
+            if (se.done) return null;
+            const pair = se.rounds[se.round].find((m) => m.includes(setup.club));
+            return { rival: pair[0] === setup.club ? pair[1] : pair[0], knockout: false, label: `Season · Matchday ${se.round + 1} of ${se.rounds.length}` };
+        }
+        if (career.comp === "cup") {
+            if (!career.cup || career.cup.club !== setup.club) newCup();
+            const cup = career.cup;
+            if (cup.out || cup.won) return null;
+            const tie = cup.ties.find((m) => m.includes(setup.club));
+            return { rival: tie[0] === setup.club ? tie[1] : tie[0], knockout: true, label: `Cup · ${["Quarter-final", "Semi-final", "Final"][cup.round]}` };
+        }
+        return null;
+    }
+
+    function addResult(table, a, b, ga, gb) {
+        for (const [id, f, ag] of [[a, ga, gb], [b, gb, ga]]) {
+            const row = table[id];
+            row.p += 1;
+            row.gf += f;
+            row.ga += ag;
+            row[f > ag ? "w" : f < ag ? "l" : "d"] += 1;
+        }
+    }
+
+    const standings = (table) => Object.keys(table).sort((a, b) => {
+        const pts = (r) => r.w * 3 + r.d;
+        return pts(table[b]) - pts(table[a]) || table[b].gf - table[b].ga - (table[a].gf - table[a].ga) || table[b].gf - table[a].gf;
+    });
+
+    // Full time in a match against the AI: records, and the season or cup moves on.
+    function finishMatch() {
+        if (s.counted || versus() || net.role === "guest") return;
+        s.counted = true;
+        const [gf, ga] = s.score;
+        const won = s.pens ? s.pens[0] > s.pens[1] : gf > ga;
+        const lost = s.pens ? s.pens[0] < s.pens[1] : gf < ga;
+        const rec = career.rec;
+        rec.p += 1;
+        rec.gf += gf;
+        rec.ga += ga;
+        rec[won ? "w" : lost ? "l" : "d"] += 1;
+        rec.streak = won ? rec.streak + 1 : 0;
+        rec.best = Math.max(rec.best, rec.streak);
+        for (const g of s.log.filter((e) => e.type === "goal" && e.team === 0)) {
+            const p = s.players[g.scorer];
+            if (p && p.team === 0) rec.scorers[p.name] = (rec.scorers[p.name] || 0) + 1;
+        }
+        const rival = s.clubs[1];
+        const se = career.season;
+        if (s.comp === "season" && se && !se.done) {
+            for (const [a, b] of se.rounds[se.round]) {
+                if (a === setup.club || b === setup.club) addResult(se.table, setup.club, rival, gf, ga);
+                else addResult(se.table, a, b, ...simScore(a, b));
+            }
+            se.round += 1;
+            if (se.round >= se.rounds.length) se.done = true;
+        }
+        const cup = career.cup;
+        if (s.comp === "cup" && cup && !cup.out && !cup.won) {
+            if (!won) cup.out = true;
+            else {
+                // The other ties: no draws in a cup, the better score goes through.
+                const winners = cup.ties.map(([a, b]) => {
+                    if (a === setup.club || b === setup.club) return setup.club;
+                    const [x, y] = simScore(a, b);
+                    return x > y || (x === y && Math.random() < 0.5) ? a : b;
+                });
+                cup.round += 1;
+                if (winners.length === 1) cup.won = true;
+                else cup.ties = winners.reduce((t, id, i) => (i % 2 ? t[t.length - 1].push(id) : t.push([id]), t), []);
+            }
+        }
+        saveCareer();
+    }
+
+    function compHtml() {
+        const rec = career.rec;
+        const top = Object.entries(rec.scorers).sort((a, b) => b[1] - a[1])[0];
+        const record = rec.p ? `<p class="stat-scorers">Your record: ${rec.w}W ${rec.d}D ${rec.l}L · goals ${rec.gf}–${rec.ga} · best winning run ${rec.best}${top ? ` · top scorer ${top[0]} (${top[1]})` : ""}</p>` : "";
+        if (versus() || net.role === "guest") return "";
+        const fx = fixture();
+        if (career.comp === "season" && career.season) {
+            const se = career.season;
+            const order = standings(se.table);
+            const rows = order.map((id, i) => {
+                const r = se.table[id];
+                return `<tr class="${id === setup.club ? "me" : ""}"><td>${i + 1}</td><td>${clubOf(id).name}</td><td>${r.p}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td><b>${r.w * 3 + r.d}</b></td></tr>`;
+            }).join("");
+            const head = se.done ? `Season over: ${order[0] === setup.club ? "you are champions!" : `${clubOf(order[0]).name} are champions; you finished ${order.indexOf(setup.club) + 1}.`}` : `${fx.label}: ${clubOf(setup.club).name} v ${clubOf(fx.rival).name}`;
+            return `<p class="comp-head">${head}</p><table class="table"><tr><th></th><th>Club</th><th>P</th><th>W-D-L</th><th>GD</th><th>Pts</th></tr>${rows}</table>${se.done ? '<button class="room-btn" type="button" data-comp-new>Start a new season</button>' : ""}${record}`;
+        }
+        if (career.comp === "cup" && career.cup) {
+            const cup = career.cup;
+            const head = cup.won ? "You won the cup!" : cup.out ? "You are out of the cup." : `${fx.label}: ${clubOf(setup.club).name} v ${clubOf(fx.rival).name}. Level after ninety minutes means extra time, then penalties.`;
+            const others = cup.won || cup.out ? "" : `<p class="stat-scorers">Also this round: ${cup.ties.filter((m) => !m.includes(setup.club)).map(([a, b]) => `${clubOf(a).name} v ${clubOf(b).name}`).join(" · ") || "none"}</p>`;
+            return `<p class="comp-head">${head}</p>${others}${cup.won || cup.out ? '<button class="room-btn" type="button" data-comp-new>Start a new cup</button>' : ""}${record}`;
+        }
+        return record;
+    }
+
+    function renderComp() {
+        const box = root.querySelector("[data-comp-info]");
+        const on = mode === "start" || mode === "full";
+        box.hidden = !on;
+        if (!on) return;
+        box.innerHTML = compHtml();
+        const again = box.querySelector("[data-comp-new]");
+        if (again) {
+            again.addEventListener("click", () => {
+                if (career.comp === "season") newSeason();
+                else newCup();
+                s = newMatch();
+                show("start");
+            });
+        }
+    }
+
+    for (const btn of root.querySelectorAll("[data-comp]")) {
+        btn.addEventListener("click", () => {
+            career.comp = btn.dataset.comp;
+            saveCareer();
+            if (mode === "full") mode = "start";
+            s = newMatch();
+            renderSetup();
+            show("start");
+        });
+    }
+
     function renderSetup() {
+        const fixed = !versus() && net.role !== "guest" && career.comp !== "friendly";
+        for (const btn of root.querySelectorAll("[data-comp]")) btn.setAttribute("aria-checked", String(btn.dataset.comp === career.comp));
+        root.querySelector("[data-comp-seg]").hidden = !!net.link;
+        root.querySelector("[data-size-seg]").hidden = fixed;
+        root.querySelector('[data-club="1"]').disabled = fixed;
         for (const btn of root.querySelectorAll("[data-size]")) btn.setAttribute("aria-checked", String(btn.dataset.size === setup.size));
         for (const btn of root.querySelectorAll("[data-form]")) btn.setAttribute("aria-checked", String(btn.dataset.form === setup.formation));
         root.querySelector("[data-form-seg]").hidden = setup.size !== "eleven" || net.role === "guest";
-        for (const sel of root.querySelectorAll("[data-club]")) sel.value = sel.dataset.club === "0" ? setup.club : setup.rival;
+        for (const sel of root.querySelectorAll("[data-club]")) sel.value = sel.dataset.club === "0" ? setup.club : fixed && sel.dataset.club === "1" ? s.clubs[1] : setup.rival;
         for (const btn of root.querySelectorAll("[data-level]")) btn.setAttribute("aria-checked", String(btn.dataset.level === setup.level));
         for (const btn of root.querySelectorAll("[data-half]")) btn.setAttribute("aria-checked", String(+btn.dataset.half === setup.half));
     }
@@ -186,13 +386,16 @@
         }
     }
 
+    // The breaks a match can stop at before full time.
+    const BREAKS = ["halftime", "extra", "etbreak", "pens"];
+
     function play() {
         net.autoAt = 0;
         if (mode === "start" || mode === "full") {
             if (versus()) track("five-match-friend", "Five-a-side: started a friend match");
             else if (net.role !== "guest") track(`five-match-${setup.level}`, `Five-a-side: started a match on ${setup.level}`);
         }
-        if (mode === "halftime") Sim.secondHalf(s);
+        if (BREAKS.includes(mode)) Sim.resume(s);
         if (mode === "full") {
             s = newMatch();
             matchId = Date.now();
@@ -245,20 +448,47 @@
     // The card over the pitch, for each break in play.
     function show(next) {
         mode = next;
-        const end = mode === "halftime" || mode === "full";
-        const line = `${TEAMS[0].name} ${s.score[0]} – ${s.score[1]} ${TEAMS[1].name}`;
+        const end = BREAKS.includes(mode) || mode === "full";
+        const line = `${TEAMS[0].name} ${s.score[0]} – ${s.score[1]} ${TEAMS[1].name}${s.pens ? ` (${s.pens[0]}–${s.pens[1]} on penalties)` : ""}`;
         overlay.querySelector("[data-overlay-kicker]").textContent =
-            { start: s.size === "eleven" ? "Eleven against eleven" : "Five against five", pause: "Paused", halftime: "Half time", full: "Full time" }[mode];
+            { start: s.size === "eleven" ? "Eleven against eleven" : "Five against five", pause: "Paused", halftime: "Half time", full: "Full time", extra: "Level after ninety minutes", etbreak: "Half time in extra time", pens: "Still level: penalties" }[mode];
         overlay.querySelector("[data-overlay-title]").textContent = mode === "start" ? `${TEAMS[0].name} vs ${TEAMS[1].name}` : line;
+        if (mode === "full") finishMatch();
+        renderSubs();
+        renderSetup();
+        renderComp();
         root.querySelector("[data-stats]").hidden = !end;
         if (end) root.querySelector("[data-stats]").innerHTML = statsHtml();
         root.querySelector("[data-setup]").hidden = !(mode === "start" || mode === "full") || net.role === "guest";
         root.querySelector("[data-keys]").hidden = end;
         root.querySelector("[data-tip]").hidden = end;
-        playBtn.firstChild.textContent = { start: versus() ? "Kick off " : "Play ", pause: "Resume ", halftime: "Second half ", full: "Play again " }[mode];
+        playBtn.firstChild.textContent = { start: versus() ? "Kick off " : "Play ", pause: "Resume ", halftime: "Second half ", full: versus() ? "Rematch " : career.comp !== "friendly" && fixture() ? "Next match " : "Play again ", extra: "Extra time ", etbreak: "Carry on ", pens: "Take penalties " }[mode];
         renderRoom();
         overlay.hidden = false;
     }
+
+    // Substitutions: at any break or pause in an eleven-a-side match, for your own side.
+    const subsBox = root.querySelector("[data-subs]");
+    function renderSubs() {
+        const t = myTeam();
+        const can = s.size === "eleven" && net.role !== "guest" && (mode === "pause" || BREAKS.includes(mode)) && mode !== "pens" && s.bench && s.bench[t].length && s.subs[t] < 5;
+        subsBox.hidden = !can;
+        if (!can) return;
+        const off = subsBox.querySelector("[data-sub-off]");
+        const on = subsBox.querySelector("[data-sub-on]");
+        off.innerHTML = "";
+        on.innerHTML = "";
+        // Most tired first.
+        for (const p of s.players.filter((q) => q.team === t && !q.off).sort((a, b) => a.energy - b.energy)) {
+            off.add(new Option(`${p.pos} ${p.name} · ${Math.round(p.energy * 100)}% fit`, p.id));
+        }
+        s.bench[t].forEach((q, i) => on.add(new Option(`${q.pos} ${q.name} · ${q.ovr}`, i)));
+        subsBox.querySelector("[data-sub-count]").textContent = `${s.subs[t]} of 5 used`;
+    }
+    subsBox.querySelector("[data-sub-go]").addEventListener("click", () => {
+        const done = Sim.substitute(s, myTeam(), +subsBox.querySelector("[data-sub-off]").value, +subsBox.querySelector("[data-sub-on]").value);
+        if (done) renderSubs();
+    });
 
     // "2Y 1R" style.
     function cards(t) {
@@ -299,7 +529,7 @@
             }).join(", ") || "–";
             html.push(`<p class="stat-scorers">${TEAMS[0].name}: ${list(0)} &middot; ${TEAMS[1].name}: ${list(1)}</p>`);
         }
-        if (mode === "halftime") html.push(`<p class="stat-scorers">Teams change ends: ${TEAMS[0].name} attack the left goal in the second half.</p>`);
+        if (mode === "halftime" || mode === "etbreak") html.push(`<p class="stat-scorers">Teams change ends: ${TEAMS[0].name} attack the left goal in the second half.</p>`);
         return html.join("");
     }
 
@@ -538,6 +768,13 @@
         ctx.fillStyle = "rgba(255,255,255,0.65)";
         ctx.font = `600 ${Math.round(11 * u)}px Saira, sans-serif`;
         ctx.fillText(meta, x + 48 * u, y + 29 * u);
+        if (s.size === "eleven" && p.energy !== undefined) {
+            // Fitness along the bottom edge.
+            ctx.fillStyle = "rgba(255,255,255,0.18)";
+            ctx.fillRect(x + 38 * u, y + h - 3 * u, w - 38 * u, 3 * u);
+            ctx.fillStyle = p.energy < 0.5 ? "#ff2d87" : p.energy < 0.7 ? "#e8c25a" : "#1ef2c8";
+            ctx.fillRect(x + 38 * u, y + h - 3 * u, (w - 38 * u) * p.energy, 3 * u);
+        }
         ctx.textBaseline = "alphabetic";
     }
 
@@ -824,6 +1061,19 @@
         ctx.fillRect(pad + w + 4 * u, pad, cwid, h);
         ctx.fillStyle = s.clock >= s.halfLen ? "#e8c25a" : "#fff";
         ctx.fillText(clock, pad + w + 14 * u, pad + h / 2 + 1);
+        // Shootout: a dot for each kick, filled for a goal.
+        if (s.shootout) {
+            s.shootout.kicks.forEach((list, t) => {
+                for (let i = 0; i < Math.max(5, list.length); i++) {
+                    const cx = pad + 12 * u + i * 16 * u;
+                    const cy = pad + h + 14 * u + t * 16 * u;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 5 * u, 0, Math.PI * 2);
+                    ctx.fillStyle = i < list.length ? (list[i] ? TEAMS[t].kit : "#e5263a") : "rgba(255,255,255,0.25)";
+                    ctx.fill();
+                }
+            });
+        }
         // In a room: the round trip to your friend, so lag has a number.
         const ping = net.role === "guest" ? net.rtt : net.peerRtt;
         if (versus() && ping > 0) {
@@ -839,8 +1089,12 @@
     }
 
     function clockText() {
-        if (s.clock >= s.halfLen) return `${s.half * 45}:00 +`;
-        const secs = Math.floor((s.half - 1) * 2700 + (s.clock / s.halfLen) * 2700);
+        if (s.shootout) return "PENS";
+        const per = s.perLen || s.halfLen;
+        const base = [0, 45, 90, 105][Math.min(3, s.half - 1)];
+        const span = s.half <= 2 ? 45 : 15;
+        if (s.clock >= per) return `${base + span}:00 +`;
+        const secs = Math.floor(base * 60 + (s.clock / per) * span * 60);
         return `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
     }
 
@@ -876,6 +1130,19 @@
     // Your throw-in or corner: a dotted aim line and the keys to play it.
     function drawSetPiece() {
         const sp = s.setPiece;
+        if (sp && sp.kind === "Penalty" && sp.team !== myTeam() && s.users[myTeam()] >= 0) {
+            // Your keeper: pick his side before the kick.
+            const u = cw / 960;
+            const say = "Penalty against you: hold ↑ or ↓ and your keeper dives that way";
+            ctx.font = `700 ${Math.round(16 * u)}px Saira, sans-serif`;
+            ctx.textAlign = "center";
+            const w = ctx.measureText(say).width + 24 * u;
+            ctx.fillStyle = "rgba(6,6,13,0.72)";
+            ctx.fillRect(cw / 2 - w / 2, ch - 158 * u, w, 28 * u);
+            ctx.fillStyle = "#fff";
+            ctx.fillText(say, cw / 2, ch - 139 * u);
+            return;
+        }
         if (!sp || sp.team !== myTeam()) return;
         const p = s.players[sp.taker];
         const a = p.aim || sp.inward;
@@ -1320,12 +1587,15 @@
             ck: r2(s.clock),
             h: s.half,
             hl: s.halfLen,
+            pl: s.perLen,
+            so: s.shootout ? s.shootout.kicks : null,
+            pn: s.pens,
             p: s.players.map((p) => [r2(p.x), r2(p.y), r2(p.face), r2(p.vx), r2(p.vy)]),
             b: [r2(b.x), r2(b.y), r2(b.z), r2(b.vx), r2(b.vy)],
             u: s.users,
             c: s.carrier,
             pt: s.pass ? s.pass.to : -1,
-            hu: s.users.map((id) => (id >= 0 ? [s.players[id].chargeKind, r2(s.players[id].charge), r2(s.players[id].stamina)] : null)),
+            hu: s.users.map((id) => (id >= 0 ? [s.players[id].chargeKind, r2(s.players[id].charge), r2(s.players[id].stamina), r2(s.players[id].energy)] : null)),
             fl: s.flash ? [s.flash.text, s.flash.team, s.flash.card || null, s.flash.who === undefined ? -1 : s.flash.who, s.flash.min || 0] : null,
             sp: sp ? [sp.kind, sp.team, sp.x, sp.y, sp.taker, r2(aim.x), r2(aim.y), r2(sp.inward.x), r2(sp.inward.y)] : null,
             ev: net.events.splice(0),
@@ -1336,7 +1606,9 @@
             fm: s.formation,
             cl: s.clubs,
         };
-        if (mode === "halftime" || mode === "full") {
+        if (mode !== "play") {
+            // Names and numbers can change with substitutions.
+            msg.ro = s.players.map((p) => [p.name, p.num, p.ovr]);
             msg.stats = s.stats;
             msg.goals = s.log.filter((e) => e.type === "goal").map((e) => ({ type: "goal", team: e.team, scorer: e.scorer, min: e.min }));
         }
@@ -1435,6 +1707,10 @@
         s.clock = d.ck;
         s.half = d.h;
         s.halfLen = d.hl;
+        s.perLen = d.pl || d.hl;
+        s.shootout = d.so ? { kicks: d.so } : null;
+        s.pens = d.pn || null;
+        if (d.ro) d.ro.forEach((r, i) => s.players[i] && Object.assign(s.players[i], { name: r[0], num: r[1], ovr: r[2] }));
         s.phase = d.ph;
         s.users = d.u;
         s.user = d.u[0];
@@ -1442,7 +1718,7 @@
         s.pass = d.pt >= 0 ? { to: d.pt } : null;
         s.flash = d.fl ? { text: d.fl[0], team: d.fl[1], card: d.fl[2], who: d.fl[3], min: d.fl[4] } : null;
         d.u.forEach((id, i) => {
-            if (id >= 0 && d.hu[i]) Object.assign(s.players[id], { chargeKind: d.hu[i][0], charge: d.hu[i][1], stamina: d.hu[i][2] });
+            if (id >= 0 && d.hu[i]) Object.assign(s.players[id], { chargeKind: d.hu[i][0], charge: d.hu[i][1], stamina: d.hu[i][2], energy: d.hu[i][3] === undefined ? 1 : d.hu[i][3] });
         });
         if (d.sp) {
             const [kind, team, x, y, taker, ax, ay, ix, iy] = d.sp;

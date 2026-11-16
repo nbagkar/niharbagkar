@@ -145,6 +145,17 @@ kbd {
 .exit:hover, .exit:focus-visible { border-color: var(--pink); color: var(--pink); outline: none; }
 .exit[hidden] { display: none; }
 
+.comp { margin: 0 0 0.8rem; }
+.comp[hidden] { display: none; }
+.comp-head { margin: 0 0 0.4rem; font-weight: 700; }
+.table { width: 100%; margin: 0 0 0.5rem; border-collapse: collapse; font-size: 0.85rem; }
+.table th { text-align: left; color: var(--dim); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+.table td, .table th { padding: 0.08rem 0.4rem 0.08rem 0; }
+.table tr.me td { color: var(--aqua); font-weight: 700; }
+
+.subs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0 0 0.9rem; }
+.subs[hidden] { display: none; }
+
 .play span { font-size: 0.75rem; font-style: normal; opacity: 0.6; }
 .play:hover, .play:focus-visible { background: #fff; outline: none; }
 
