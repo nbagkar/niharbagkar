@@ -8,13 +8,20 @@
 (function (root) {
     "use strict";
 
-    const L = 64;
-    const W = 40;
-    const GOAL_W = 6;
-    const GOAL_H = 2.2;
+    // Pitch sizes: the five-a-side cage, and a full-size pitch for eleven a
+    // side (FIFA's recommended 105 by 68, with its real boxes and goal).
+    const PITCHES = {
+        five: { L: 64, W: 40, GOAL_W: 6, GOAL_H: 2.2, BOX_D: 11, BOX_W: 22, SIX_D: 4, SIX_W: 10, SPOT: 8, CIRCLE: 6 },
+        eleven: { L: 105, W: 68, GOAL_W: 7.32, GOAL_H: 2.44, BOX_D: 16.5, BOX_W: 40.32, SIX_D: 5.5, SIX_W: 18.32, SPOT: 11, CIRCLE: 9.15 },
+    };
+    // The current match's pitch. Only one match runs at a time, so these are
+    // set by create() and again at the start of every step.
+    let L, W, GOAL_W, GOAL_H, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE;
     const GOAL_D = 1.6;
-    const BOX_D = 11;
-    const BOX_W = 22;
+    function usePitch(size) {
+        ({ L, W, GOAL_W, GOAL_H, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE } = PITCHES[size] || PITCHES.five);
+    }
+    usePitch("five");
     const DT = 1 / 60;
     const G = 9.81;
 
@@ -36,7 +43,8 @@
         { name: "Rivals", short: "RIV", kit: "#ff2d87", trim: "#3a0619" },
     ];
 
-    // Home spots as fractions of the pitch, team 0 attacking right.
+    // Home spots as fractions of the pitch, team 0 attacking right (so its
+    // left side is the top of the screen).
     const LINEUP = [
         { team: 0, role: "GK", num: 1, hx: 0.03, hy: 0.5 },
         { team: 0, role: "DF", num: 4, hx: 0.26, hy: 0.5 },
@@ -49,6 +57,42 @@
         { team: 1, role: "RM", num: 10, hx: 0.54, hy: 0.2 },
         { team: 1, role: "FW", num: 9, hx: 0.38, hy: 0.5 },
     ];
+
+    // Eleven a side: formations for a side attacking right; the other side
+    // gets the mirror image. pos is the position's usual abbreviation.
+    const BACK_FOUR = [
+        { role: "GK", pos: "GK", num: 1, hx: 0.025, hy: 0.5 },
+        { role: "DF", pos: "LB", num: 3, hx: 0.2, hy: 0.14 },
+        { role: "DF", pos: "CB", num: 5, hx: 0.17, hy: 0.38 },
+        { role: "DF", pos: "CB", num: 4, hx: 0.17, hy: 0.62 },
+        { role: "DF", pos: "RB", num: 2, hx: 0.2, hy: 0.86 },
+    ];
+    const FORMATIONS = {
+        "4-4-2": BACK_FOUR.concat([
+            { role: "MF", pos: "LM", num: 11, hx: 0.4, hy: 0.15 },
+            { role: "MF", pos: "CM", num: 8, hx: 0.36, hy: 0.41 },
+            { role: "MF", pos: "CM", num: 6, hx: 0.36, hy: 0.59 },
+            { role: "MF", pos: "RM", num: 7, hx: 0.4, hy: 0.85 },
+            { role: "FW", pos: "ST", num: 9, hx: 0.56, hy: 0.42 },
+            { role: "FW", pos: "ST", num: 10, hx: 0.53, hy: 0.6 },
+        ]),
+        "4-3-3": BACK_FOUR.concat([
+            { role: "MF", pos: "CDM", num: 6, hx: 0.32, hy: 0.5 },
+            { role: "MF", pos: "CM", num: 8, hx: 0.4, hy: 0.33 },
+            { role: "MF", pos: "CM", num: 10, hx: 0.4, hy: 0.67 },
+            { role: "FW", pos: "LW", num: 11, hx: 0.56, hy: 0.16 },
+            { role: "FW", pos: "ST", num: 9, hx: 0.6, hy: 0.5 },
+            { role: "FW", pos: "RW", num: 7, hx: 0.56, hy: 0.84 },
+        ]),
+    };
+
+    function lineup(opts) {
+        if (opts.size !== "eleven") return LINEUP;
+        const side = (form, team) =>
+            (FORMATIONS[form] || FORMATIONS["4-3-3"]).map((d) =>
+                Object.assign({}, d, { team, hx: team ? 1 - d.hx : d.hx, hy: team ? 1 - d.hy : d.hy }));
+        return side(opts.formation, 0).concat(side(opts.rivalFormation || "4-4-2", 1));
+    }
 
     function rng(seed) {
         let a = seed >>> 0 || 1;
@@ -81,8 +125,18 @@
 
     function create(seed, opts) {
         opts = opts || {};
+        const size = opts.size === "eleven" ? "eleven" : "five";
+        usePitch(size);
+        const roster = lineup(opts);
+        // The person starts on the centre forward.
+        const fw = (team) => {
+            const st = roster.findIndex((d) => d.team === team && d.pos === "ST");
+            return st >= 0 ? st : roster.findIndex((d) => d.team === team && d.role === "FW");
+        };
         const s = {
             t: 0,
+            size,
+            formation: opts.formation || null,
             // Against a friend both sides are people, so the Rivals get no level.
             versus: !!opts.versus,
             level: !opts.versus && LEVELS[opts.level] ? opts.level : "normal",
@@ -99,10 +153,11 @@
             rand: rng(seed || 7),
             score: [0, 0],
             ball: { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, vz: 0, last: -1, lastAt: -9, kickAt: -9 },
-            players: LINEUP.map((d, id) => ({
+            players: roster.map((d, id) => ({
                 id,
                 team: d.team,
                 role: d.role,
+                pos: d.pos || d.role,
                 num: d.num,
                 hx: d.hx,
                 hy: d.hy,
@@ -128,8 +183,8 @@
             })),
             // The player each side's person controls, or -1 for a side the AI runs.
             // `user` is always NB FC's, for the single-player screen.
-            users: [4, opts.versus ? 9 : -1],
-            user: 4,
+            users: [fw(0), opts.versus ? fw(1) : -1],
+            user: fw(0),
             carrier: -1,
             pass: null,
             held: null,
@@ -175,19 +230,23 @@
             // Everyone back in their own half, and the side not kicking off
             // outside the centre circle.
             p.x = attackDir(s, p.team) === 1 ? Math.min(p.x, L / 2 - 1.5) : Math.max(p.x, L / 2 + 1.5);
-            if (p.team !== team && hyp(p.x - L / 2, p.y - W / 2) < 7) p.x = L / 2 - attackDir(s, p.team) * 7;
+            if (p.team !== team && hyp(p.x - L / 2, p.y - W / 2) < CIRCLE + 1) p.x = L / 2 - attackDir(s, p.team) * (CIRCLE + 1);
             Object.assign(p, { vx: 0, vy: 0, dvx: 0, dvy: 0, stun: 0, run: null, queued: null, charge: 0, chargeKind: null });
             p.face = attackDir(s, p.team) === 1 ? 0 : Math.PI;
         }
-        const fw = s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
+        const fw = striker(s, team);
         fw.x = L / 2 - attackDir(s, team) * 0.7;
         fw.y = W / 2;
-        for (const t of [0, 1]) if (human(s, t)) s.users[t] = s.players.find((p) => p.team === t && p.role === "FW").id;
+        for (const t of [0, 1]) if (human(s, t)) s.users[t] = striker(s, t).id;
         s.user = s.users[0];
         s.carrier = -1;
         s.pass = null;
         s.held = null;
         s.flash = { text: "Kick off", until: s.t + 1.2 };
+    }
+
+    function striker(s, team) {
+        return s.players.find((p) => p.team === team && p.pos === "ST") || s.players.find((p) => p.team === team && p.role === "FW") || s.players.find((p) => p.team === team && p.role !== "GK");
     }
 
     /* ---------- Ball maths ---------- */
@@ -238,6 +297,7 @@
 
     // inp drives NB FC's player; inp2 the Rivals' when a friend plays them.
     function step(s, inp, inp2) {
+        usePitch(s.size);
         stepInner(s, [inp || {}, inp2 || {}]);
         count(s);
         for (const e of s.events) {
@@ -309,6 +369,7 @@
     // Second half: the teams change ends and the Rivals kick off.
     function secondHalf(s) {
         if (s.phase !== "halftime") return;
+        usePitch(s.size);
         s.half = 2;
         s.ends = 1;
         s.clock = 0;
@@ -825,7 +886,17 @@
         const ad = attackDir(s, p.team);
         let x = homeX(s, p) + (b.x - L / 2) * 0.5;
         let y = homeY(s, p) + (b.y - W / 2) * 0.3;
-        if (p.role === "FW") x = ad > 0 ? Math.max(x, b.x + 6) : Math.min(x, b.x - 6);
+        if (s.size === "eleven") {
+            // With the ball the side pushes up and spreads; without it, it
+            // drops and narrows into a block between ball and goal.
+            const c = s.carrier >= 0 ? s.players[s.carrier] : s.held ? s.players[s.held.id] : null;
+            const ours = c && c.team === p.team;
+            const push = p.role === "DF" ? 6 : p.role === "MF" ? 9 : 10;
+            if (c) x += ad * (ours ? push : -push * 0.6);
+            y = W / 2 + (y - W / 2) * (ours ? 1.1 : 0.8);
+            // Forwards hold the line of the last defender instead of running offside.
+            if (p.role === "FW") x = ad > 0 ? Math.min(x, offsideLine(s, p.team) - 0.5) : Math.max(x, offsideLine(s, p.team) + 0.5);
+        } else if (p.role === "FW") x = ad > 0 ? Math.max(x, b.x + 6) : Math.min(x, b.x - 6);
         if (outOfBox) x = ad > 0 ? Math.max(x, BOX_D + 2) : Math.min(x, L - BOX_D - 2);
         x = clamp(x, 4, L - 4);
         y = clamp(y, 3, W - 3);
@@ -875,6 +946,15 @@
             if (d(p) < 1.15 && p.tackleCd <= 0) tackle(s, p, 0.33 * (p.team === 1 ? LEVELS[s.level].tackle : 1));
             return;
         }
+        if (s.size === "eleven") {
+            // A second man covers a few metres behind the presser.
+            const rest = mates.filter((q) => q !== nearest || userPresses);
+            const second = rest.reduce((a, q) => (d(q) < d(a) ? q : a), rest[0]);
+            if (second === p && d(p) < 18) {
+                const g = norm(gx - b.x, W / 2 - b.y);
+                return seek(p, b.x + g.x * 5, b.y + g.y * 5, AI_RUN);
+            }
+        }
         // Mark: share out the other side's outfield players (not the one on the
         // ball) by who is nearest to whose formation spot.
         const markers = mates.filter((q) => userPresses || q !== nearest);
@@ -896,6 +976,8 @@
             if (m === p) mine = best;
         }
         if (!mine) return shape(s, p, false);
+        // On the big pitch a man is only followed while he is in your zone.
+        if (s.size === "eleven" && hyp(mine.x - homeX(s, p) - (b.x - L / 2) * 0.5, mine.y - homeY(s, p)) > 17) return shape(s, p, false);
         const g = norm(gx - mine.x, W / 2 - mine.y);
         seek(p, mine.x + g.x * 1.8, mine.y + g.y * 1.8, AI_RUN);
     }
@@ -922,7 +1004,8 @@
                 return kick(s, p, "lob", 0.7, norm(ad, b.y < W / 2 ? -0.6 : 0.6));
             }
             // Under pressure, or a teammate clearly better placed: pass.
-            if (settled && (press < 2.8 || s.rand() < 0.08)) {
+            const far = s.size === "eleven" && dG > 30;
+            if (settled && (press < 2.8 || s.rand() < (far ? 0.3 : 0.08))) {
                 const q = passOption(s, p, opps);
                 if (q) return kick(s, p, "pass", 0.3, norm(q.x - p.x, q.y - p.y));
             }
@@ -960,7 +1043,8 @@
             const dx = q.x - p.x;
             const dy = q.y - p.y;
             const d = hyp(dx, dy);
-            if (d < 4 || d > 30 || dx * ad < -4) continue;
+            if (d < 4 || d > (s.size === "eleven" ? 38 : 30) || dx * ad < -4) continue;
+            if (q.offside) continue;
             // Never back to someone deep in our own box: one missed touch is a goal.
             if ((q.x - goalX(s, p.team)) * ad < 7 && Math.abs(q.y - W / 2) < BOX_W / 2) continue;
             const open = Math.min(...opps.map((o) => hyp(o.x - q.x, o.y - q.y)));
@@ -978,6 +1062,16 @@
             }
         }
         return best;
+    }
+
+    // Where an attacker of `team` stops being onside: level with the second
+    // last defender, or the ball, or halfway, whichever is furthest forward
+    // for the defence. Returns an x.
+    function offsideLine(s, team) {
+        const ad = attackDir(s, team);
+        const xs = s.players.filter((q) => q.team !== team).map((q) => q.x * ad).sort((a, c) => c - a);
+        const second = xs[1] !== undefined ? xs[1] : L * ad;
+        return Math.max(second, s.ball.x * ad, (L / 2) * ad) * ad;
     }
 
     function norm(x, y) {
@@ -1372,7 +1466,7 @@
             if (lastTeam(s) === defending) {
                 return restart(s, "Corner", 1 - defending, gx === 0 ? 0.5 : L - 0.5, b.y < W / 2 ? 0.5 : W - 0.5);
             }
-            return restart(s, "Goal kick", defending, gx + attackDir(s, defending) * 4, W / 2);
+            return restart(s, "Goal kick", defending, gx + attackDir(s, defending) * SIX_D, W / 2);
         }
     }
 
@@ -1490,7 +1584,7 @@
         b.vx = b.vy = b.vz = 0;
         b.px = b.x;
         b.py = b.y;
-        const room = sp.kind === "Corner" ? 8 : 3;
+        const room = sp.kind === "Corner" ? (s.size === "eleven" ? 9.15 : 8) : 3;
         for (const p of s.players) {
             if (p.team === sp.team) continue;
             const d = hyp(p.x - sp.x, p.y - sp.y);
@@ -1502,7 +1596,11 @@
         }
     }
 
-    const api = { create, step, secondHalf, LEVELS, DT, L, W, GOAL_W, GOAL_H, GOAL_D, BOX_D, BOX_W, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
+    const api = { create, step, secondHalf, LEVELS, FORMATIONS, PITCHES, DT, GOAL_D, R_PLAYER, R_BALL, REACH, JOG, SPRINT, ACCEL, TEAMS, speedFor, rollDist };
+    // The pitch's measurements follow whichever match was made last.
+    for (const k of ["L", "W", "GOAL_W", "GOAL_H", "BOX_D", "BOX_W", "SIX_D", "SIX_W", "SPOT", "CIRCLE"]) {
+        Object.defineProperty(api, k, { enumerable: true, get: () => ({ L, W, GOAL_W, GOAL_H, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE })[k] });
+    }
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     else root.MatchSim = api;
 })(typeof window !== "undefined" ? window : globalThis);

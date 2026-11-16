@@ -11,10 +11,18 @@
     const ctx = canvas.getContext("2d");
     const overlay = root.querySelector("[data-overlay]");
     const playBtn = root.querySelector("[data-play]");
-    const { L, W, GOAL_W, GOAL_D, BOX_D, BOX_W, TEAMS } = Sim;
+    const { GOAL_D, TEAMS } = Sim;
+    // The pitch's measurements, refreshed whenever a match is made (five-a-side
+    // and eleven-a-side pitches differ).
+    let L, W, GOAL_W, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE;
+    function readPitch() {
+        ({ L, W, GOAL_W, BOX_D, BOX_W, SIX_D, SIX_W, SPOT, CIRCLE } = Sim);
+    }
 
     // Visible width of pitch in metres; height follows from 16:9.
-    const VIEW = 34;
+    // On the full-size pitch the camera stands further back.
+    const VIEWS = { five: 34, eleven: 46 };
+    const viewFor = () => VIEWS[s.size] || VIEWS.five;
     // Players and ball are drawn larger than life so they read at laptop size.
     const BIG = 1.4;
 
@@ -33,7 +41,7 @@
 
     // Rivals level and half length, remembered between visits.
     const SETUP_KEY = "nbs-five-setup";
-    const setup = { level: "normal", half: 180 };
+    const setup = { level: "normal", half: 180, size: "eleven", formation: "4-3-3" };
     try {
         Object.assign(setup, JSON.parse(localStorage.getItem(SETUP_KEY)) || {});
     } catch (error) {
@@ -56,7 +64,11 @@
     const myTeam = () => (net.role === "guest" ? 1 : 0);
     const meId = () => (s.users[myTeam()] >= 0 ? s.users[myTeam()] : s.users[0]);
 
-    const newMatch = () => Sim.create((Math.random() * 1e9) | 0, Object.assign({}, setup, { versus: versus() }));
+    function newMatch(opts) {
+        const made = Sim.create((Math.random() * 1e9) | 0, Object.assign({}, setup, { versus: versus() }, opts));
+        readPitch();
+        return made;
+    }
     let s = newMatch();
     let held = {};
     let playing = false;
@@ -64,7 +76,7 @@
     let mode = "start";
     let last = 0;
     let acc = 0;
-    const cam = { x: L / 2, y: W / 2, view: VIEW };
+    const cam = { x: L / 2, y: W / 2, view: viewFor() };
     const legs = {};
 
     /* ---------- Input ---------- */
@@ -110,9 +122,11 @@
         if (!playing && !overlay.hidden) play();
     });
 
-    for (const btn of root.querySelectorAll("[data-level], [data-half]")) {
+    for (const btn of root.querySelectorAll("[data-level], [data-half], [data-size], [data-form]")) {
         btn.addEventListener("click", () => {
             if (btn.dataset.level) setup.level = btn.dataset.level;
+            else if (btn.dataset.size) setup.size = btn.dataset.size;
+            else if (btn.dataset.form) setup.formation = btn.dataset.form;
             else setup.half = +btn.dataset.half;
             try {
                 localStorage.setItem(SETUP_KEY, JSON.stringify(setup));
@@ -122,10 +136,14 @@
             // Before kick-off the new settings apply to this match straight away.
             if (mode === "start") s = newMatch();
             renderSetup();
+            if (mode === "start" || mode === "full") show(mode);
         });
     }
 
     function renderSetup() {
+        for (const btn of root.querySelectorAll("[data-size]")) btn.setAttribute("aria-checked", String(btn.dataset.size === setup.size));
+        for (const btn of root.querySelectorAll("[data-form]")) btn.setAttribute("aria-checked", String(btn.dataset.form === setup.formation));
+        root.querySelector("[data-form-seg]").hidden = setup.size !== "eleven" || net.role === "guest";
         for (const btn of root.querySelectorAll("[data-level]")) btn.setAttribute("aria-checked", String(btn.dataset.level === setup.level));
         for (const btn of root.querySelectorAll("[data-half]")) btn.setAttribute("aria-checked", String(+btn.dataset.half === setup.half));
     }
@@ -180,7 +198,7 @@
         const end = mode === "halftime" || mode === "full";
         const line = `${TEAMS[0].name} ${s.score[0]} – ${s.score[1]} ${TEAMS[1].name}`;
         overlay.querySelector("[data-overlay-kicker]").textContent =
-            { start: "Five against five", pause: "Paused", halftime: "Half time", full: "Full time" }[mode];
+            { start: s.size === "eleven" ? "Eleven against eleven" : "Five against five", pause: "Paused", halftime: "Half time", full: "Full time" }[mode];
         overlay.querySelector("[data-overlay-title]").textContent = mode === "start" ? `${TEAMS[0].name} vs ${TEAMS[1].name}` : line;
         root.querySelector("[data-stats]").hidden = !end;
         if (end) root.querySelector("[data-stats]").innerHTML = statsHtml();
@@ -311,7 +329,7 @@
         const k = 1 - Math.exp(-dt * 4);
         cam.x += (tx - cam.x) * k;
         cam.y += (ty - cam.y) * k;
-        cam.view += ((corner ? 46 : VIEW) - cam.view) * k;
+        cam.view += ((corner ? viewFor() * 1.35 : viewFor()) - cam.view) * k;
         sc = cw / cam.view;
         const hw = cam.view / 2;
         const hh = (cam.view * ch) / cw / 2;
@@ -382,14 +400,28 @@
         ctx.lineWidth = Math.max(1, 0.12 * sc);
         ctx.strokeRect(X(0), Y(0), L * sc, W * sc);
         line(L / 2, 0, L / 2, W);
-        circle(L / 2, W / 2, 6, false);
+        circle(L / 2, W / 2, CIRCLE, false);
         circle(L / 2, W / 2, 0.2, true);
         for (const side of [0, 1]) {
             const gx = side ? L : 0;
             const dir = side ? -1 : 1;
             ctx.strokeRect(X(Math.min(gx, gx + dir * BOX_D)), Y(W / 2 - BOX_W / 2), BOX_D * sc, BOX_W * sc);
-            ctx.strokeRect(X(Math.min(gx, gx + dir * 4)), Y(W / 2 - 5), 4 * sc, 10 * sc);
-            circle(gx + dir * 8, W / 2, 0.18, true);
+            ctx.strokeRect(X(Math.min(gx, gx + dir * SIX_D)), Y(W / 2 - SIX_W / 2), SIX_D * sc, SIX_W * sc);
+            circle(gx + dir * SPOT, W / 2, 0.18, true);
+            if (s.size === "eleven") {
+                // The penalty arc: the part of a 9.15 m circle round the spot outside the box.
+                const reach = Math.acos((BOX_D - SPOT) / CIRCLE);
+                ctx.beginPath();
+                ctx.arc(X(gx + dir * SPOT), Y(W / 2), CIRCLE * sc, side ? Math.PI - reach : -reach, side ? Math.PI + reach : reach);
+                ctx.stroke();
+            }
+            // Corner arcs.
+            for (const cy of [0, W]) {
+                ctx.beginPath();
+                const a0 = (cy ? -1 : 1) * (side ? Math.PI / 2 : 0);
+                ctx.arc(X(gx), Y(cy), 1 * sc, Math.min(a0, a0 + (cy ? -1 : 1) * (side ? -Math.PI / 2 : Math.PI / 2)), Math.max(a0, a0 + (cy ? -1 : 1) * (side ? -Math.PI / 2 : Math.PI / 2)));
+                ctx.stroke();
+            }
         }
     }
 
@@ -1083,6 +1115,8 @@
             ev: net.events.splice(0),
             ka: net.autoLeft,
             ht: Math.round(now),
+            sz: s.size,
+            fm: s.formation,
         };
         if (mode === "halftime" || mode === "full") {
             msg.stats = s.stats;
@@ -1134,6 +1168,16 @@
         if (!snaps.length) return;
         const last = snaps[snaps.length - 1];
         const d = last.d;
+        // The host picked the pitch and formation: match them.
+        if ((d.sz || "five") !== s.size || (d.fm || null) !== s.formation || d.p.length !== s.players.length) {
+            s = newMatch({ size: d.sz || "five", formation: d.fm || undefined, versus: true });
+            net.pred = null;
+            if (mode !== "play") show(mode);
+        }
+        if (snaps[0].d.p.length !== s.players.length) {
+            net.snaps = snaps.filter((x) => x.d.p.length === s.players.length);
+            return;
+        }
 
         // Everyone else: replayed on the host's own clock, a little in the
         // past, between the two snapshots either side of that moment. The more
@@ -1354,7 +1398,7 @@
     // Hooks for poking at it from the console. render() draws one frame by
     // hand, for when the tab gets no animation frames; logs() lists saved matches.
     // tick() runs one whole frame by hand, for a tab in the background.
-    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1), logs: loadLogs, tick: () => frame(performance.now(), true), net };
+    window.fiveASide = { get state() { return s; }, Sim, render: (dt) => draw(dt || 1), logs: loadLogs, tick: () => frame(performance.now(), true), net, cam };
 
     requestAnimationFrame((now) => {
         last = now;
