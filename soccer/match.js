@@ -144,7 +144,22 @@
     window.addEventListener("blur", () => {
         held = {};
         if (net.role === "guest") sendInput();
-        else if (playing) pause();
+        else if (playing && !versus()) pause();
+    });
+
+    // Hosting a room with the tab in the background: the browser stops
+    // animation frames, so a worker's timer keeps the match running for your friend.
+    let ticker = null;
+    document.addEventListener("visibilitychange", () => {
+        const need = document.hidden && net.role === "host" && versus() && playing;
+        if (need && !ticker) {
+            ticker = new Worker(URL.createObjectURL(new Blob(["setInterval(() => postMessage(0), 16)"], { type: "text/javascript" })));
+            ticker.onmessage = () => frame(performance.now(), true);
+        } else if (!need && ticker) {
+            ticker.terminate();
+            ticker = null;
+            last = performance.now();
+        }
     });
 
     playBtn.addEventListener("click", () => (net.role === "guest" ? goAhead() : play()));
@@ -533,8 +548,75 @@
         return html.join("");
     }
 
-    if (matchMedia("(hover: none) and (pointer: coarse)").matches) {
+    /* ---------- Touch controls ----------
+       On a phone or tablet: a stick under the left thumb (push it right out
+       to sprint) and buttons under the right. */
+
+    const touch = matchMedia("(hover: none) and (pointer: coarse)").matches;
+    const pad = root.querySelector("[data-pad]");
+    if (touch) {
         root.querySelector("[data-touch]").hidden = false;
+        root.querySelector("[data-keys]").classList.add("no-keys");
+        const stick = pad.querySelector("[data-stick]");
+        const knob = stick.querySelector("i");
+        let from = null;
+        let sentAt = 0;
+        const told = (force) => {
+            if (net.role !== "guest") return;
+            const now = performance.now();
+            if (force || now - sentAt > 50) {
+                sentAt = now;
+                sendInput();
+            }
+        };
+        const steer = (e) => {
+            const dx = (e.clientX - from.x) / 46;
+            const dy = (e.clientY - from.y) / 46;
+            const m = Math.hypot(dx, dy);
+            const k = m > 1 ? 1 / m : 1;
+            held.dx = dx * k;
+            held.dy = dy * k;
+            held.sprint = m > 0.92;
+            knob.style.transform = `translate(${held.dx * 30}px, ${held.dy * 30}px)`;
+            told(false);
+        };
+        stick.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            stick.setPointerCapture(e.pointerId);
+            const box = stick.getBoundingClientRect();
+            from = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+            steer(e);
+        });
+        stick.addEventListener("pointermove", (e) => from && steer(e));
+        const let_go = () => {
+            from = null;
+            delete held.dx;
+            delete held.dy;
+            held.sprint = false;
+            knob.style.transform = "";
+            told(true);
+        };
+        stick.addEventListener("pointerup", let_go);
+        stick.addEventListener("pointercancel", let_go);
+        for (const btn of pad.querySelectorAll("[data-btn]")) {
+            const set = (down) => (e) => {
+                e.preventDefault();
+                // A tap on a kick button also skips a replay.
+                if (down && replay && net.role !== "guest") return endReplay();
+                held[btn.dataset.btn] = down;
+                btn.classList.toggle("down", down);
+                told(true);
+            };
+            btn.addEventListener("pointerdown", set(true));
+            btn.addEventListener("pointerup", set(false));
+            btn.addEventListener("pointercancel", set(false));
+            btn.addEventListener("pointerleave", set(false));
+        }
+        pad.querySelector("[data-pad-pause]").addEventListener("click", () => {
+            if (net.role === "guest") {
+                if (net.link && net.hostMode === "play") net.link.send({ t: "pause" });
+            } else if (playing) pause();
+        });
     }
 
     /* ---------- Loop ---------- */
@@ -587,6 +669,7 @@
         }
         if (replayAt && now >= replayAt && net.role !== "guest") startReplay(now);
         if (replay) runReplay(now, dt);
+        if (touch) pad.hidden = !overlay.hidden;
         if (net.role === "host") autoKickoff(now);
         if (net.role === "guest") guestFrame(now);
         else if (versus() && now - net.snapAt > (playing ? SNAP_EVERY : 250)) sendSnap(now);
@@ -1435,6 +1518,11 @@
         openRoom("guest", code);
     }
 
+    // Keep the room in the address, so a refresh comes straight back to it.
+    function rememberRoom(code) {
+        history.replaceState(null, "", `${location.pathname}?room=${code}`);
+    }
+
     function roomLink(code) {
         return `${location.origin}${location.pathname}?room=${code}`;
     }
@@ -1456,6 +1544,7 @@
         }
         if (net.full) return leaveRoom("That room already has two people in it.");
         if (role === "guest") {
+            rememberRoom(code);
             s = newMatch();
             // Nobody hosting it: say so rather than wait forever.
             window.setTimeout(() => {
@@ -1493,7 +1582,16 @@
         net.peer = list.some((peer) => peer.role === (net.role === "host" ? "guest" : "host"));
         if (!net.link || had === net.peer) return;
         if (net.role === "host") {
-            if (net.peer) {
+            if (net.peer && net.away && mode !== "start" && mode !== "full") {
+                // They are back (a refresh, a dropped connection): same match, their side again.
+                net.away = false;
+                const mates = s.players.filter((p) => p.team === 1 && p.role !== "GK" && !p.off);
+                s.users[1] = (mates.find((p) => p.pos === "ST") || mates[0]).id;
+                s.versus = true;
+                show(mode === "play" ? "pause" : mode);
+                roomStatus.textContent = "Your friend is back. Either of you can press Enter to carry on.";
+            } else if (net.peer) {
+                net.away = false;
                 // A fresh match with your friend on the Rivals.
                 playing = false;
                 breakAt = 0;
@@ -1510,9 +1608,11 @@
                 // They left mid-match: the AI takes their side, and you can play on.
                 s.users[1] = -1;
                 s.versus = false;
-                if (playing) pause();
-                else show(mode);
-                roomStatus.textContent = "Your friend left. The AI has the Rivals now.";
+                net.away = true;
+                playing = false;
+                held = {};
+                show(mode === "play" ? "pause" : mode);
+                roomStatus.textContent = "Your friend dropped out. The AI has their side; if they come back to this room they get it again.";
             }
         } else if (had) {
             leaveRoom("The host left the room.");
@@ -1526,6 +1626,11 @@
                 net.lastIn = Number(m.n);
                 const k = {};
                 for (const act of Object.values(KEYS)) if (m.k && m.k[act]) k[act] = true;
+                // A phone's stick sends a direction instead of keys.
+                if (m.k && typeof m.k.dx === "number" && typeof m.k.dy === "number") {
+                    k.dx = Math.max(-1, Math.min(1, m.k.dx));
+                    k.dy = Math.max(-1, Math.min(1, m.k.dy));
+                }
                 net.queue.push(k);
                 if (net.queue.length > 12) net.queue.shift();
             } else if (m.t === "ping") {
@@ -1770,8 +1875,8 @@
             net.pred = { id: me, x: hx, y: hy, vx: pm[3], vy: pm[4], at: now };
         } else {
             const q = net.pred;
-            let dx = (held.right ? 1 : 0) - (held.left ? 1 : 0);
-            let dy = (held.down ? 1 : 0) - (held.up ? 1 : 0);
+            let dx = typeof held.dx === "number" ? held.dx : (held.right ? 1 : 0) - (held.left ? 1 : 0);
+            let dy = typeof held.dy === "number" ? held.dy : (held.down ? 1 : 0) - (held.up ? 1 : 0);
             const m = Math.hypot(dx, dy);
             if (m > 0) {
                 dx /= m;

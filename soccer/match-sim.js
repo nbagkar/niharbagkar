@@ -637,7 +637,7 @@
         }
         if (!s.shootout) s.clock += DT;
         // Facing a penalty, a person picks his keeper's side with up or down.
-        for (const t of [0, 1]) s.dive[t] = (inps[t].down ? 1 : 0) - (inps[t].up ? 1 : 0);
+        for (const t of [0, 1]) s.dive[t] = (inps[t].down ? 1 : 0) - (inps[t].up ? 1 : 0) || (typeof inps[t].dy === "number" ? Math.sign(Math.round(inps[t].dy)) : 0);
 
         for (const p of s.players) {
             p.touchCd = Math.max(0, p.touchCd - DT);

@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Match Day · Soccer · Nihar Bagkar</title>
     <meta name="description" content="Match Day: a top-down football game for the keyboard. Eleven a side or five a side, with offside, free kicks, penalties, goal replays and online matches against a friend.">
-    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://soccer.niharbagkar.com/match.html">
+    <meta property="og:title" content="Match Day · a football game by Nihar Bagkar">
+    <meta property="og:description" content="Eleven a side with offside, free kicks, penalties and goal replays. Play a season, a cup, or a friend online.">
+    <meta property="og:url" content="https://soccer.niharbagkar.com/match.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://www.niharbagkar.com/og-hub.jpg">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon-32.png" sizes="32x32">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +39,20 @@
 
         <div class="match-stage wrap" id="match">
             <canvas class="match-canvas" tabindex="0" aria-label="Top-down football game. Move with WASD or the arrow keys; pass, shoot and lob with J, K and L or Space, X and C."></canvas>
+
+            <div class="pad" data-pad hidden>
+                <div class="pad-stick" data-stick><i></i></div>
+                <div class="pad-btns">
+                    <button type="button" data-btn="swap">Switch</button>
+                    <button type="button" data-btn="tackle">Tackle</button>
+                    <button type="button" data-btn="skill">Skill</button>
+                    <button type="button" data-btn="lob">Lob</button>
+                    <button type="button" data-btn="finesse">Curl</button>
+                    <button type="button" data-btn="pass">Pass</button>
+                    <button type="button" class="pad-shoot" data-btn="shoot">Shoot</button>
+                </div>
+                <button type="button" class="pad-pause" data-pad-pause aria-label="Pause">II</button>
+            </div>
 
             <div class="match-overlay" data-overlay>
                 <div class="overlay-card">
@@ -125,7 +145,7 @@
                         <button class="play" type="button" data-play>Play <span>Enter</span></button>
                         <button class="exit" type="button" data-exit hidden>Exit match</button>
                     </div>
-                    <p class="touch-note" data-touch hidden>This one is built for a laptop keyboard.</p>
+                    <p class="touch-note" data-touch hidden>Touch controls: the stick is under your left thumb (push it right out to sprint), the buttons under your right. Turn the phone sideways.</p>
                 </div>
             </div>
         </div>

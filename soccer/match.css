@@ -282,7 +282,72 @@ kbd {
 
 .stat-scorers { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--dim); }
 
-.touch-note { margin: 0.8rem 0 0; color: var(--pink); font-weight: 700; }
+.touch-note { margin: 0.8rem 0 0; color: var(--aqua); font-weight: 600; font-size: 0.9rem; }
+.touch-note[hidden], .keys.no-keys { display: none; }
+
+/* Touch controls over the pitch. */
+.pad { position: absolute; inset: 0; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pad[hidden] { display: none; }
+.pad > * { pointer-events: auto; touch-action: none; }
+
+.pad-stick {
+    position: absolute;
+    left: 3%;
+    bottom: 6%;
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 50%;
+    background: rgba(6, 6, 13, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.pad-stick i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3rem;
+    height: 3rem;
+    margin: -1.5rem 0 0 -1.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.pad-btns {
+    position: absolute;
+    right: 2%;
+    bottom: 5%;
+    display: grid;
+    grid-template-columns: repeat(4, 3.6rem);
+    gap: 0.4rem;
+    direction: rtl;
+}
+
+.pad-btns button, .pad-pause {
+    height: 3.6rem;
+    border-radius: 50%;
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(6, 6, 13, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    direction: ltr;
+}
+
+.pad-btns button.down { background: rgba(30, 242, 200, 0.55); color: #000; }
+.pad-btns .pad-shoot { border-color: var(--pink); }
+.pad-pause { position: absolute; right: 2%; top: 3%; width: 2.6rem; height: 2.6rem; }
+
+/* A phone on its side: the pitch gets the whole screen. */
+@media (max-height: 520px) and (orientation: landscape) {
+    .bar, .match-head, .match-foot { display: none; }
+    .match-page { padding: 0; }
+    .match-stage { width: min(100%, 100dvh * 16 / 9) !important; margin: 0 auto; border: 0; clip-path: none; }
+    .pad-stick { width: 6.5rem; height: 6.5rem; }
+    .pad-btns { grid-template-columns: repeat(4, 3.1rem); }
+    .pad-btns button { height: 3.1rem; font-size: 0.62rem; }
+}
 
 .match-foot {
     margin: 0.6rem auto 0;
