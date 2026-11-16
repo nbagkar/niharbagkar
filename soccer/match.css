@@ -118,7 +118,32 @@ kbd {
 }
 
 /* On a short screen the card scrolls; the button stays in reach. */
-.play { position: sticky; bottom: 0; box-shadow: 0 0 0 0.6rem rgba(10, 12, 22, 0.88); }
+.actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 0 0 0.6rem #0b0d17;
+    background: #0b0d17;
+}
+
+.exit {
+    padding: 0.45rem 1rem;
+    font-family: var(--font);
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-stretch: 85%;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.exit:hover, .exit:focus-visible { border-color: var(--pink); color: var(--pink); outline: none; }
+.exit[hidden] { display: none; }
 
 .play span { font-size: 0.75rem; font-style: normal; opacity: 0.6; }
 .play:hover, .play:focus-visible { background: #fff; outline: none; }

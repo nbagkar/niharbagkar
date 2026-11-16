@@ -106,13 +106,16 @@
                         </div>
                     </div>
                     <p class="overlay-tip" data-tip>Hold shoot longer for power; past the red line it flies over. Point the stick at a corner to aim.</p>
-                    <button class="play" type="button" data-play>Play <span>Enter</span></button>
+                    <div class="actions">
+                        <button class="play" type="button" data-play>Play <span>Enter</span></button>
+                        <button class="exit" type="button" data-exit hidden>Exit match</button>
+                    </div>
                     <p class="touch-note" data-touch hidden>This one is built for a laptop keyboard.</p>
                 </div>
             </div>
         </div>
 
-        <p class="match-foot wrap"><kbd>Esc</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound <span data-sound-state>on</span></p>
+        <p class="match-foot wrap"><kbd>Esc</kbd> pause or exit &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound <span data-sound-state>on</span></p>
     </main>
 
     <script src="/online.js"></script>

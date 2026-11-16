@@ -216,6 +216,24 @@
         show("pause");
     }
 
+    // Leave the match for the start screen. In a room this leaves the room
+    // too, which ends the match for your friend.
+    function exitMatch() {
+        if (mode === "start") return;
+        saveLog();
+        if (net.link) return leaveRoom("");
+        playing = false;
+        held = {};
+        breakAt = 0;
+        replay = null;
+        replayAt = 0;
+        s = newMatch();
+        matchId = Date.now();
+        show("start");
+    }
+
+    root.querySelector("[data-exit]").addEventListener("click", exitMatch);
+
     function restart() {
         breakAt = 0;
         saveLog();
@@ -1187,6 +1205,8 @@
         playing = false;
         held = {};
         breakAt = 0;
+        replay = null;
+        replayAt = 0;
         s = newMatch();
         matchId = Date.now();
         show("start");
@@ -1520,6 +1540,10 @@
         root.querySelector("[data-level-seg]").hidden = !!net.link;
         root.querySelector("[data-half-seg]").hidden = guest;
         playBtn.hidden = (guest && !net.peer) || (host && !net.peer);
+        // Out of a match in progress or just finished, back to the start screen.
+        const exit = root.querySelector("[data-exit]");
+        exit.hidden = mode === "start" || mode === "play";
+        exit.textContent = net.link ? "Exit and leave room" : "Exit match";
         if (!net.link) return;
         const code = net.link.code;
         room.querySelector(".room-url").value = roomLink(code);
