@@ -1072,7 +1072,9 @@
             const b = s.ball;
             const near = Math.max(0, 1 - Math.min(b.x, L - b.x) / 20);
             roar = Math.max(0, roar - Sim.DT * 0.5);
-            crowd.gain.value = 0.05 + near * 0.06 + Math.min(1, roar) * 0.2;
+            const level = 0.05 + near * 0.06 + Math.min(1, roar) * 0.2;
+            // Seen non-finite on a friend's screen in a two-page test; never hand that to the audio.
+            if (Number.isFinite(level)) crowd.gain.value = level;
         }
     }
 
