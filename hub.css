@@ -1962,3 +1962,70 @@ kbd {
         padding: 0.2rem 0.55rem;
     }
 }
+
+/* Phone pass: 44px touch targets and readable card text. The html.hub[data-theme]
+   prefix outranks the theme files, which load after this one. */
+
+@media (max-width: 760px) {
+    html.hub[data-theme] .sound-toggle {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    html.hub[data-theme] .theme-toggle {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        justify-content: center;
+    }
+
+    html.hub[data-theme] .hub-resume:not(.hub-quick),
+    html.hub[data-theme] .wordmark {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    html.hub[data-theme] .screen-back,
+    html.hub[data-theme] .squad-views button,
+    html.hub[data-theme] .pf-tabs button,
+    html.hub[data-theme] .po-free {
+        min-height: 2.75rem;
+    }
+
+    /* Text links: grow the hit area without moving the layout. */
+    html.hub[data-theme] .home-quick,
+    html.hub[data-theme] .contact .link-arrow,
+    html.hub[data-theme] .card.player .c-link {
+        padding-block: 0.6rem;
+        margin-block: -0.6rem;
+    }
+
+    /* Player card front: drop the fine print, which is unreadable at this size. */
+    html.hub[data-theme] .hero .card.player .face-front .c-text,
+    html.hub[data-theme] .hero .card.player .face-front .c-foot {
+        display: none;
+    }
+}
+
+@media (max-width: 620px) {
+    /* Squad bar: keep both view tabs on screen. */
+    html.hub[data-theme] .squad-views button {
+        padding-inline: 0.5rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.02em;
+    }
+
+    /* Lineup cards: wider, with the name as the only caption. */
+    html.hub[data-theme] .formation {
+        --mini-w: min(8rem, calc((100vw - 4.5rem) / 4.3));
+    }
+
+    html.hub[data-theme] .mini-no,
+    html.hub[data-theme] .mini-fact {
+        display: none;
+    }
+
+    html.hub[data-theme] .mini-name {
+        font-size: 14.5cqw;
+    }
+}

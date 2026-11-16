@@ -1,6 +1,11 @@
 {
     "routes": [
         {
+            "src": "/(images/.*|og-hub\\.jpg|favicon\\.svg|favicon-32\\.png|apple-touch-icon\\.png)",
+            "headers": { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" },
+            "continue": true
+        },
+        {
             "src": "/resume.pdf",
             "headers": {
                 "X-Robots-Tag": "noindex",

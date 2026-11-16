@@ -278,8 +278,23 @@
         overlay.classList.toggle("has-board", visible);
         if (!visible) return;
         renderBoard();
-        if (Date.now() - boardFetched > 30000) loadBoard();
+        if (Date.now() - boardFetched <= 30000) return;
+        if (offScreen()) boardPending = true;
+        else loadBoard();
     }
+
+    // On the menu page the pitch is built before anyone opens Kick off, so the
+    // board waits for the screen instead of fetching on every home visit.
+    let boardPending = false;
+    function offScreen() {
+        const screen = root.closest("section");
+        return Boolean(document.getElementById("home") && screen && !screen.classList.contains("is-active"));
+    }
+    window.addEventListener("hub:screen", (event) => {
+        if (!boardPending || event.detail.id !== "kickoff") return;
+        boardPending = false;
+        if (!boardBox.hidden) loadBoard();
+    });
 
     async function loadBoard() {
         boardFetched = Date.now();
