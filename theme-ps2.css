@@ -876,3 +876,40 @@
 .case-page[data-theme="ps2"] :focus-visible {
     outline-color: var(--ps2-yellow);
 }
+
+/* Featured case files on the home screen. */
+
+.hub[data-theme="ps2"] .featured-label {
+    font-style: italic;
+    font-weight: 800;
+    color: var(--ps2-yellow);
+}
+
+.hub[data-theme="ps2"] .featured a {
+    color: #fff;
+    background: linear-gradient(180deg, #3f86f2 0%, #1f5fd6 49%, #1149b8 51%, #1a5ad0 100%);
+    border: 2px solid #cfe0ff;
+    border-radius: 0.7rem;
+    box-shadow: 0 0 0 2px var(--ps2-navy);
+}
+
+.hub[data-theme="ps2"] .featured a strong {
+    font-weight: 800;
+    font-style: italic;
+}
+
+.hub[data-theme="ps2"] .featured a span {
+    color: #dbe8ff;
+}
+
+.hub[data-theme="ps2"] .featured a:hover,
+.hub[data-theme="ps2"] .featured a:focus-visible {
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 49%, #f5a300 51%, var(--ps2-orange) 100%);
+    border-color: #fff;
+}
+
+.hub[data-theme="ps2"] .featured a:hover span,
+.hub[data-theme="ps2"] .featured a:focus-visible span {
+    color: var(--ps2-navy);
+}

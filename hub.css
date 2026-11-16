@@ -297,7 +297,7 @@ kbd {
 .hub .home {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto auto;
     padding: clamp(0.8rem, 2vw, 1.6rem) clamp(1rem, 3vw, 2.4rem) 0;
 }
 
@@ -749,6 +749,91 @@ kbd {
     }
 }
 
+/* Featured case files: a straight line from the home screen to the work. */
+
+.featured {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    margin-top: clamp(0.6rem, 1.5vw, 1rem);
+}
+
+.featured-label {
+    flex: none;
+    font-style: italic;
+    color: #c7c3b2;
+}
+
+.featured a {
+    flex: 1 1 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.5rem 0.9rem;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 0.6rem;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.featured a span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--ink-soft);
+}
+
+.featured a::after {
+    content: "\2192";
+    margin-left: auto;
+}
+
+.featured a:hover,
+.featured a:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+@media (max-width: 760px) {
+    .featured {
+        flex-wrap: wrap;
+        gap: 0.3rem 0.4rem;
+        margin-top: 0.6rem;
+    }
+
+    .featured-label {
+        flex-basis: 100%;
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+
+    .featured a span,
+    .featured a::after {
+        display: none;
+    }
+
+    .featured a {
+        justify-content: center;
+        padding: 0.7rem 0.3rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+    .featured-label {
+        display: none;
+    }
+
+    .featured a {
+        padding: 0.45rem 0.3rem;
+    }
+}
+
 /* Phone and narrow screens */
 
 @media (max-width: 760px) {
@@ -781,6 +866,7 @@ kbd {
     }
 
     .hub .home {
+        grid-template-rows: minmax(min-content, 1fr) auto auto;
         padding: 0.7rem 0.8rem 0;
         overflow-y: auto;
     }
@@ -797,7 +883,7 @@ kbd {
     }
 
     .hub .hero .player-wrap {
-        width: min(48vw, calc((100dvh - 31rem) * 5 / 7));
+        width: min(48vw, calc((100dvh - 37.6rem) * 5 / 7));
         min-width: 8.5rem;
     }
 
@@ -807,7 +893,7 @@ kbd {
 
     .tiles {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-rows: none;
+        grid-template-rows: minmax(6.5rem, 1.4fr);
         grid-auto-rows: minmax(4.4rem, 1fr);
         max-height: none;
     }

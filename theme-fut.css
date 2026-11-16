@@ -956,3 +956,42 @@
 .hub[data-theme="fut"] #about .book-name {
     font-size: 18cqi;
 }
+
+/* Featured case files on the home screen. */
+
+.hub[data-theme="fut"] .featured-label {
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .featured a {
+    color: #fff;
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%),
+        rgba(14, 14, 28, 0.72);
+    border: 0;
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--fut-line);
+}
+
+.hub[data-theme="fut"] .featured a strong {
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="fut"] .featured a span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.hub[data-theme="fut"] .featured a::after {
+    color: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .featured a:hover,
+.hub[data-theme="fut"] .featured a:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--fut-aqua), inset 0 0 1.4rem rgba(30, 242, 200, 0.18);
+}

@@ -1617,6 +1617,34 @@ a.btn {
     color: var(--paper-light);
 }
 
+/* Card front: a shortcut to the case file, above the flip button. */
+
+.c-art {
+    position: relative;
+}
+
+.c-case {
+    position: absolute;
+    right: 2cqw;
+    bottom: 2cqw;
+    z-index: 5;
+    padding: 1.6cqw 3.2cqw;
+    font-family: var(--font);
+    font-size: var(--card-text);
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--paper-light);
+    background: var(--ink);
+    border-radius: 99px;
+    box-shadow: 0 0 0 0.5cqw var(--paper-light);
+}
+
+.c-case:hover,
+.c-case:focus-visible {
+    background: var(--accent);
+}
+
 @media (max-width: 960px) {
     .case-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));
