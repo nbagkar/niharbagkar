@@ -67,6 +67,11 @@
     const meId = () => (s.users[myTeam()] >= 0 ? s.users[myTeam()] : s.users[0]);
 
     // Season, cup and records, kept in this browser (see further down).
+    const BOARD_URL = "https://cnqxfazzvpmcvtttkjed.supabase.co/functions/v1/matchday";
+    const LEVEL_ORDER = ["easy", "normal", "hard"];
+    let boardRows = null;
+    let boardAt = 0;
+    let boardNote = "";
     const CAREER_KEY = "nbs-career";
     const blankRec = () => ({ p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, streak: 0, best: 0, scorers: {} });
     const career = { comp: "friendly", season: null, cup: null, rec: blankRec() };
@@ -238,8 +243,69 @@
         }
         const table = {};
         for (const id of ids) table[id] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 };
-        career.season = { club: setup.club, round: 0, rounds, table, done: false };
+        const season = { club: setup.club, round: 0, rounds, table, done: false, level: setup.level, token: null, sent: false };
+        career.season = season;
         saveCareer();
+        // A token from the leaderboard, to send the finished season in with.
+        fetch(BOARD_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "start" }) })
+            .then((r) => r.json())
+            .then((data) => {
+                season.token = data.token || null;
+                saveCareer();
+            })
+            .catch(() => {});
+    }
+
+    /* Season leaderboard: finished seasons from everyone, most points first.
+       A small server function checks and stores them, as for Kick off. */
+
+    function loadBoard() {
+        if (Date.now() - boardAt < 60000) return;
+        boardAt = Date.now();
+        fetch(BOARD_URL)
+            .then((r) => r.json())
+            .then((data) => {
+                boardRows = data.board || [];
+                renderComp();
+            })
+            .catch(() => {
+                boardRows = boardRows || [];
+            });
+    }
+
+    function boardHtml() {
+        const se = career.season;
+        const rows = !boardRows ? "<li>Loading…</li>" : !boardRows.length ? "<li>No seasons yet. Finish one to be first.</li>"
+            : boardRows.map((r) => `<li><b>${r.initials}</b> ${clubOf(r.club).name} · <b>${r.points} pts</b> · ${r.wins}-${r.draws}-${r.losses} · ${r.goal_diff > 0 ? "+" : ""}${r.goal_diff} · ${r.level}</li>`).join("");
+        const form = se && se.done && se.token && !se.sent
+            ? `<form class="board-form" data-board-form><input class="room-code" maxlength="3" placeholder="AAA" aria-label="Your initials" autocomplete="off" required><button class="room-btn" type="submit">Put my season on the board</button></form>`
+            : "";
+        return `<p class="seg-label board-title">Season leaderboard</p><ol class="board">${rows}</ol>${form}${boardNote ? `<p class="stat-scorers">${boardNote}</p>` : ""}`;
+    }
+
+    async function sendSeason(initials) {
+        const se = career.season;
+        const order = standings(se.table);
+        const row = se.table[se.club];
+        boardNote = "Sending…";
+        renderComp();
+        try {
+            const response = await fetch(BOARD_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "submit", token: se.token, initials, club: se.club, level: se.level, w: row.w, d: row.d, l: row.l, gf: row.gf, ga: row.ga, finished: order.indexOf(se.club) + 1 }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Could not submit.");
+            se.sent = true;
+            saveCareer();
+            boardRows = data.board;
+            boardAt = Date.now();
+            boardNote = `Your season is #${data.rank} on the board.`;
+        } catch (error) {
+            boardNote = error.message;
+        }
+        renderComp();
     }
 
     function newCup() {
@@ -308,6 +374,8 @@
                 else addResult(se.table, a, b, ...simScore(a, b));
             }
             se.round += 1;
+            // The board shows the easiest level any match of the season was played on.
+            if (LEVEL_ORDER.indexOf(s.level) < LEVEL_ORDER.indexOf(se.level || "hard")) se.level = s.level;
             if (se.round >= se.rounds.length) se.done = true;
         }
         const cup = career.cup;
@@ -342,7 +410,7 @@
                 return `<tr class="${id === setup.club ? "me" : ""}"><td>${i + 1}</td><td>${clubOf(id).name}</td><td>${r.p}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td><b>${r.w * 3 + r.d}</b></td></tr>`;
             }).join("");
             const head = se.done ? `Season over: ${order[0] === setup.club ? "you are champions!" : `${clubOf(order[0]).name} are champions; you finished ${order.indexOf(setup.club) + 1}.`}` : `${fx.label}: ${clubOf(setup.club).name} v ${clubOf(fx.rival).name}`;
-            return `<p class="comp-head">${head}</p><table class="table"><tr><th></th><th>Club</th><th>P</th><th>W-D-L</th><th>GD</th><th>Pts</th></tr>${rows}</table>${se.done ? '<button class="room-btn" type="button" data-comp-new>Start a new season</button>' : ""}${record}`;
+            return `<p class="comp-head">${head}</p><table class="table"><tr><th></th><th>Club</th><th>P</th><th>W-D-L</th><th>GD</th><th>Pts</th></tr>${rows}</table>${se.done ? '<button class="room-btn" type="button" data-comp-new>Start a new season</button>' : ""}${record}${boardHtml()}`;
         }
         if (career.comp === "cup" && career.cup) {
             const cup = career.cup;
@@ -359,6 +427,18 @@
         box.hidden = !on;
         if (!on) return;
         box.innerHTML = compHtml();
+        if (career.comp === "season" && !versus() && net.role !== "guest") loadBoard();
+        const form = box.querySelector("[data-board-form]");
+        if (form) {
+            const input = form.querySelector("input");
+            input.addEventListener("input", () => {
+                input.value = input.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+            });
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                if (input.value.length >= 2) sendSeason(input.value);
+            });
+        }
         const again = box.querySelector("[data-comp-new]");
         if (again) {
             again.addEventListener("click", () => {

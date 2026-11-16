@@ -153,6 +153,12 @@ kbd {
 .table td, .table th { padding: 0.08rem 0.4rem 0.08rem 0; }
 .table tr.me td { color: var(--aqua); font-weight: 700; }
 
+.board-title { margin: 0.6rem 0 0.2rem; }
+.board { margin: 0 0 0.5rem; padding-left: 1.4rem; font-size: 0.85rem; }
+.board li { padding: 0.05rem 0; }
+.board b { color: var(--aqua); }
+.board-form { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.4rem; }
+
 .subs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0 0 0.9rem; }
 .subs[hidden] { display: none; }
 
