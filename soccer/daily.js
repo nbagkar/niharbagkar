@@ -24,6 +24,15 @@ window.SoccerDaily = (function () {
         return ((dayNumber + salt) * step) % size;
     }
 
+    // Daily pick for a list that grew: until `from` the old list as before;
+    // from then the new entries one a day in order, then the whole list.
+    function pickGrown(size, oldSize, from, salt = 0) {
+        const n = dayNumber - from;
+        if (n < 0) return pick(oldSize, salt);
+        if (n < size - oldSize) return oldSize + n;
+        return pick(size, salt);
+    }
+
     // A run of consecutive days won. { last, count } in localStorage.
     function streak(key) {
         const state = store.get(key) || { last: null, count: 0 };
@@ -43,5 +52,5 @@ window.SoccerDaily = (function () {
         };
     }
 
-    return { store, today, dayKey, dayNumber, pick, streak };
+    return { store, today, dayKey, dayNumber, pick, pickGrown, streak };
 })();

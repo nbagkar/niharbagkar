@@ -13,7 +13,8 @@
         const box = document.querySelector("#trivia");
         if (!box || !bank.length) return;
 
-        const item = bank[pick(bank.length)];
+        // 40 questions were added on 17 November 2026: they come first from the 18th.
+        const item = bank[window.SoccerDaily.pickGrown(bank.length, 107, Math.floor(Date.UTC(2026, 10, 18) / 86400000))];
 
         const question = box.querySelector("[data-q]");
         const options = box.querySelector("[data-options]");

@@ -1,12 +1,13 @@
 (function () {
-    const { store, today, dayNumber, pick, streak: makeStreak } = window.SoccerDaily;
+    const { store, today, dayNumber, pickGrown, streak: makeStreak } = window.SoccerDaily;
     const players = window.GUESS_PLAYERS || [];
     const pool = window.GUESS_POOL || [];
     if (!players.length) return;
 
     const MAX = 6;
     const FIRST_DAY = Math.floor(Date.UTC(2026, 9, 27) / 86400000);
-    const answer = players[pick(players.length, 3)];
+    // 44 players were added on 17 November 2026: they come first from the 18th.
+    const answer = players[pickGrown(players.length, 129, Math.floor(Date.UTC(2026, 10, 18) / 86400000), 3)];
     const puzzleNumber = dayNumber - FIRST_DAY + 1;
 
     // The opening clue shows all but the last three clubs (at least one),
