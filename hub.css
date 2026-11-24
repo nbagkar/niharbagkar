@@ -315,8 +315,8 @@ kbd {
 
 .tiles {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: clamp(0.6rem, 1.2vw, 1rem);
     height: 100%;
     max-height: 40rem;
@@ -424,49 +424,41 @@ kbd {
 }
 
 .tile-squad .tile-art {
-    top: 10%;
-    right: 8%;
-    display: flex;
-    /* Stop above the kicker, title and subtitle on short screens. */
-    height: min(58%, calc(84% - 9.5rem));
-}
-
-.tile-squad .tile-art img {
-    height: 100%;
-    width: auto;
-    aspect-ratio: 5 / 7;
-    object-fit: cover;
-    object-position: top;
-    margin-left: -18%;
-    background: #fff;
-    border: 3px solid var(--paper-light);
-    border-radius: 0.6rem;
-    box-shadow: 0 12px 22px -8px rgba(0, 0, 0, 0.7);
-    transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
-}
-
-.tile-squad .tile-art img:nth-child(1) {
-    transform: rotate(-10deg) translateY(6%);
-}
-
-.tile-squad .tile-art img:nth-child(3) {
-    transform: rotate(10deg) translateY(6%);
+    top: 1.2rem;
+    right: 1.6rem;
+    width: 46%;
 }
 
 .tile-squad.is-selected .tile-art {
     transform: none;
 }
 
-.tile-squad.is-selected .tile-art img:nth-child(1) {
-    transform: rotate(-17deg) translate(-22%, 9%);
+/* Starting XI: a 4-3-3, with the three live apps ringed up front. */
+.tile-formation {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 13rem;
 }
 
-.tile-squad.is-selected .tile-art img:nth-child(2) {
-    transform: translateY(-5%);
+.tile-formation rect,
+.tile-formation line,
+.tile-formation circle:not(.dot) {
+    fill: none;
+    stroke: currentColor;
+    stroke-opacity: 0.35;
+    stroke-width: 0.8;
 }
 
-.tile-squad.is-selected .tile-art img:nth-child(3) {
-    transform: rotate(17deg) translate(22%, 9%);
+.tile-formation .dot {
+    fill: currentColor;
+    fill-opacity: 0.85;
+}
+
+.tile-formation .dot.star {
+    fill-opacity: 1;
+    stroke: var(--formation-star, #e8c25a);
+    stroke-width: 1.4;
 }
 
 /* Small tile art */
@@ -749,91 +741,6 @@ kbd {
     }
 }
 
-/* Featured case files: a straight line from the home screen to the work. */
-
-.featured {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    min-width: 0;
-    margin-top: clamp(0.6rem, 1.5vw, 1rem);
-}
-
-.featured-label {
-    flex: none;
-    font-style: italic;
-    color: #c7c3b2;
-}
-
-.featured a {
-    flex: 1 1 0;
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    min-width: 0;
-    padding: 0.5rem 0.9rem;
-    color: var(--ink);
-    text-decoration: none;
-    white-space: nowrap;
-    background: var(--paper);
-    border: 2px solid var(--ink);
-    border-radius: 0.6rem;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.featured a span {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--ink-soft);
-}
-
-.featured a::after {
-    content: "\2192";
-    margin-left: auto;
-}
-
-.featured a:hover,
-.featured a:focus-visible {
-    border-color: var(--accent);
-    outline: none;
-}
-
-@media (max-width: 760px) {
-    .featured {
-        flex-wrap: wrap;
-        gap: 0.3rem 0.4rem;
-        margin-top: 0.6rem;
-    }
-
-    .featured-label {
-        flex-basis: 100%;
-        font-size: 0.8rem;
-        line-height: 1.2;
-    }
-
-    .featured a span,
-    .featured a::after {
-        display: none;
-    }
-
-    .featured a {
-        justify-content: center;
-        padding: 0.7rem 0.3rem;
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 760px) and (max-height: 700px) {
-    .featured-label {
-        display: none;
-    }
-
-    .featured a {
-        padding: 0.45rem 0.3rem;
-    }
-}
-
 /* Phone and narrow screens */
 
 @media (max-width: 760px) {
@@ -902,10 +809,6 @@ kbd {
         grid-column: 1 / -1;
         grid-row: auto;
         min-height: 6.5rem;
-    }
-
-    .tile-transfer {
-        grid-column: 1 / -1;
     }
 
     .tile-sub,
@@ -1320,7 +1223,11 @@ kbd {
     .hub main > section.is-active:not(.home),
     .tile,
     .tile-art,
-    .tile-squad .tile-art img {
+    .home-pitch,
+    .featured,
+    .tiles,
+    .home-foot,
+    .hub .home.is-active .hero {
         animation: none;
         transition: none;
     }
@@ -2027,5 +1934,260 @@ kbd {
 
     html.hub[data-theme] .mini-name {
         font-size: 14.5cqw;
+    }
+}
+
+/* Home hierarchy: who (headline) -> proof (featured work) -> explore (tiles) -> play (foot). */
+
+.home-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.7rem, 1.6vh, 1.2rem);
+    min-height: 0;
+}
+
+.home-kicker {
+    margin: 0 0 0.45rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-dim, var(--ink-soft));
+}
+
+.home-headline {
+    margin: 0;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    font-size: clamp(2rem, 3.4vw, 3.3rem);
+    line-height: 0.92;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.home-headline em {
+    font-style: italic;
+    color: var(--home-accent, var(--accent));
+}
+
+/* Featured work: three proof cards with a big outcome. */
+.featured {
+    display: grid;
+    grid-template-columns: auto repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.featured-label {
+    align-self: center;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-dim, var(--ink-soft));
+}
+
+.featured a {
+    position: relative;
+    display: grid;
+    align-content: start;
+    row-gap: 0.15rem;
+    min-width: 0;
+    padding: 0.7rem 1rem 0.75rem;
+    text-decoration: none;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.featured a::after {
+    content: "\2192";
+    position: absolute;
+    top: 0.6rem;
+    right: 0.8rem;
+}
+
+.featured-name {
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.featured a strong {
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.featured-note {
+    font-size: 0.9rem;
+    line-height: 1.25;
+}
+
+.featured a:focus-visible {
+    outline: none;
+}
+
+/* Small tiles: icon in the flow above the label, the block centred. */
+.tile:not(.tile-squad) {
+    justify-content: center;
+    gap: 0.1rem;
+}
+
+.tile:not(.tile-squad) .tile-art {
+    position: static;
+    align-self: flex-start;
+    margin-bottom: 0.55rem;
+}
+
+/* Soccer Hub: a small play button in the footer. */
+.home-play {
+    flex: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    padding: 0.2rem 0.9rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.home-play strong {
+    font-size: 0.95rem;
+    font-weight: 900;
+    font-style: italic;
+}
+
+/* Player card: headline numbers in the rating spot. Home and profile only. */
+.p-rating {
+    display: none;
+}
+
+.hub .p-rating {
+    position: absolute;
+    top: 21cqw;
+    left: 9cqw;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6cqw;
+    margin: 0;
+    text-align: center;
+}
+
+.hub .p-rating div + div {
+    padding-top: 1.6cqw;
+    border-top: 0.4cqw solid currentColor;
+    border-top-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.hub .p-rating dd {
+    margin: 0;
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: 68%;
+    font-size: 7.5cqw;
+    line-height: 1;
+}
+
+.hub .p-rating dt {
+    font-weight: 700;
+    font-size: 2.6cqw;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* The home screen arrives in reading order. */
+@keyframes home-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+}
+
+.hub .home.is-active .hero { animation: home-rise 0.6s both cubic-bezier(0.2, 0.8, 0.25, 1); }
+.hub .home.is-active .home-pitch { animation: home-rise 0.6s 0.15s both cubic-bezier(0.2, 0.8, 0.25, 1); }
+.hub .home.is-active .featured { animation: home-rise 0.6s 0.35s both cubic-bezier(0.2, 0.8, 0.25, 1); }
+.hub .home.is-active .tiles { animation: home-rise 0.6s 0.55s both cubic-bezier(0.2, 0.8, 0.25, 1); }
+.hub .home.is-active .home-foot { animation: home-rise 0.6s 0.75s both cubic-bezier(0.2, 0.8, 0.25, 1); }
+
+@media (min-width: 761px) {
+    .home-grid {
+        align-items: center;
+    }
+
+    .tiles {
+        flex: 0 1 auto;
+        height: auto;
+        grid-template-rows: repeat(2, minmax(0, auto));
+        max-height: 26rem;
+    }
+
+    .tile-squad {
+        min-height: 19.5rem;
+    }
+
+    .tile:not(.tile-squad) {
+        min-height: 9.5rem;
+        padding: 1rem 1.1rem;
+    }
+}
+
+@media (max-width: 760px) {
+    .home-headline {
+        font-size: 2.3rem;
+    }
+
+    .home-kicker {
+        font-size: 0.8rem;
+    }
+
+    .featured {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .featured-label,
+    .featured-note {
+        display: none;
+    }
+
+    .featured a {
+        padding: 0.5rem 2rem 0.5rem 0.8rem;
+    }
+
+    .featured a strong {
+        font-size: 1.4rem;
+    }
+
+    .tile-squad {
+        min-height: 11rem;
+    }
+
+    .tile-squad .tile-art {
+        width: 34%;
+    }
+}
+
+@media (max-width: 760px) {
+    .tiles {
+        grid-template-rows: none;
+        grid-auto-rows: auto;
+    }
+
+    .tile:not(.tile-squad) {
+        min-height: 0;
+        padding: 0.8rem 0.9rem;
+    }
+
+    .tile:not(.tile-squad) .tile-art,
+    .tile.is-selected:not(.tile-squad) .tile-art {
+        margin: -0.3rem 0 -0.2rem;
+        transform: scale(0.7);
+        transform-origin: left center;
     }
 }

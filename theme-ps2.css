@@ -235,11 +235,6 @@
     color: #d6e6ff;
 }
 
-.hub[data-theme="ps2"] .tile-squad .tile-art img {
-    border: 3px solid #fff;
-    border-radius: 0.4rem;
-}
-
 /* Small tile art */
 .hub[data-theme="ps2"] .tile-crest,
 .hub[data-theme="ps2"] .tile-crests i {
@@ -879,6 +874,16 @@
 
 /* Featured case files on the home screen. */
 
+.hub[data-theme="ps2"] {
+    --home-dim: #cfe0ff;
+    --home-accent: var(--ps2-yellow);
+}
+
+.hub[data-theme="ps2"] .home-headline {
+    color: #fff;
+    text-shadow: 0 3px 0 var(--ps2-navy);
+}
+
 .hub[data-theme="ps2"] .featured-label {
     font-style: italic;
     font-weight: 800;
@@ -893,12 +898,8 @@
     box-shadow: 0 0 0 2px var(--ps2-navy);
 }
 
-.hub[data-theme="ps2"] .featured a strong {
-    font-weight: 800;
-    font-style: italic;
-}
-
-.hub[data-theme="ps2"] .featured a span {
+.hub[data-theme="ps2"] .featured-name,
+.hub[data-theme="ps2"] .featured-note {
     color: #dbe8ff;
 }
 
@@ -912,4 +913,55 @@
 .hub[data-theme="ps2"] .featured a:hover span,
 .hub[data-theme="ps2"] .featured a:focus-visible span {
     color: var(--ps2-navy);
+}
+
+/* Home hierarchy extras. */
+
+.hub[data-theme="ps2"] .tile-formation {
+    color: var(--ps2-navy);
+    --formation-star: #fff;
+}
+
+.hub[data-theme="ps2"] .home-play {
+    color: #dbe8ff;
+    background: linear-gradient(180deg, #3f86f2 0%, #1f5fd6 49%, #1149b8 51%, #1a5ad0 100%);
+    border: 2px solid #cfe0ff;
+    border-radius: 99px;
+}
+
+.hub[data-theme="ps2"] .home-play strong {
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="ps2"] .home-play:hover,
+.hub[data-theme="ps2"] .home-play:focus-visible {
+    outline: none;
+    color: var(--ps2-navy);
+    background: linear-gradient(180deg, #ffe680 0%, var(--ps2-yellow) 49%, #f5a300 51%, var(--ps2-orange) 100%);
+}
+
+.hub[data-theme="ps2"] .home-play:hover strong,
+.hub[data-theme="ps2"] .home-play:focus-visible strong {
+    color: var(--ps2-navy);
+}
+
+/* Rating numbers sit on the photo here, so they get a plate. */
+.hub[data-theme="ps2"] .card.player .p-rating {
+    top: 14cqw;
+    left: 6cqw;
+    padding: 1.6cqw 2cqw;
+    color: var(--ps2-navy);
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 1.4cqw;
+}
+
+/* Exo 2 runs wider than Saira: smaller headline and small-tile titles. */
+.hub[data-theme="ps2"] .home-headline {
+    font-size: clamp(1.6rem, 2.25vw, 2.2rem);
+}
+
+.hub[data-theme="ps2"] .tile:not(.tile-squad) .tile-title {
+    font-size: clamp(1.15rem, 1.75vw, 1.6rem);
+    overflow-wrap: anywhere;
 }

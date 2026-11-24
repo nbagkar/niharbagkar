@@ -94,12 +94,21 @@
     <main id="main">
         <section class="home" id="home" aria-label="Home screen" hidden>
             <div class="home-grid">
+                <div class="home-left">
+                <header class="home-pitch">
+                    <p class="home-kicker">NYU Stern &middot; Product, venture, fintech</p>
+                    <p class="home-headline">Prev Product @ <em>Microsoft</em>, <em>Cue</em> &amp; <em>NoteSight</em>.<br>Shipped <em>Viridian</em> &amp; <em>UPHouse</em>.</p>
+                </header>
+                <nav class="featured" aria-label="Featured work">
+                    <span class="featured-label">Featured work</span>
+                    <a href="viridian.html" data-track="home-case-viridian"><span class="featured-name">Viridian</span><strong>Live</strong><span class="featured-note">on the App Store</span></a>
+                    <a href="uphouse.html" data-track="home-case-uphouse"><span class="featured-name">UPHouse</span><strong>Live</strong><span class="featured-note">on the App Store</span></a>
+                    <a href="signalpath.html" data-track="home-case-signalpath"><span class="featured-name">SignalPath</span><strong>Top 5</strong><span class="featured-note">of 47 teams, Microsoft hackathon</span></a>
+                </nav>
                 <nav class="tiles" aria-label="Menu">
                     <a class="tile tile-squad" href="#binder">
                         <span class="tile-art" aria-hidden="true">
-                            <img width="388" height="844" src="images/shots/viridian-market.jpg" alt="" loading="lazy">
-                            <img width="1000" height="600" src="images/SignalPath.jpg" alt="" loading="lazy">
-                            <img width="1000" height="558" src="images/Cue.jpg" alt="" loading="lazy">
+                            <svg class="tile-formation" viewBox="0 0 100 100"><rect x="2" y="2" width="96" height="96" rx="3"/><line x1="2" y1="50" x2="98" y2="50"/><circle cx="50" cy="50" r="11"/><circle class="dot star" cx="50" cy="12" r="5"/><circle class="dot star" cx="22" cy="26" r="5"/><circle class="dot star" cx="78" cy="26" r="5"/><circle class="dot" cx="30" cy="48" r="3.6"/><circle class="dot" cx="50" cy="44" r="3.6"/><circle class="dot" cx="70" cy="48" r="3.6"/><circle class="dot" cx="14" cy="70" r="3.6"/><circle class="dot" cx="38" cy="72" r="3.6"/><circle class="dot" cx="62" cy="72" r="3.6"/><circle class="dot" cx="86" cy="70" r="3.6"/><circle class="dot" cx="50" cy="90" r="3.6"/></svg>
                         </span>
                         <span class="tile-kicker">Squad</span>
                         <span class="tile-title">Starting XI</span>
@@ -123,12 +132,6 @@
                         <span class="tile-title">Trophies</span>
                         <span class="tile-sub">Nine awards, two publications</span>
                     </a>
-                    <a class="tile tile-kickoff" href="https://soccer.niharbagkar.com/">
-                        <span class="tile-art tile-pitch" aria-hidden="true"><i class="tile-car"></i><i class="tile-ball"></i></span>
-                        <span class="tile-kicker">Visit</span>
-                        <span class="tile-title">Soccer Hub</span>
-                        <span class="tile-sub">Kick off, daily trivia, today&rsquo;s matches</span>
-                    </a>
                     <a class="tile tile-transfer" href="#contact">
                         <span class="tile-art tile-letter" aria-hidden="true"></span>
                         <span class="tile-kicker">Contact</span>
@@ -136,14 +139,9 @@
                         <span class="tile-sub">Say hello</span>
                     </a>
                 </nav>
+                </div>
                 <div class="hero" data-hero></div>
             </div>
-            <nav class="featured" aria-label="Featured case files">
-                <span class="featured-label">Case files</span>
-                <a href="viridian.html" data-track="home-case-viridian"><strong>Viridian</strong><span>App Store</span></a>
-                <a href="uphouse.html" data-track="home-case-uphouse"><strong>UPHouse</strong><span>App Store</span></a>
-                <a href="signalpath.html" data-track="home-case-signalpath"><strong>SignalPath</strong><span>Top 5 of 47</span></a>
-            </nav>
             <div class="home-foot">
                 <div class="ticker" role="region" aria-label="News">
                     <ul class="ticker-track">
@@ -157,8 +155,7 @@
                         <li>Now reading: Abby Offsides by Anna McCallie</li>
                     </ul>
                 </div>
-                <p class="hub-keys" aria-hidden="true"><span><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> Move</span><span><kbd>Enter</kbd> Select</span><span><kbd>Esc</kbd> Back</span></p>
-                <a class="home-quick" href="/recruiter" data-track="home-recruiter">In a hurry? Recruiter view &rarr;</a>
+                <a class="home-play" href="https://soccer.niharbagkar.com/" data-track="home-soccer-hub"><span>Visit</span> <strong>Soccer Hub</strong></a>
                 <button class="pack-replay" type="button">Open the pack again</button>
             </div>
         </section>
@@ -677,6 +674,7 @@
                                     <p class="c-type">Product &middot; Venture &middot; Fintech</p>
                                     <p class="c-text">NYU Stern, New York. Last season: Microsoft, product intern.</p>
                                     <footer class="c-foot"><span>Player card</span><span class="c-mark">Foil</span></footer>
+                                    <dl class="p-rating"><div><dd>2</dd><dt>Live apps</dt></div><div><dd>20</dd><dt>Projects</dt></div></dl>
                                     <button class="c-flip" type="button" aria-expanded="false" aria-label="Turn over Nihar's player card to see the stats"></button>
                                 </div>
                                 <div class="face face-back" inert>

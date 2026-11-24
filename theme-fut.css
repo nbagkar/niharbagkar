@@ -220,11 +220,6 @@
     font-size: clamp(2.6rem, 5vw, 4rem);
 }
 
-.hub[data-theme="fut"] .tile-squad .tile-art img {
-    border: 2px solid #fff;
-    border-radius: 0.3rem;
-}
-
 .hub[data-theme="fut"] .tile-squad::after {
     color: #000;
     background: #fff;
@@ -957,14 +952,15 @@
     font-size: 18cqi;
 }
 
-/* Featured case files on the home screen. */
+/* Home hierarchy: headline, featured work, quiet chrome. One accent (aqua). */
 
-.hub[data-theme="fut"] .featured-label {
-    font-style: normal;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--fut-aqua);
+.hub[data-theme="fut"] {
+    --home-dim: var(--fut-dim);
+    --home-accent: var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .home-headline {
+    color: #fff;
 }
 
 .hub[data-theme="fut"] .featured a {
@@ -972,19 +968,13 @@
     background:
         linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%),
         rgba(14, 14, 28, 0.72);
-    border: 0;
-    border-radius: 0;
     box-shadow: inset 0 0 0 1px var(--fut-line);
+    clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 0.9rem, 100% 100%, 0 100%);
 }
 
-.hub[data-theme="fut"] .featured a strong {
-    font-weight: 800;
-    font-style: italic;
-    text-transform: uppercase;
-}
-
-.hub[data-theme="fut"] .featured a span {
-    color: rgba(255, 255, 255, 0.7);
+.hub[data-theme="fut"] .featured-name,
+.hub[data-theme="fut"] .featured-note {
+    color: var(--fut-dim);
 }
 
 .hub[data-theme="fut"] .featured a::after {
@@ -994,4 +984,50 @@
 .hub[data-theme="fut"] .featured a:hover,
 .hub[data-theme="fut"] .featured a:focus-visible {
     box-shadow: inset 0 0 0 2px var(--fut-aqua), inset 0 0 1.4rem rgba(30, 242, 200, 0.18);
+}
+
+.hub[data-theme="fut"] .tile:not(.tile-squad) .tile-kicker {
+    color: var(--fut-dim);
+}
+
+.hub[data-theme="fut"] .tile-formation {
+    color: #fff;
+}
+
+.hub[data-theme="fut"] .home-foot::before {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.hub[data-theme="fut"] .ticker {
+    opacity: 0.6;
+}
+
+.hub[data-theme="fut"] .pack-replay {
+    opacity: 0.5;
+}
+
+.hub[data-theme="fut"] .home-play {
+    color: var(--fut-dim);
+    background: rgba(14, 14, 28, 0.72);
+    box-shadow: inset 0 0 0 1px var(--fut-line);
+    clip-path: polygon(0 0, calc(100% - 0.5rem) 0, 100% 0.5rem, 100% 100%, 0 100%);
+}
+
+.hub[data-theme="fut"] .home-play strong {
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.hub[data-theme="fut"] .home-play:hover,
+.hub[data-theme="fut"] .home-play:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--fut-aqua);
+}
+
+.hub[data-theme="fut"] .card.player .p-rating {
+    color: #2a1d05;
+}
+
+.hub[data-theme="fut"] .card.player .p-rating dt {
+    color: #5a4110;
 }
