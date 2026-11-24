@@ -1213,9 +1213,12 @@ kbd {
     transform: none;
 }
 
-/* The walkout: the card turns one full circle, back face and all, before it settles. */
+/* The walkout: the card turns one full circle, back face and all, then keeps
+   turning (easing through each front) until the visitor clicks Continue. */
 .is-reveal .walkout-card .card-inner {
-    animation: card-spin 1.6s cubic-bezier(0.25, 0.75, 0.25, 1) both;
+    animation:
+        card-spin 1.6s cubic-bezier(0.25, 0.75, 0.25, 1) both,
+        card-spin 3.2s cubic-bezier(0.45, 0, 0.55, 1) 1.6s infinite;
 }
 
 @keyframes card-spin {
